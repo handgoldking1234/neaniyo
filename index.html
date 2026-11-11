@@ -459,6 +459,27 @@ body.embedded .side-hot{display:none!important}
 .pimg.fit{background:#fff}
 .pimg.fit img{object-fit:contain;max-height:420px;background:#fff}
 .credit{margin:-10px 0 0;font-size:11.5px;color:var(--muted)}
+.pimg.yt{position:relative;aspect-ratio:16/9;background:#000}
+.pimg.yt button{all:unset;cursor:pointer;display:block;position:absolute;inset:0}
+.pimg.yt img{min-height:0;max-height:none;height:100%;object-fit:cover;object-position:center}
+.pimg.yt .play{position:absolute;left:50%;top:50%;width:68px;height:48px;margin:-24px 0 0 -34px;border-radius:14px;background:#ff0033;color:#fff;display:grid;place-items:center;box-shadow:0 6px 20px rgba(0,0,0,.35);transition:transform .15s}
+.pimg.yt .play svg{width:26px;height:26px;fill:#fff}
+.pimg.yt button:hover .play,.pimg.yt button:focus-visible .play{transform:scale(1.08)}
+.pimg.yt .ytlab{position:absolute;left:12px;bottom:12px;padding:5px 10px;border-radius:999px;background:rgba(0,0,0,.65);color:#fff;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:5px}
+.pimg.yt .ytlab svg{width:14px;height:14px}
+.pimg.yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.pimg .capb{position:absolute;left:10px;top:10px;padding:4px 9px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:11.5px;font-weight:600}
+.pimg.cap{position:relative}
+.plink{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);text-decoration:none;font-size:13.5px;min-width:0}
+.plink:hover{border-color:var(--b)}
+.plink svg{width:18px;height:18px;flex:none;color:var(--muted)}
+.plink b{flex:none;font-weight:700}
+.plink span{flex:1;min-width:0;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plink .ext{width:15px;height:15px}
+#f-link{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px;font:inherit;width:100%}
+.linkprev{margin-top:8px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.linkprev svg{width:15px;height:15px}
+.linkprev.ok{color:var(--b)}
 .credit a{color:var(--muted)}
 .pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .pgrid.n3{grid-template-columns:repeat(3,1fr)}
@@ -624,10 +645,14 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
             <input type="file" id="f-photo" accept="image/*" multiple hidden>
           </div>
           <div class="thumbs" id="thumbs"></div>
-          <p class="hint">2장 이상 올리면 사진 중에서 고르는 투표가 돼요. 사람 얼굴은 본인 동의가 있을 때만, 아이 그림은 이름·학교가 보이지 않게 올려 주세요.</p></div>
+          <p class="hint">예고편·뉴스·방송 캡처도 올릴 수 있어요. 2장 이상 올리면 사진 중에서 고르는 투표가 돼요. 사람 얼굴은 본인 동의가 있을 때만, 아이 그림은 이름·학교가 보이지 않게 올려 주세요.</p></div>
+        <div class="field" id="f-link-wrap"><label for="f-link">링크 <small>(선택 · 유튜브 예고편, 뉴스 기사)</small></label>
+          <input id="f-link" type="url" inputmode="url" maxlength="300" placeholder="https://youtu.be/… 또는 기사 주소">
+          <p class="linkprev" id="linkprev" hidden></p>
+          <p class="hint">유튜브 주소는 카드 안에서 바로 재생돼요. 캡처를 올렸다면 원본 기사·영상 주소를 같이 넣어 주세요.</p></div>
         <div class="field" id="f-opt-wrap"><label id="f-opt-label">보기</label>
           <div class="quick" id="quick" role="group" aria-label="보기 빠른 입력">
-            <button type="button" data-q="찬성|반대">찬성 / 반대</button><button type="button" data-q="O|X">O / X</button><button type="button" data-q="산다|안 산다">산다 / 안 산다</button><button type="button" data-q="한다|안 한다">한다 / 안 한다</button><button type="button" data-q="사귄다|안 사귄다">사귄다 / 안 사귄다</button>
+            <button type="button" data-q="찬성|반대">찬성 / 반대</button><button type="button" data-q="O|X">O / X</button><button type="button" data-q="산다|안 산다">산다 / 안 산다</button><button type="button" data-q="한다|안 한다">한다 / 안 한다</button><button type="button" data-q="사귄다|안 사귄다">사귄다 / 안 사귄다</button><button type="button" data-q="본다|안 본다">본다 / 안 본다</button><button type="button" data-q="공감|비공감">공감 / 비공감</button>
           </div>
           <div class="optlist" id="optlist">
             <input id="f-o1" placeholder="보기 1 · 비워 두면 찬성" maxlength="30">
@@ -828,6 +853,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       {q:'월급에서 저축 비율은?',o:['10% 미만','10~30%','30% 이상'],v:[380,520,280]},
       {q:'연말까지 목표는?',o:['더 모으기','빚 줄이기','버티기'],v:[430,350,400]}]},
     // 패션·쇼핑 사진 투표 예시
+    {id:'mv1',ex:true,comments:true,cat:'연예',sub:'영화',type:'vs',q:'메인 예고편 떴다, 이 영화 봐 안 봐?',o:['본다','안 본다'],v:[2840,1310],h:'40분 전',img:'assets/sample/trailer-capture.svg',capLabel:'예고편 캡처',desc:'예고편이나 뉴스 화면을 캡처해 올리고 의견을 물어보는 투표예요. 캡처를 올릴 때 원본 영상·기사 주소를 함께 넣으면 카드 아래에 붙어요.'},
     {id:'ph1',ex:true,comments:true,cat:'패션·쇼핑',sub:'패션',type:'vs',q:'올겨울 롱패딩, 이거 산다 vs 안 산다',o:['산다','안 산다'],v:[1840,2260],h:'1시간 전',img:'assets/sample/long-padding.jpg',imgFit:'contain'},
     {id:'ph2',ex:true,cat:'패션·쇼핑',type:'photo',q:'올겨울 패딩 코디, 어떤 스타일이 제일 나아요?',o:['모노톤 패딩','시티 나이트룩','스카프 데일리룩'],v:[1420,2380,960],h:'3시간 전',imgs:['px:15639609|black','px:19426409|charcoal','px:14469824|beige'],credit:'Farshad Sheikhzadeh · Caner Kokcu · Jean-Daniel'},
     {id:'ph3',ex:true,cat:'패션·쇼핑',type:'photo',multiSel:true,n:1650,q:'출근길 패딩 코디, 괜찮은 거 다 골라 주세요',o:['퍼 후드 패딩','블랙 숏패딩','볼캡 매치','스카프 코디'],v:[1120,890,640,380],h:'오늘',imgs:['px:11274805|black','px:15639609|charcoal','px:19714681|navy','px:14469824|ivory'],credit:'Pexels 무료 사진'},
@@ -870,6 +896,16 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   // 예시 사진: Pexels 무료 사진(px:사진번호|대체그림). 사진을 못 불러오면 대체 그림으로 바꿈
   var FALLBACK={};
   function fbOf(key){ if(key==='@drawing'||key==='@drawing2') return drawing(key==='@drawing2'); var a=JK[key.replace('@','')]||JK.black; return jacket(a[0],a[1],a[2]); }
+  function parseLink(u){
+    u=(u||'').trim(); if(!u) return null; if(!/^https?:\/\//i.test(u)) u='https://'+u;
+    var a; try{ a=new URL(u); }catch(e){ return null; }
+    if(!/^https?:$/.test(a.protocol)||a.hostname.indexOf('.')<0) return null;
+    var host=a.hostname.replace(/^(www|m)\./,''), yt=null;
+    if(/(^|\.)youtube\.com$/.test(host)) yt=a.searchParams.get('v')||((a.pathname.match(/^\/(?:shorts|embed|live)\/([\w-]{11})/)||[])[1]);
+    else if(host==='youtu.be') yt=a.pathname.slice(1,12);
+    if(yt&&!/^[\w-]{11}$/.test(yt)) yt=null;
+    var o={url:a.href,host:host}; if(yt) o.yt=yt; return o;
+  }
   function resolveImg(x){
     if(!x||x.indexOf('px:')!==0) return x;
     var parts=x.slice(3).split('|'), id=parts[0], url='https://images.pexels.com/photos/'+id+'/pexels-photo-'+id+'.jpeg?auto=compress&cs=tinysrgb&w=800';
@@ -901,6 +937,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     st1:'친구·인간관계',st2:'직장',st3:'가족',st4:'돈',st5:'가족',st6:'연애'};
   var CATMOVE={p3:'연예',x1:'라이프',x2:'라이프'};
   function normCat(p){
+    if(typeof p.link==='string') p.link=parseLink(p.link);
     if(p.cat==='드라마·예능'){ p.cat='연예'; if(!p.sub) p.sub=/예능|요리|오디션|PPL/.test(p.q)?'예능·방송':'배우·드라마'; }
     if(CATMOVE[p.id]) p.cat=CATMOVE[p.id];
     if(!p.sub&&SUBMAP[p.id]) p.sub=SUBMAP[p.id];
@@ -931,7 +968,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sv);
   }
   // Lucide 아이콘 (lucide-static 0.460, ISC)
-  var ICONS={"sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />", "route": "<circle cx=\"6\" cy=\"19\" r=\"3\" /> <path d=\"M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15\" /> <circle cx=\"18\" cy=\"5\" r=\"3\" />", "settings-2": "<path d=\"M20 7h-9\" /> <path d=\"M14 17H5\" /> <circle cx=\"17\" cy=\"17\" r=\"3\" /> <circle cx=\"7\" cy=\"7\" r=\"3\" />", "image-plus": "<path d=\"M16 5h6\" /> <path d=\"M19 2v6\" /> <path d=\"M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5\" /> <path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\" /> <circle cx=\"9\" cy=\"9\" r=\"2\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />"};
+  var ICONS={"sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />", "route": "<circle cx=\"6\" cy=\"19\" r=\"3\" /> <path d=\"M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15\" /> <circle cx=\"18\" cy=\"5\" r=\"3\" />", "settings-2": "<path d=\"M20 7h-9\" /> <path d=\"M14 17H5\" /> <circle cx=\"17\" cy=\"17\" r=\"3\" /> <circle cx=\"7\" cy=\"7\" r=\"3\" />", "image-plus": "<path d=\"M16 5h6\" /> <path d=\"M19 2v6\" /> <path d=\"M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5\" /> <path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\" /> <circle cx=\"9\" cy=\"9\" r=\"2\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />", "play": "<polygon points=\"6 3 20 12 6 21 6 3\" />", "newspaper": "<path d=\"M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2\" />\n  <path d=\"M18 14h-8\" />\n  <path d=\"M15 18h-5\" />\n  <path d=\"M10 6h8v4h-8V6Z\" />", "clapperboard": "<path d=\"M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z\" />\n  <path d=\"m6.2 5.3 3.1 3.9\" />\n  <path d=\"m12.4 3.4 3.1 4\" />\n  <path d=\"M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z\" />"};
   function ic(n){return '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[n]||'')+'</svg>'}
   // ===== 효과음 (Web Audio로 합성, 파일 없음) =====
   var SKEY='neaniyo-sound', soundOn=true, actx=null;
@@ -1061,7 +1098,10 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       }).join('')+'</div>'+(p.multiSel&&!done?'<button class="btn dark pick-go" data-act="pickgo" disabled>여러 개 고른 뒤 투표하기</button>':'');
     }
     if(p.multiSel&&!done) body='<p class="hint pick-hint">'+ic('check')+'복수 선택 · 마음에 드는 걸 모두 고르세요</p>'+body;
-    var media=p.img?'<div class="pimg'+(p.imgFit==='contain'?' fit':'')+'"><img src="'+p.img+'" alt="'+esc(p.q)+'" loading="lazy" referrerpolicy="no-referrer"></div>':'';
+    var lk=p.link||null, media='';
+    if(p.img) media='<div class="pimg cap'+(p.imgFit==='contain'?' fit':'')+'"><img src="'+p.img+'" alt="'+esc(p.q)+'" loading="lazy" referrerpolicy="no-referrer">'+(p.capLabel?'<span class="capb">'+esc(p.capLabel)+'</span>':'')+'</div>';
+    else if(lk&&lk.yt) media='<div class="pimg yt"><button type="button" data-act="ytplay" aria-label="영상 재생: '+esc(p.q)+'"><img src="https://i.ytimg.com/vi/'+lk.yt+'/hqdefault.jpg" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="play">'+ic('play')+'</span><span class="ytlab">'+ic('clapperboard')+'눌러서 영상 보기</span></button></div>';
+    if(lk&&(p.img||!lk.yt)) media+='<a class="plink" href="'+esc(lk.url)+'" target="_blank" rel="noopener nofollow">'+ic(lk.yt?'clapperboard':'newspaper')+'<b>'+(lk.yt?'영상':'원문')+'</b><span>'+esc(lk.host)+'</span>'+ic('external-link').replace('<svg','<svg class="ext"')+'</a>';
     var credit=p.credit?'<p class="credit">사진: '+esc(p.credit)+' · <a href="https://www.pexels.com" target="_blank" rel="noopener">Pexels</a></p>':'';
     return '<article class="poll'+(done?' done':'')+'" data-id="'+p.id+'">'+
       (embedded?embedBrand(p):'')+
@@ -1437,7 +1477,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       '<svg viewBox="0 0 32 32" aria-hidden="true"><rect width="16" height="32" fill="var(--a)"/><rect x="16" width="16" height="32" fill="var(--b)"/><circle cx="9" cy="16" r="4.2" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M20 12l7 8M27 12l-7 8" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>'+
       '<b>네아니요</b><span>투표하고 결과 보기</span></a>';
   }
-  function embedHeight(p){return p.type==='vs'?380:(290+p.o.length*56)}
+  function embedHeight(p){var h=p.type==='vs'?380:(290+p.o.length*56); if(p.img||(p.link&&p.link.yt)) h+=340; if(p.link&&(p.img||!p.link.yt)) h+=56; return h}
 
   function embedPanel(p,el){
     el.innerHTML='<h4>이 투표를 내 사이트에 붙이기</h4>'+
@@ -1495,6 +1535,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       if(act==='login'){ openAuth(); }
       if(act==='upgrade'){ location.hash='premium'; }
       if(act==='csv'){ downloadCsv(p); }
+      if(act==='ytplay'&&p.link&&p.link.yt){ var box=actBtn.closest('.pimg'); box.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+p.link.yt+'?autoplay=1&rel=0" title="'+esc(p.q)+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>'; return; }
       if(act==='more'){
         var st=actBtn.closest('.story'), inn=st.querySelector('.story-in'), open=!st.classList.contains('open');
         inn.style.maxHeight=inn.getBoundingClientRect().height+'px'; inn.getBoundingClientRect();
@@ -1627,14 +1668,14 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   var thumbs=document.getElementById('thumbs'), photoIn=document.getElementById('f-photo'), drop=document.getElementById('drop');
   var relayWrap=document.getElementById('f-relay-wrap'), rbuild=document.getElementById('rbuild'), raddq=document.getElementById('raddq'), relayToggle=document.getElementById('relayToggle');
   var optWrap=document.getElementById('f-opt-wrap'), photoWrap=document.getElementById('f-photo-wrap'), mselWrap=document.getElementById('f-msel-wrap'), pwIn=document.getElementById('f-pw');
-  var upImgs=[], relayMode=false, catTouched=false;
+  var upImgs=[], relayMode=false, catTouched=false, linkIn=document.getElementById('f-link'), linkPrev=document.getElementById('linkprev'), linkWrap=document.getElementById('f-link-wrap');
   document.getElementById('drop-ic').innerHTML=ic('image-plus');
   add.innerHTML=ic('plus')+'보기 추가'; raddq.innerHTML=ic('plus')+'질문 추가';
 
   // 카테고리
   catSel.innerHTML=TAX.map(function(t){return '<option value="'+t.c+'">'+t.l+'</option>'}).join('');
   function fillSubs(){ var t=TAX.filter(function(x){return x.c===catSel.value})[0]; subSel.innerHTML=t.s.map(function(x){return '<option>'+x+'</option>'}).join(''); }
-  function setCat(c){ if(catTouched||catSel.value===c) return; catSel.value=c; fillSubs(); }
+  function setCat(c,sub){ if(catTouched) return; if(catSel.value!==c){ catSel.value=c; fillSubs(); } if(sub) subSel.value=sub; }
   catSel.addEventListener('change',function(){ catTouched=true; fillSubs(); });
   catSel.value='연예'; fillSubs();
 
@@ -1685,6 +1726,8 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     var b=e.target.closest('[data-q]'); if(!b) return; var v=b.dataset.q.split('|'); setOptCount(2); var ins=optInputs(); ins[0].value=v[0]; ins[1].value=v[1]; try{SFX.tick()}catch(err){} sync();
   });
   optlist.addEventListener('input',sync);
+  qIn.addEventListener('input',sync);
+  linkIn.addEventListener('input',sync);
   storyIn.addEventListener('input',function(){ document.getElementById('f-story-n').textContent=storyIn.value.length; sync(); });
 
   // 릴레이
@@ -1710,6 +1753,17 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     if(n>2) return {kind:'multi',name:'객관식',desc:'보기 '+n+'개 중에서 골라요',story:story,img:nImg===1};
     return {kind:'vs',name:'OX',desc:'둘 중 하나를 골라요',story:story,img:nImg===1};
   }
+  function linkOf(){ return relayMode?null:parseLink(linkIn.value); }
+  function autoCat(d){
+    var t=qIn.value+' '+storyIn.value, lk=linkOf();
+    if(d.story) return ['사연'];
+    if(/예고편|티저|영화|개봉|극장|시사회/.test(t)) return ['연예','영화'];
+    if(/드라마|넷플릭스|OTT/.test(t)) return ['연예','배우·드라마'];
+    if(/뉴스|기사|속보|보도/.test(t)||(lk&&!lk.yt)) return ['사회','생활·소비'];
+    if(lk&&lk.yt) return ['연예','유튜버·인플루언서'];
+    if(upImgs.length&&!relayMode) return ['패션·쇼핑'];
+    return null;
+  }
   function sync(){
     var d=detect();
     relayWrap.hidden=!relayMode; optWrap.hidden=relayMode; photoWrap.hidden=relayMode;
@@ -1727,9 +1781,12 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     if(!photoMode) optInputs().forEach(function(inp,i){ if(i<2) inp.placeholder='보기 '+(i+1)+' · 비워 두면 '+labels[i]; });
     mselWrap.hidden=!(d.kind==='multi'||d.kind==='photo');
     // 카테고리 자동 제안
-    var autoC=d.story?'사연':(upImgs.length&&!relayMode?'패션·쇼핑':null);
-    if(!catTouched){ if(autoC){ setCat(autoC); sync.auto=true; } else if(sync.auto){ catSel.value='연예'; fillSubs(); sync.auto=false; } }
-    var tags='<span class="at-main">'+d.name+'</span><span>'+d.desc+'</span>'+(d.story?'<span class="at-tag">사연 판정</span>':'')+(d.img?'<span class="at-tag">사진 1장</span>':'');
+    var autoC=autoCat(d), lk=linkOf(), raw=linkIn.value.trim();
+    if(!catTouched){ var key=autoC?autoC.join('/'):''; if(key!==sync.key){ if(autoC){ setCat(autoC[0],autoC[1]); } else if(sync.key){ catSel.value='연예'; fillSubs(); } sync.key=key; } }
+    linkWrap.hidden=relayMode;
+    linkPrev.hidden=!raw; linkPrev.className='linkprev'+(lk?' ok':'');
+    linkPrev.innerHTML=lk?(lk.yt?ic('clapperboard')+'유튜브 영상 · 카드에서 바로 재생':ic('newspaper')+esc(lk.host)+' · 카드 아래 원문 링크로 붙어요'):'주소 형식이 아니에요. https://로 시작하는 주소를 넣어 주세요.';
+    var tags='<span class="at-main">'+d.name+'</span><span>'+d.desc+'</span>'+(d.story?'<span class="at-tag">사연 판정</span>':'')+(d.img?'<span class="at-tag">사진·캡처 1장</span>':'')+(lk&&!relayMode?'<span class="at-tag">'+(lk.yt?'유튜브 영상':'기사 링크')+'</span>':'');
     document.getElementById('autotype').innerHTML=ic('sparkles')+'<span class="at-label">이렇게 올라가요</span>'+tags;
     var vis=document.querySelector('input[name="f-vis"]:checked').value;
     document.getElementById('moreSum').innerHTML=ic('settings-2')+'설정 <small>'+(vis==='public'?'전체 공개':vis==='link'?'링크 공유만':'비밀방')+(d.story||document.getElementById('f-cmt').checked?' · 한줄평 켜짐':'')+(!mselWrap.hidden&&document.getElementById('f-msel').checked?' · 복수 선택':'')+'</small>';
@@ -1768,9 +1825,10 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       if(d.story){ np.story=storyIn.value.trim(); np.comments=true; }
       if(!mselWrap.hidden&&document.getElementById('f-msel').checked&&(o.length>2||np.type==='photo')){ np.multiSel=true; np.n=0; }
     }
+    if(linkIn.value.trim()&&d.kind!=='relay'){ var lk=parseLink(linkIn.value); if(!lk){ fail('링크 주소를 확인해 주세요.'); linkIn.focus(); return; } np.link=lk; }
     if(vis==='secret') np.pw=pwHash(pwIn.value);
     polls.unshift(np); saveMine();
-    form.reset(); upImgs=[]; relayMode=false; catTouched=false; rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='연예'; fillSubs();
+    form.reset(); upImgs=[]; relayMode=false; catTouched=false; sync.key=''; rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='연예'; fillSubs();
     document.getElementById('f-story-n').textContent='0'; syncVis();
     showMade(np,vis);
     setFilter('all','');

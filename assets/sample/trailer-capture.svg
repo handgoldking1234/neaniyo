@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1026"/><stop offset=".55" stop-color="#3b1d4a"/><stop offset="1" stop-color="#d9673a"/></linearGradient>
+<radialGradient id="sun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd27a"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="1280" height="720" fill="#000"/>
+<rect y="88" width="1280" height="544" fill="url(#sky)"/>
+<circle cx="820" cy="470" r="190" fill="url(#sun)"/>
+<path d="M0 632V470l60-18v-60h40v40l50-10v-90h70v120l40-6V330h90v170l60 6v-80h50v90l70-30V360h110v150l60-20v-70h50v90l80 10V300h100v220l60-30v-60h60v100l70 12V400h80v232z" fill="#0a0612"/>
+<path d="M0 632l300-60 260 30 300-50 420 40v40z" fill="#05030a"/>
+<g fill="#fff" font-family="Arial,Helvetica,sans-serif" text-anchor="middle">
+<text x="640" y="300" font-size="22" letter-spacing="14" opacity=".75">MAIN TRAILER</text>
+<text x="640" y="372" font-size="64" font-weight="700" letter-spacing="10">THE LAST CITY</text>
+<text x="640" y="420" font-size="20" letter-spacing="8" opacity=".7">COMING SOON</text>
+</g>
+<g transform="translate(0 676)"><rect x="40" y="0" width="1200" height="6" rx="3" fill="#fff" opacity=".25"/><rect x="40" y="0" width="420" height="6" rx="3" fill="#ff3b3b"/><circle cx="460" cy="3" r="9" fill="#ff3b3b"/>
+<text x="40" y="-14" fill="#fff" font-family="Arial,sans-serif" font-size="18" opacity=".8">0:51 / 2:14</text></g>
+</svg>
