@@ -196,11 +196,18 @@ td small{color:var(--muted)}
 .score b{font-variant-numeric:tabular-nums;text-align:right}
 
 /* embed-only view */
-body.embedded .hd,body.embedded .chips,body.embedded .foot .acts,body.embedded .note,body.shared .chips{display:none}
+body.embedded .nextup,body.shared .nextup,body.embedded .hd,body.embedded .chips,body.embedded .foot .acts,body.embedded .note,body.shared .chips{display:none}
 body.embedded{padding-left:6px;padding-right:6px;background:transparent}
 body.embedded .wrap{padding-block:4px;padding-inline:0;max-width:none}
 .more{display:none;text-align:center;font-size:12.5px;margin-top:8px}
-body.embedded .more{display:block}
+.ebrand{display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink);margin:-8px 0 -6px;width:max-content;max-width:100%;border-radius:8px;padding:2px 6px 2px 0}
+.ebrand svg{width:22px;height:22px;border-radius:6px;flex:none}
+.ebrand b{font-family:var(--display);font-weight:400;font-size:16px;letter-spacing:-.2px}
+.ebrand span{font-size:12px;color:var(--muted)}
+.ebrand:hover b{color:var(--a)}
+.egoto{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;color:var(--b);text-decoration:none}
+.egoto .i{width:13px;height:13px}
+.egoto:hover{text-decoration:underline}
 .more a,.sharebar a{color:var(--muted);text-decoration:none;font-weight:500}
 .more a:hover,.sharebar a:hover{color:var(--ink)}
 .sharebar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0;font-size:13.5px;color:var(--muted)}
@@ -1057,10 +1064,12 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     var media=p.img?'<div class="pimg'+(p.imgFit==='contain'?' fit':'')+'"><img src="'+p.img+'" alt="'+esc(p.q)+'" loading="lazy" referrerpolicy="no-referrer"></div>':'';
     var credit=p.credit?'<p class="credit">사진: '+esc(p.credit)+' · <a href="https://www.pexels.com" target="_blank" rel="noopener">Pexels</a></p>':'';
     return '<article class="poll'+(done?' done':'')+'" data-id="'+p.id+'">'+
+      (embedded?embedBrand(p):'')+
       '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+catLabel(p.cat)+(p.sub?' <span class="sub">› '+esc(p.sub)+'</span>':'')+'</span>'+(p.type==='relay'?'<span class="ex rl">릴레이 '+p.qs.length+'문항</span>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+'<span>·</span><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'</div>'+
       '<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+credit+
       (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
       '<div class="foot"><span class="n">'+fmt(voters(p))+'명 참여'+(p.closed?' · 마감된 투표':done?'':' · 투표하면 결과 공개')+'</span>'+
+      (embedded?'<a class="egoto" href="'+SITE+'?p='+p.id+'" target="_blank" rel="noopener">'+(done?'다른 투표 보기':'네아니요에서 보기')+ic('external-link')+'</a>':'')+
       '<span class="acts">'+(done&&p.type!=='relay'?'<button class="btn" data-act="stats">'+ic('chart-column')+'상세 통계</button>':'')+'<button class="btn" data-act="copy">'+ic('link')+'링크 복사</button>'+(p.vis==='secret'?'':'<button class="btn dark" data-act="embed">'+ic('code')+'임베드</button>')+'</span></div>'+
       '<div class="stats" hidden></div><div class="embed" hidden></div>'+(p.comments&&!embedded?cmtBlock(p,done):'')+'</article>';
   }
@@ -1422,7 +1431,13 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   function pwHash(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return 'h'+(h>>>0).toString(36)}
 
   function shareUrl(p){return SITE+'?p='+p.id}
-  function embedHeight(p){return p.type==='vs'?330:(215+p.o.length*56)}
+  // 임베드 안 로고: 누르면 네아니요 사이트(이 투표 페이지)가 새 탭으로 열림
+  function embedBrand(p){
+    return '<a class="ebrand" href="'+SITE+'?p='+p.id+'" target="_blank" rel="noopener" aria-label="네아니요에서 이 투표 보기 (새 탭)">'+
+      '<svg viewBox="0 0 32 32" aria-hidden="true"><rect width="16" height="32" fill="var(--a)"/><rect x="16" width="16" height="32" fill="var(--b)"/><circle cx="9" cy="16" r="4.2" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M20 12l7 8M27 12l-7 8" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>'+
+      '<b>네아니요</b><span>투표하고 결과 보기</span></a>';
+  }
+  function embedHeight(p){return p.type==='vs'?380:(290+p.o.length*56)}
 
   function embedPanel(p,el){
     el.innerHTML='<h4>이 투표를 내 사이트에 붙이기</h4>'+
@@ -1463,7 +1478,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   function resize(){
     if(!embedded||window.parent===window) return;
     requestAnimationFrame(function(){
-      try{window.parent.postMessage({neaniyo:embedId,h:Math.ceil(document.documentElement.scrollHeight)},'*')}catch(e){}
+      try{window.parent.postMessage({neaniyo:embedId,h:Math.ceil(document.querySelector('.wrap').getBoundingClientRect().height)+4},'*')}catch(e){}
     });
   }
   window.addEventListener('resize',resize);
@@ -1775,7 +1790,6 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   function init(){
   if(exists(params.get('embed'))){
     embedded=true; embedId=params.get('embed'); document.body.classList.add('embedded');
-    document.getElementById('more').innerHTML='<a href="'+SITE+'?p='+embedId+'" target="_blank" rel="noopener">네아니요에서 결과·다른 투표 보기 '+ic('external-link')+'</a>';
   }else if(exists(params.get('p'))){
     shareId=params.get('p'); document.body.classList.add('shared');
     document.getElementById('sharebar').hidden=false;
