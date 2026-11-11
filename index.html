@@ -140,6 +140,9 @@ pre.code{margin:0;background:var(--ink);color:var(--bg);border-radius:8px;paddin
 .rank .t small{display:block;color:var(--muted);font-size:12px}
 .rank .v{font-variant-numeric:tabular-nums;font-weight:700;text-align:right;white-space:nowrap}
 .rank .v small{font-weight:400;font-size:11.5px;color:var(--muted);margin-left:1px}
+.morebtn{width:100%;margin-top:16px;padding:13px;font-size:14px;font-weight:700}
+.morebtn small{font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums}
+.morebtn .i{width:16px;height:16px}
 .rank-cap{margin:-4px 0 12px;font-size:13px;color:var(--muted)}
 .badge{font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.03em;padding:1px 6px;border-radius:4px;background:var(--line);color:var(--muted);vertical-align:2px}
 .badge.new{background:var(--a-soft);color:var(--a)}
@@ -553,6 +556,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       <div class="sharebar" id="sharebar" hidden><span>공유받은 투표</span><a href="./">전체 투표 보기 <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="m12 5 7 7-7 7" /></svg></a></div>
       <p class="nextup" id="nextup" hidden></p>
       <div class="feed" id="feed"></div>
+      <button type="button" class="btn morebtn" id="feedMore" hidden></button>
       <p class="more" id="more"></p>
       <p class="note">예시 투표입니다. 1인 1표는 이 브라우저 기준으로만 체크합니다.</p>
     </section>
@@ -567,6 +571,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       </div>
       <p class="rank-cap" id="rankcap"></p>
       <div class="rank"><ol id="rank"></ol></div>
+      <button type="button" class="btn morebtn" id="rankMore" hidden></button>
     </section>
 
     <section id="v-create" hidden>
@@ -1028,10 +1033,19 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       '<div class="stats" hidden></div><div class="embed" hidden></div>'+(p.comments&&!embedded?cmtBlock(p,done):'')+'</article>';
   }
 
+  // 한 번에 20개씩 보여주고 '더보기'로 이어서 붙임
+  var PAGE=20, feedShown=PAGE, rankShown=PAGE, feedList=[];
+  var feedMore=document.getElementById('feedMore'), rankMore=document.getElementById('rankMore');
+  function moreLabel(btn,shown,total,unit){
+    btn.hidden=shown>=total;
+    btn.innerHTML=ic('chevron-down')+(unit==='rank'?(shown+1)+'~'+Math.min(shown+PAGE,total)+'위 더보기':'투표 더보기')+' <small>'+Math.min(shown,total)+' / '+total+'</small>';
+  }
   function render(){
     var only=embedded?embedId:shareId;
     var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return isPublic(p)&&!p.closed&&(filter==='all'||p.cat===filter)&&(!subFilter||p.sub===subFilter)});
-    feed.innerHTML=list.length?list.map(card).join(''):'<p class="tag">이 카테고리에 투표가 아직 없습니다.</p>';
+    feedList=list;
+    feed.innerHTML=list.length?list.slice(0,feedShown).map(card).join(''):'<p class="tag">이 카테고리에 투표가 아직 없습니다.</p>';
+    moreLabel(feedMore,feedShown,only?1:list.length,'feed');
     renderRank();
     renderHot();
     resize();
@@ -1039,16 +1053,16 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
 
   // 기간별 랭킹 기준 (시안용 계산식, 개발 단계에서 실제 기간별 득표 집계로 교체)
   var RANK={
-    live:{cap:'최근 1시간 동안 표가 가장 많이 몰린 투표',unit:'표/시간',max:10,
+    live:{cap:'최근 1시간 동안 표가 가장 많이 몰린 투표',unit:'표/시간',max:100,
       pick:function(p){return !p.closed},
       score:function(p){return Math.round(sum(p.v)*0.12/(1+p.t/6))+(p.boost||0)}},
-    day:{cap:'오늘 하루 참여가 많은 순',unit:'명',max:10,
+    day:{cap:'오늘 하루 참여가 많은 순',unit:'명',max:100,
       pick:function(p){return !p.closed&&p.t<=24},score:function(p){return sum(p.v)}},
-    week:{cap:'이번 주 참여가 많은 순',unit:'명',max:10,
+    week:{cap:'이번 주 참여가 많은 순',unit:'명',max:100,
       pick:function(p){return p.t<=168},score:function(p){return sum(p.v)}},
-    month:{cap:'이번 달 참여가 많은 순 · 마감된 투표 포함',unit:'명',max:10,
+    month:{cap:'이번 달 참여가 많은 순 · 마감된 투표 포함',unit:'명',max:100,
       pick:function(p){return p.t<=720},score:function(p){return sum(p.v)}},
-    best:{cap:'역대 참여가 가장 많은 명예의 전당',unit:'명',max:10,
+    best:{cap:'역대 참여가 가장 많은 명예의 전당',unit:'명',max:100,
       pick:function(){return true},score:function(p){return sum(p.v)}}
   };
   var period='live';
@@ -1108,6 +1122,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     document.getElementById('rankcap').textContent=R.cap;
     var r=polls.filter(function(p){return isPublic(p)&&R.pick(p)}).map(function(p){return {p:p,s:R.score(p)}})
       .sort(function(a,b){return b.s-a.s}).slice(0,R.max);
+    var rankTotal=r.length; r=r.slice(0,rankShown);
     var rl=document.getElementById('rank'), live=period==='live', hadR=live&&Object.keys(prevRank).length>0, nextR={};
     if(rl.dataset.period!==period){ rl.innerHTML=''; rl.dataset.period=period; }
     flipRender(rl,r.length?r.map(function(x,i){
@@ -1121,10 +1136,11 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       return '<li data-id="'+p.id+'"><a href="?p='+p.id+'"><span class="rkw"><span class="rk">'+(i+1)+'</span>'+rmv+'</span><span class="t">'+esc(p.q)+badge+'<small>'+p.cat+' · '+p.h+' · 우세: '+esc(p.o[lead])+' '+ps[lead]+'%</small></span><span class="v">'+(period==='live'?'+':'')+fmt(x.s)+'<small>'+R.unit+'</small></span><span class="go" aria-hidden="true">'+ic('chevron-right')+'</span></a></li>';
     }).join(''):'<li><p class="empty">이 기간에 집계된 투표가 아직 없습니다.</p></li>');
     if(live) prevRank=nextR;
+    moreLabel(rankMore,rankShown,rankTotal,'rank');
   }
   document.querySelectorAll('.chip[data-r]').forEach(function(c){
     c.onclick=function(){
-      period=c.dataset.r;
+      period=c.dataset.r; rankShown=PAGE;
       document.querySelectorAll('.chip[data-r]').forEach(function(x){x.setAttribute('aria-pressed',x===c)});
       renderRank();
     };
@@ -1543,8 +1559,14 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     subChips.innerHTML='<button class="chip" data-s="" aria-pressed="'+(!subFilter)+'">전체</button>'+t.s.map(function(x){return '<button class="chip" data-s="'+x+'" aria-pressed="'+(subFilter===x)+'">'+x+'</button>'}).join('');
     subChips.hidden=false;
   }
+  feedMore.onclick=function(){
+    var from=feedShown; feedShown+=PAGE;
+    feed.insertAdjacentHTML('beforeend',feedList.slice(from,feedShown).map(card).join(''));
+    moreLabel(feedMore,feedShown,feedList.length,'feed'); resize();
+  };
+  rankMore.onclick=function(){ rankShown+=PAGE; renderRank(); };
   function setFilter(c,sub){
-    filter=c; subFilter=sub||'';
+    filter=c; subFilter=sub||''; feedShown=PAGE;
     [].forEach.call(catChips.querySelectorAll('.chip'),function(x){x.setAttribute('aria-pressed',x.dataset.c===c)});
     drawSubs(); render();
   }
