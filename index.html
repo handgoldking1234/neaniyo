@@ -66,6 +66,10 @@ button,input,select,textarea{font:inherit;color:inherit}
 .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:20px 0 22px;padding:2px}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;white-space:nowrap;border:0;background:transparent;color:var(--muted);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:14px}
+.subchips{margin-top:-12px}
+.subchips .chip{font-size:13px;padding:3px 10px;border:1px solid var(--line);border-radius:999px}
+.subchips .chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);box-shadow:none;border-color:var(--ink)}
+.cat .sub{color:var(--muted);font-weight:500}
 .chip[aria-pressed="true"]{color:var(--ink);background:var(--surface);font-weight:700;box-shadow:0 0 0 1px var(--line)}
 
 /* poll card */
@@ -529,19 +533,10 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
 
   <main>
     <section id="v-vote">
-      <div class="chips" role="group" aria-label="카테고리">
-        <button class="chip" data-c="all" aria-pressed="true">전체</button>
-        <button class="chip" data-c="사연" aria-pressed="false">사연·고민</button>
-        <button class="chip" data-c="패션·쇼핑" aria-pressed="false">패션·쇼핑</button>
-        <button class="chip" data-c="그림·재능" aria-pressed="false">그림·재능</button>
-        <button class="chip" data-c="연예" aria-pressed="false">연예</button>
-        <button class="chip" data-c="드라마·예능" aria-pressed="false">드라마·예능</button>
-        <button class="chip" data-c="사회" aria-pressed="false">사회</button>
-        <button class="chip" data-c="경제" aria-pressed="false">경제·부동산·주식</button>
-        <button class="chip" data-c="스포츠" aria-pressed="false">스포츠</button>
-        <button class="chip" data-c="정치" aria-pressed="false">정치</button>
-        <button class="chip" data-c="밸런스" aria-pressed="false">밸런스</button>
+      <div class="chips" id="catchips" role="group" aria-label="카테고리">
+        <!-- 대분류 칩은 스크립트가 TAX로 채움 -->
       </div>
+      <div class="chips subchips" id="subchips" role="group" aria-label="소분류" hidden></div>
       <div class="sharebar" id="sharebar" hidden><span>공유받은 투표</span><a href="./">전체 투표 보기 <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="m12 5 7 7-7 7" /></svg></a></div>
       <p class="nextup" id="nextup" hidden></p>
       <div class="feed" id="feed"></div>
@@ -565,7 +560,8 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       <form class="make" id="make" novalidate>
         <div class="field"><label for="f-q" id="f-q-label">질문</label><input id="f-q" maxlength="60" placeholder="예) 아이돌 컴백 주기, 몇 개월이 적당할까?"></div>
         <div class="field"><label for="f-cat">카테고리</label>
-          <select id="f-cat"><option value="사연">사연·고민</option><option value="패션·쇼핑">패션·쇼핑</option><option value="그림·재능">그림·재능</option><option selected>연예</option><option>드라마·예능</option><option>사회</option><option value="경제">경제·부동산·주식</option><option>스포츠</option><option>정치</option><option>밸런스</option></select></div>
+          <select id="f-cat"></select></div>
+        <div class="field"><label for="f-sub">세부 분류</label><select id="f-sub"></select></div>
         <div class="field"><label>형식</label>
           <div class="seg">
             <label><input type="radio" name="f-type" id="f-t-vs" value="vs" checked><span>VS 양자택일</span></label>
@@ -813,6 +809,33 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     else if(p.img&&p.img[0]==='@'){ var a=JK[p.img.slice(1)]; p.img=jacket(a[0],a[1],a[2]); }
     if(p.imgs) p.imgs=p.imgs.map(function(x){ if(x[0]!=='@') return x; var b=JK[x.slice(1)]; return jacket(b[0],b[1],b[2]); });
   });
+  // ===== 카테고리: 대분류(cat) + 소분류(sub) =====
+  var TAX=[
+    {c:'연예',l:'연예',s:['아이돌·K팝','배우·드라마','예능·방송','영화','유튜버·인플루언서']},
+    {c:'사회',l:'사회',s:['직장·노동','교육·입시','생활·소비','교통·안전','환경·날씨']},
+    {c:'경제',l:'경제',s:['주식','부동산','금리·환율','코인','재테크·소비']},
+    {c:'라이프',l:'라이프',s:['연애·결혼','육아·가족','음식·맛집','여행·여가','건강·운동']},
+    {c:'사연',l:'사연·고민',s:['연애','가족','직장','친구·인간관계','돈']},
+    {c:'패션·쇼핑',l:'패션·쇼핑',s:['패션','뷰티','물건·가전']},
+    {c:'스포츠',l:'스포츠',s:['야구','축구','농구·배구','골프·기타','e스포츠']},
+    {c:'IT·게임',l:'IT·게임',s:['AI·테크','스마트폰','게임']},
+    {c:'그림·재능',l:'그림·재능',s:['아이 그림','작품·사진']},
+    {c:'정치',l:'정치·정책',s:['제도','예산·세금','외교·국제']},
+    {c:'밸런스',l:'밸런스',s:['밸런스게임','취향']}
+  ];
+  function catLabel(c){var t=TAX.filter(function(x){return x.c===c})[0];return t?t.l:c}
+  var SUBMAP={p1:'아이돌·K팝',s1:'생활·소비',e1:'부동산',p2:'배우·드라마',n2:'아이돌·K팝',p3:'아이돌·K팝',sp1:'야구',e2:'주식',n3:'예능·방송',s2:'직장·노동',g1:'제도',p4:'아이돌·K팝',p7:'생활·소비',e3:'부동산',p5:'밸런스게임',p6:'예능·방송',sp2:'축구',g2:'제도',
+    x1:'음식·맛집',x2:'육아·가족',a1:'예능·방송',a2:'야구',a3:'생활·소비',a4:'부동산',a5:'밸런스게임',rl1:'취향',rl2:'재테크·소비',ph1:'패션',ph2:'패션',ph3:'패션',dr1:'아이 그림',dr2:'아이 그림',
+    st1:'친구·인간관계',st2:'직장',st3:'가족',st4:'돈',st5:'가족',st6:'연애'};
+  var CATMOVE={p3:'연예',x1:'라이프',x2:'라이프'};
+  function normCat(p){
+    if(p.cat==='드라마·예능'){ p.cat='연예'; if(!p.sub) p.sub=/예능|요리|오디션|PPL/.test(p.q)?'예능·방송':'배우·드라마'; }
+    if(CATMOVE[p.id]) p.cat=CATMOVE[p.id];
+    if(!p.sub&&SUBMAP[p.id]) p.sub=SUBMAP[p.id];
+    var t=TAX.filter(function(x){return x.c===p.cat})[0];
+    if(t&&p.sub&&t.s.indexOf(p.sub)<0) p.sub='';
+  }
+  polls.forEach(normCat);
   var HRS={'방금':0,'1시간 전':1,'2시간 전':2,'3시간 전':3,'4시간 전':4,'5시간 전':5,'오늘':8,'어제':26,'2일 전':50,'3일 전':74};
   polls.forEach(function(p){ if(p.t===undefined) p.t=HRS[p.h]!==undefined?HRS[p.h]:0; });
   var filter='all';
@@ -968,7 +991,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     if(p.multiSel&&!done) body='<p class="hint pick-hint">'+ic('check')+'복수 선택 · 마음에 드는 걸 모두 고르세요</p>'+body;
     var media=p.img?'<div class="pimg"><img src="'+p.img+'" alt="" loading="lazy"></div>':'';
     return '<article class="poll'+(done?' done':'')+'" data-id="'+p.id+'">'+
-      '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+(p.cat==='사연'?'사연·고민':p.cat)+'</span>'+(p.type==='relay'?'<span class="ex rl">릴레이 '+p.qs.length+'문항</span>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+'<span>·</span><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'</div>'+
+      '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+catLabel(p.cat)+(p.sub?' <span class="sub">› '+esc(p.sub)+'</span>':'')+'</span>'+(p.type==='relay'?'<span class="ex rl">릴레이 '+p.qs.length+'문항</span>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+'<span>·</span><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'</div>'+
       '<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+
       (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
       '<div class="foot"><span class="n">'+fmt(voters(p))+'명 참여'+(p.closed?' · 마감된 투표':done?'':' · 투표하면 결과 공개')+'</span>'+
@@ -978,7 +1001,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
 
   function render(){
     var only=embedded?embedId:shareId;
-    var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return isPublic(p)&&!p.closed&&(filter==='all'||p.cat===filter)});
+    var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return isPublic(p)&&!p.closed&&(filter==='all'||p.cat===filter)&&(!subFilter||p.sub===subFilter)});
     feed.innerHTML=list.length?list.map(card).join(''):'<p class="tag">이 카테고리에 투표가 아직 없습니다.</p>';
     renderRank();
     renderHot();
@@ -1087,6 +1110,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   var queue=[];
   function addDaily(x){
     if(!x||!x.id||!x.q||!Array.isArray(x.o)||x.o.length<2) return;
+    normCat(x);
     if(polls.some(function(p){return p.id===x.id})||queue.some(function(p){return p.id===x.id})) return;
     var at=Date.parse(x.at);
     if(!isNaN(at)&&at>Date.now()){ x._at=at; queue.push(x); queue.sort(function(a,b){return a._at-b._at}); return; }
@@ -1101,7 +1125,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     var el=document.getElementById('nextup'); if(!el) return;
     if(!queue.length||embedded||shareId){ el.hidden=true; return; }
     var t=new Date(queue[0]._at), mins=Math.max(1,Math.ceil((queue[0]._at-Date.now())/6e4));
-    el.innerHTML=ic('clock')+'<span>새 투표는 매시 정각에 하나씩 올라와요</span><b>다음 공개 '+('0'+t.getHours()).slice(-2)+':'+('0'+t.getMinutes()).slice(-2)+' · '+mins+'분 남음</b>';
+    el.innerHTML=ic('clock')+'<span>실시간 이슈로 만든 새 투표가 5분마다 올라와요</span><b>다음 공개 '+('0'+t.getHours()).slice(-2)+':'+('0'+t.getMinutes()).slice(-2)+' · '+mins+'분 남음</b>';
     el.hidden=false;
   }
   function releaseDue(){
@@ -1482,16 +1506,28 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     }
   });
 
-  document.querySelectorAll('.chip[data-c]').forEach(function(c){
-    c.onclick=function(){
-      filter=c.dataset.c;
-      document.querySelectorAll('.chip[data-c]').forEach(function(x){x.setAttribute('aria-pressed',x===c)});
-      render();
-    };
-  });
+  var subFilter='', catChips=document.getElementById('catchips'), subChips=document.getElementById('subchips');
+  catChips.innerHTML='<button class="chip" data-c="all" aria-pressed="true">전체</button>'+TAX.map(function(t){return '<button class="chip" data-c="'+t.c+'" aria-pressed="false">'+t.l+'</button>'}).join('');
+  function drawSubs(){
+    var t=TAX.filter(function(x){return x.c===filter})[0];
+    if(!t){ subChips.hidden=true; subChips.innerHTML=''; return; }
+    subChips.innerHTML='<button class="chip" data-s="" aria-pressed="'+(!subFilter)+'">전체</button>'+t.s.map(function(x){return '<button class="chip" data-s="'+x+'" aria-pressed="'+(subFilter===x)+'">'+x+'</button>'}).join('');
+    subChips.hidden=false;
+  }
+  function setFilter(c,sub){
+    filter=c; subFilter=sub||'';
+    [].forEach.call(catChips.querySelectorAll('.chip'),function(x){x.setAttribute('aria-pressed',x.dataset.c===c)});
+    drawSubs(); render();
+  }
+  catChips.addEventListener('click',function(e){ var c=e.target.closest('[data-c]'); if(c) setFilter(c.dataset.c,''); });
+  subChips.addEventListener('click',function(e){ var c=e.target.closest('[data-s]'); if(c) setFilter(filter,c.dataset.s); });
 
   // 만들기
   var form=document.getElementById('make'), optlist=document.getElementById('optlist'), add=document.getElementById('addopt'), msg=document.getElementById('f-msg');
+  var subSel=document.getElementById('f-sub'), catSelEl=document.getElementById('f-cat');
+  catSelEl.innerHTML=TAX.map(function(t){return '<option value="'+t.c+'"'+(t.c==='연예'?' selected':'')+'>'+t.l+'</option>'}).join('');
+  function fillSubs(){ var t=TAX.filter(function(x){return x.c===catSelEl.value})[0]; subSel.innerHTML=t.s.map(function(x){return '<option>'+x+'</option>'}).join(''); }
+  catSelEl.addEventListener('change',fillSubs); fillSubs();
   var storyWrap=document.getElementById('f-story-wrap'), storyIn=document.getElementById('f-story'), qIn=document.getElementById('f-q'), catSel=document.getElementById('f-cat');
   storyIn.addEventListener('input',function(){ document.getElementById('f-story-n').textContent=storyIn.value.length; });
   var photoWrap=document.getElementById('f-photo-wrap'), photoIn=document.getElementById('f-photo'), thumbs=document.getElementById('thumbs'), upbtn=document.getElementById('upbtn'), mselWrap=document.getElementById('f-msel-wrap');
@@ -1539,7 +1575,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     var multi=document.getElementById('f-t-multi').checked, story=document.getElementById('f-t-story').checked, photo=document.getElementById('f-t-photo').checked;
     photoWrap.hidden=!photo;
     mselWrap.hidden=!(multi||story||(photo&&upImgs.length!==1));
-    if(photo){ if(catSel.value==='사연'||catSel.value==='연예') catSel.value='패션·쇼핑';
+    if(photo){ if(catSel.value==='사연'||catSel.value==='연예') catSel.value='패션·쇼핑'; fillSubs();
       if(upImgs.length>=2){ [].forEach.call(optlist.querySelectorAll('input'),function(x){ if(x.value==='산다'||x.value==='안 산다') x.value=''; }); setOptCount(upImgs.length,['A','B','C','D']); add.hidden=true; }
       else { var o1p=document.getElementById('f-o1'),o2p=document.getElementById('f-o2'); if(o1p&&(o1p.value==='A'||!o1p.value)) o1p.value='산다'; if(o2p&&(o2p.value==='B'||!o2p.value)) o2p.value='안 산다'; add.hidden=false; }
     }
@@ -1548,8 +1584,8 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     if(relay){ mselWrap.hidden=true; qIn.placeholder='예) 겨울 취향 릴레이 5문항'; return; }
     qIn.placeholder=story?'예) 축의금 냈는데 제 결혼식엔 안 온 친구, 서운한 게 맞죠?':'예) 아이돌 컴백 주기, 몇 개월이 적당할까?';
     var o1=document.getElementById('f-o1'), o2=document.getElementById('f-o2');
-    if(story){ catSel.value='사연'; if(!o1.value) o1.value='찬성'; if(!o2.value) o2.value='반대'; document.getElementById('f-cmt').checked=true; }
-    else { if(o1&&o1.value==='찬성'&&o2.value==='반대'){o1.value='';o2.value='';} if(catSel.value==='사연') catSel.value='연예'; }
+    if(story){ catSel.value='사연'; fillSubs(); if(!o1.value) o1.value='찬성'; if(!o2.value) o2.value='반대'; document.getElementById('f-cmt').checked=true; }
+    else { if(o1&&o1.value==='찬성'&&o2.value==='반대'){o1.value='';o2.value='';} if(catSel.value==='사연'){ catSel.value='연예'; fillSubs(); } }
     if(photo) return;
     add.hidden=!(multi||story);
     var ins=optlist.querySelectorAll('input');
@@ -1581,7 +1617,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       qs.forEach(function(x){x.v=x.o.map(function(){return 0})});
       var rvis=document.querySelector('input[name="f-vis"]:checked').value;
       if(rvis==='secret'&&pwIn.value.length<4){msg.className='msg err';msg.textContent='비밀번호를 4자 이상 입력해 주세요.';return}
-      var rp={id:'u'+Date.now().toString(36),cat:catSel.value==='사연'?'밸런스':catSel.value,type:'relay',q:q,qs:qs,o:qs[0].o,v:qs[0].v,n:0,h:'방금',t:0,vis:rvis,comments:document.getElementById('f-cmt').checked,own:true,created:Date.now()};
+      var rp={id:'u'+Date.now().toString(36),cat:catSel.value==='사연'?'밸런스':catSel.value,sub:catSel.value==='사연'?'취향':subSel.value,type:'relay',q:q,qs:qs,o:qs[0].o,v:qs[0].v,n:0,h:'방금',t:0,vis:rvis,comments:document.getElementById('f-cmt').checked,own:true,created:Date.now()};
       if(rvis==='secret') rp.pw=pwHash(pwIn.value);
       polls.unshift(rp); saveMine(); form.reset(); resetRelay(); syncType(); syncVis(); showMade(rp,rvis); render(); return;
     }
@@ -1597,7 +1633,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     var catV=isStory?'사연':catSel.value;
     var vis=document.querySelector('input[name="f-vis"]:checked').value;
     if(vis==='secret'&&pwIn.value.length<4){msg.className='msg err';msg.textContent='비밀번호를 4자 이상 입력해 주세요.';return}
-    var np={id:'u'+Date.now().toString(36),cat:catV,type:type,q:q,o:o,v:o.map(function(){return 0}),h:'방금',t:0,
+    var np={id:'u'+Date.now().toString(36),cat:catV,sub:subSel.value,type:type,q:q,o:o,v:o.map(function(){return 0}),h:'방금',t:0,
       vis:vis,comments:isStory||document.getElementById('f-cmt').checked,own:true,created:Date.now()};
     if(isStory) np.story=storyTxt;
     if(isPhoto){ if(type==='photo') np.imgs=upImgs.slice(); else np.img=upImgs[0]; }
@@ -1607,8 +1643,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     form.reset(); upImgs=[]; drawThumbs(); document.getElementById('f-story-n').textContent='0'; syncType(); syncVis();
     msg.textContent='';
     showMade(np,vis);
-    filter='all'; document.querySelectorAll('.chip[data-c]').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.c==='all')});
-    render();
+    setFilter('all','');
   });
   function showMade(np,vis){
     var made=document.getElementById('made'), url=shareUrl(np);
@@ -1645,17 +1680,25 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     render();
   }
 
+  // 투표 데이터: 사이트에 포함된 data/polls.json + 자동 수집 피드(feed 브랜치, 배포 없이 갱신)
+  var FEEDS=['data/polls.json','https://raw.githubusercontent.com/handgoldking1234/neaniyo/feed/data/polls.json'];
+  function loadFeeds(done){
+    var left=FEEDS.length, fin=function(){ if(--left===0) done(); };
+    FEEDS.forEach(function(u,i){
+      try{
+        fetch(u+(i?'?t='+Math.floor(Date.now()/300000):''),{cache:'no-store'}).then(function(r){return r.ok?r.json():[]})
+          .then(function(list){ if(Array.isArray(list)) list.forEach(addDaily); fin(); }).catch(fin);
+      }catch(e){ fin(); }
+    });
+  }
   // 매일 올라오는 투표(data/polls.json)를 불러와 합친 뒤 시작
   var started=false;
   function start(){ if(started) return; started=true; init(); }
   setTimeout(start,2500);
   try{
-    fetch('data/polls.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():[]}).then(function(list){
-      if(Array.isArray(list)) list.forEach(addDaily);
-      nextUp();
-      polls.sort(function(a,b){return a.t-b.t});
-      start(); if(started) route();
-    }).catch(start);
+    loadFeeds(function(){ nextUp(); polls.sort(function(a,b){return a.t-b.t}); start(); if(started) route(); });
+    // 10분마다 새로 쌓인 예약 투표를 받아 옴 (배포 없이 갱신)
+    setInterval(function(){ if(!document.hidden) loadFeeds(function(){ nextUp(); releaseDue(); }); },600000);
   }catch(e){start()}
 })();
 </script>

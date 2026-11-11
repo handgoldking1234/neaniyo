@@ -1,7 +1,8 @@
 {
   "git": {
     "deploymentEnabled": {
-      "daily-queue": false
+      "daily-queue": false,
+      "feed": false
     }
   },
   "headers": [
