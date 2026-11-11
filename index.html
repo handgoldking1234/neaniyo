@@ -101,8 +101,12 @@ pre.code{margin:0;background:var(--ink);color:var(--bg);border-radius:8px;paddin
 
 /* ranking */
 .rank{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.rank li{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding:14px 16px;border-top:1px solid var(--line)}
+.rank li{border-top:1px solid var(--line)}
 .rank li:first-child{border-top:0}
+.rank li a{display:grid;grid-template-columns:36px 1fr auto auto;gap:10px;align-items:center;padding:14px 16px;color:inherit;text-decoration:none;transition:background .15s}
+.rank li a:hover{background:var(--bg)}
+.rank li a:hover .t{color:var(--b)}
+.rank .go{color:var(--muted);font-size:18px;line-height:1}
 .rank ol{list-style:none;margin:0;padding:0}
 .rk{font-family:var(--display);font-size:20px;color:var(--muted)}
 .rank li:nth-child(-n+3) .rk{color:var(--a)}
@@ -372,7 +376,7 @@ body.embedded .more{display:block}
     var r=polls.slice().sort(function(a,b){return sum(b.v)-sum(a.v)});
     document.getElementById('rank').innerHTML=r.map(function(p,i){
       var ps=pct(p),lead=ps.indexOf(Math.max.apply(null,ps));
-      return '<li><span class="rk">'+(i+1)+'</span><span class="t">'+esc(p.q)+'<small>'+p.cat+' · 우세: '+esc(p.o[lead])+' '+ps[lead]+'%</small></span><span class="v">'+fmt(sum(p.v))+'</span></li>';
+      return '<li><a href="?p='+p.id+'"><span class="rk">'+(i+1)+'</span><span class="t">'+esc(p.q)+'<small>'+p.cat+' · 우세: '+esc(p.o[lead])+' '+ps[lead]+'%</small></span><span class="v">'+fmt(sum(p.v))+'</span><span class="go" aria-hidden="true">›</span></a></li>';
     }).join('');
   }
 
