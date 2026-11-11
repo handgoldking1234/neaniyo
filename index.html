@@ -396,6 +396,11 @@ body.embedded .side-hot{display:none!important}
 .snd[aria-pressed="false"]{color:var(--muted)}
 @media (max-width:720px){.snd{width:32px;height:32px}}
 .burst .plus.combo{font-size:17px;width:120px;left:-60px;top:-82px;letter-spacing:.02em;text-shadow:0 1px 0 #fff,0 0 8px #fff}
+/* 다음 공개 안내 */
+.nextup{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-8px 0 18px;padding:11px 14px;border-radius:12px;background:var(--surface);border:1px dashed var(--line);font-size:13px;color:var(--muted)}
+.nextup .i{width:16px;height:16px;color:var(--a)}
+.nextup b{margin-left:auto;color:var(--ink);font-variant-numeric:tabular-nums;font-weight:700}
+@media (max-width:520px){.nextup b{margin-left:0;width:100%}}
 /* Lucide 아이콘 */
 .i{width:1.1em;height:1.1em;flex:none;vertical-align:-0.18em}
 .btn,.cta,.login{display:inline-flex;align-items:center;justify-content:center;gap:5px}
@@ -461,6 +466,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
         <button class="chip" data-c="밸런스" aria-pressed="false">밸런스</button>
       </div>
       <div class="sharebar" id="sharebar" hidden><span>공유받은 투표</span><a href="./">전체 투표 보기 <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="m12 5 7 7-7 7" /></svg></a></div>
+      <p class="nextup" id="nextup" hidden></p>
       <div class="feed" id="feed"></div>
       <p class="more" id="more"></p>
       <p class="note">예시 투표입니다. 1인 1표는 이 브라우저 기준으로만 체크합니다.</p>
@@ -682,7 +688,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   function sum(a){return a.reduce(function(s,x){return s+x},0)}
   function pct(p){var t=sum(p.v)||1;return p.v.map(function(x){return Math.round(x*1000/t)/10})}
   // Lucide 아이콘 (lucide-static 0.460, ISC)
-  var ICONS={"volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />"};
+  var ICONS={"clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />"};
   function ic(n){return '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[n]||'')+'</svg>'}
   // ===== 효과음 (Web Audio로 합성, 파일 없음) =====
   var SKEY='neaniyo-sound', soundOn=true, actx=null;
@@ -898,15 +904,40 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     if(t<1) return '방금'; if(t<24) return Math.floor(t)+'시간 전'; if(t<48) return '어제';
     if(t<168) return Math.floor(t/24)+'일 전'; if(t<720) return Math.floor(t/168)+'주 전'; return Math.floor(t/720)+'달 전';
   }
+  // 예약 공개: 공개 시각(at)이 지나지 않은 투표는 대기열에 두었다가 정각에 공개
+  var queue=[];
   function addDaily(x){
     if(!x||!x.id||!x.q||!Array.isArray(x.o)||x.o.length<2) return;
-    if(polls.some(function(p){return p.id===x.id})) return;
-    var at=Date.parse(x.at); x.t=isNaN(at)?0:Math.max(0,(Date.now()-at)/36e5);
+    if(polls.some(function(p){return p.id===x.id})||queue.some(function(p){return p.id===x.id})) return;
+    var at=Date.parse(x.at);
+    if(!isNaN(at)&&at>Date.now()){ x._at=at; queue.push(x); queue.sort(function(a,b){return a._at-b._at}); return; }
+    x.t=isNaN(at)?0:Math.max(0,(Date.now()-at)/36e5);
     x.h=ago(x.t); x.type=x.type==='multi'?'multi':'vs'; if(x.type==='vs') x.o=x.o.slice(0,2);
     if(!Array.isArray(x.v)||x.v.length!==x.o.length) x.v=x.o.map(function(){return 0});
     if(x.t>24*30) x.closed=true;
     polls.push(x);
   }
+
+  function nextUp(){
+    var el=document.getElementById('nextup'); if(!el) return;
+    if(!queue.length||embedded||shareId){ el.hidden=true; return; }
+    var t=new Date(queue[0]._at), mins=Math.max(1,Math.ceil((queue[0]._at-Date.now())/6e4));
+    el.innerHTML=ic('clock')+'<span>새 투표는 매시 정각에 하나씩 올라와요</span><b>다음 공개 '+('0'+t.getHours()).slice(-2)+':'+('0'+t.getMinutes()).slice(-2)+' · '+mins+'분 남음</b>';
+    el.hidden=false;
+  }
+  function releaseDue(){
+    var out=[];
+    while(queue.length&&queue[0]._at<=Date.now()){ var x=queue.shift(); delete x._at; out.push(x); addDaily(x); }
+    if(out.length){
+      polls.sort(function(a,b){return a.t-b.t});
+      if(typeof route==='function'&&!document.getElementById('v-vote').hidden&&!embedded&&!shareId){ render(); }
+      else renderHot();
+      if(!embedded){ toast('새 투표가 올라왔어요: '+out[out.length-1].q); try{SFX.open()}catch(e){} }
+    }
+    nextUp();
+  }
+  setInterval(function(){ if(!document.hidden) releaseDue(); },15000);
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden) releaseDue(); });
 
   // ===== 로그인·프로필 (시안: 브라우저에만 저장) =====
   var UKEY='neaniyo-user', user=null;
@@ -1307,6 +1338,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   try{
     fetch('data/polls.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():[]}).then(function(list){
       if(Array.isArray(list)) list.forEach(addDaily);
+      nextUp();
       polls.sort(function(a,b){return a.t-b.t});
       start(); if(started) route();
     }).catch(start);
