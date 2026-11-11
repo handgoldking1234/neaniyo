@@ -14,17 +14,17 @@ body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 /* Layout: 상단 탭(투표·랭킹·만들기·경쟁사) + 단일 컬럼 피드, 투표 카드 = 임베드 단위 */
 :root{
   --bg:#F3F4F8; --surface:#FFFFFF; --ink:#14161F; --muted:#5E6378; --line:#E2E4EC;
-  --a:#E8336D; --a-soft:#FCE3EB; --b:#2F5BEA; --b-soft:#E2E9FD; --ok:#1F9D6B;
+  --a:#E8336D; --a-soft:#FCE3EB; --b:#2F5BEA; --b-soft:#E2E9FD; --ok:#1F9D6B; --c:#E59A17; --d:#14A3A0; --e:#8B5CF6; --f:#7A8094; --gold:#B7791F;
   --display:"Black Han Sans","IBM Plex Sans KR",system-ui,sans-serif;
   --body:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0F1118; --surface:#181B25; --ink:#ECEEF5; --muted:#9AA0B5; --line:#2A2E3C;
-  --a:#FF5A8A; --a-soft:#3A1A27; --b:#6C8CFF; --b-soft:#1C2445; --ok:#3CC48C; color-scheme:dark}}
+  --a:#FF5A8A; --a-soft:#3A1A27; --b:#6C8CFF; --b-soft:#1C2445; --ok:#3CC48C; --c:#F2B544; --d:#2DC4C0; --e:#A78BFA; --f:#8C93A8; --gold:#E2B04A; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0F1118; --surface:#181B25; --ink:#ECEEF5; --muted:#9AA0B5; --line:#2A2E3C;
-  --a:#FF5A8A; --a-soft:#3A1A27; --b:#6C8CFF; --b-soft:#1C2445; --ok:#3CC48C; color-scheme:dark}
+  --a:#FF5A8A; --a-soft:#3A1A27; --b:#6C8CFF; --b-soft:#1C2445; --ok:#3CC48C; --c:#F2B544; --d:#2DC4C0; --e:#A78BFA; --f:#8C93A8; --gold:#E2B04A; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;word-break:keep-all;overflow-wrap:break-word}
 .gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -49,7 +49,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .cta[aria-current="page"]{background:var(--a)}
 @media (max-width:720px){
   .hd-in{flex-wrap:wrap;gap:0 12px;min-height:0;padding-top:10px}
-  .logo{flex:1}
+  .logo{flex:1;min-width:0}
   .logo svg{width:26px;height:26px}
   .logo .word{font-size:20px}
   .cta{padding:7px 12px;font-size:13px}
@@ -198,6 +198,87 @@ body.embedded .more{display:block}
   .foot .acts .btn{flex:1;text-align:center;padding:9px}
   .sec h2{font-size:21px}
 }
+/* 로그인 버튼 */
+.login{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
+.login .pro{font-size:10.5px;font-weight:700;color:#fff;background:var(--gold);border-radius:4px;padding:1px 5px}
+@media (max-width:720px){.login{padding:6px 11px;font-size:13px}}
+
+/* 모달 */
+dialog.auth{border:0;border-radius:16px;padding:0;width:min(420px,calc(100% - 32px));background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+dialog.auth::backdrop{background:rgba(10,12,20,.45)}
+.auth-in{padding:22px;display:flex;flex-direction:column;gap:14px}
+.auth h2{margin:0;font-size:19px}
+.auth p{margin:0;font-size:13.5px;color:var(--muted)}
+.auth .x{position:absolute;right:12px;top:10px;border:0;background:none;font-size:22px;color:var(--muted);cursor:pointer;line-height:1;padding:4px}
+.sso{display:flex;flex-direction:column;gap:8px}
+.sso button{border:0;border-radius:10px;padding:13px;font-weight:700;font-size:15px;cursor:pointer}
+.sso .kakao{background:#FEE500;color:#191600}
+.sso .google{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.pf{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pf .field{gap:4px}
+.pf .full{grid-column:1/-1}
+.pf select,.pf input{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 10px;width:100%}
+.pf .field > label{font-size:13px}
+.req{color:var(--a)}
+.consent{display:flex;flex-direction:column;gap:6px;font-size:13px;background:var(--bg);border-radius:10px;padding:12px}
+.consent label{display:flex;gap:8px;align-items:flex-start}
+.consent input{margin-top:3px;accent-color:var(--a)}
+.consent small{color:var(--muted)}
+.auth .btn.dark{padding:12px;font-size:15px}
+.me{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.me div{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0}
+.me span{color:var(--muted)}
+
+/* 상세 통계 */
+.stats{background:var(--bg);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.stats h4{margin:0;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.dims{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.dims button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:4px}
+.dims button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.dims .lk{font-size:11px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.xt{display:flex;flex-direction:column;gap:8px}
+.xr{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:center;font-size:13px}
+.xr .g{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.xr .g small{color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums}
+.xr .g em{font-style:normal;font-size:10.5px;font-weight:700;color:var(--ok)}
+.xr.mine .g b{color:var(--ok)}
+.sb{display:flex;height:26px;border-radius:6px;overflow:hidden;background:var(--line)}
+.sb span{display:flex;align-items:center;justify-content:center;color:#fff;font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;min-width:0;overflow:hidden;white-space:nowrap}
+.sb.hide{align-items:center;justify-content:center;font-size:12px;color:var(--muted);background:repeating-linear-gradient(45deg,var(--line) 0 6px,var(--surface) 6px 12px)}
+.locked{position:relative}
+.locked .xt{filter:blur(5px);pointer-events:none;user-select:none}
+.lockmsg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:12px}
+.lockmsg b{font-size:14px}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:700}
+.stats .foot2{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+.gate{display:flex;flex-direction:column;gap:10px;align-items:flex-start;font-size:13.5px}
+.pbadge{font-size:10.5px;font-weight:700;color:#fff;background:var(--gold);border-radius:4px;padding:1px 6px}
+
+/* 프리미엄 요금제 */
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.plan.hot{border:2px solid var(--gold)}
+.plan h3{margin:0;font-size:16px;display:flex;gap:6px;align-items:center}
+.plan .price{font-family:var(--display);font-size:28px;line-height:1}
+.plan .price small{font-family:var(--body);font-size:13px;color:var(--muted);font-weight:400}
+.plan ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px;font-size:13.5px;flex:1}
+.plan li{padding-left:20px;position:relative}
+.plan li::before{content:"✓";position:absolute;left:0;color:var(--ok);font-weight:700}
+.plan li.no{color:var(--muted)}
+.plan li.no::before{content:"–";color:var(--muted)}
+.plan .btn{padding:11px;text-align:center;font-size:14px}
+.cmp td:first-child{font-weight:500}
+.cmp td{text-align:center}.cmp td:first-child,.cmp th:first-child{text-align:left}
+
+/* 투표 배경 설명·출처 */
+.desc{margin:-4px 0 0;font-size:14px;color:var(--muted);line-height:1.6}
+.src{font-size:12px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap}
+.src a{color:var(--muted)}
+.btn.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+@media (max-width:520px){.xr{grid-template-columns:76px 1fr}.foot .acts{flex-wrap:wrap}}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -209,8 +290,10 @@ body.embedded .more{display:block}
     <nav class="tabs" aria-label="메뉴">
       <a href="./#vote" data-v="vote">투표</a>
       <a href="./#ranking" data-v="ranking">랭킹</a>
+      <a href="./#premium" data-v="premium">프리미엄</a>
       <a href="./#analysis" data-v="analysis">경쟁사 분석</a>
     </nav>
+    <button class="login" id="loginBtn" type="button">로그인</button>
     <a class="cta" href="./#create" data-v="create">+ 투표 만들기</a>
   </div>
 </header>
@@ -267,6 +350,48 @@ body.embedded .more{display:block}
         <button class="btn dark" type="submit" style="padding:12px">투표 올리기</button>
         <p class="msg" id="f-msg" role="status"></p>
       </form>
+    </section>
+
+    <section id="v-premium" hidden>
+      <div class="sec" style="margin-top:20px">
+        <h2>결과를 더 깊게, 프리미엄</h2>
+        <p class="lede">투표는 누구나 무료입니다. 결과를 성별·연령·지역·학력으로 쪼개 보고 자료로 가져가려는 분을 위한 기능입니다.</p>
+      </div>
+      <div class="plans">
+        <div class="plan">
+          <h3>비로그인</h3>
+          <div class="price">0원</div>
+          <ul><li>투표 참여</li><li>전체 결과 보기</li><li>링크 공유·임베드</li><li class="no">세부 통계</li></ul>
+          <a class="btn" href="./#vote">투표하러 가기</a>
+        </div>
+        <div class="plan">
+          <h3>무료 회원</h3>
+          <div class="price">0원</div>
+          <ul><li>성별·연령대별 결과</li><li>"나와 같은 그룹" 결과</li><li>내 투표 기록</li><li>투표 만들기</li><li class="no">지역·학력·시간대 분석</li></ul>
+          <button class="btn dark" type="button" data-plan="free">무료로 시작하기</button>
+        </div>
+        <div class="plan hot">
+          <h3>프리미엄 <span class="pbadge">추천</span></h3>
+          <div class="price">9,900원 <small>/ 월</small></div>
+          <ul><li>무료 회원 기능 전부</li><li>지역·학력·시간대 교차분석</li><li>엑셀(CSV) 다운로드</li><li>내 투표 응답자 조건 지정</li><li>임베드 로고 제거</li></ul>
+          <button class="btn gold" type="button" data-plan="pro">7일 무료 체험</button>
+        </div>
+        <div class="plan">
+          <h3>비즈니스</h3>
+          <div class="price">문의</div>
+          <ul><li>브랜드 스폰서 투표</li><li>맞춤 응답자 모집</li><li>리포트 제작</li><li>언론사·커뮤니티 화이트라벨 임베드</li></ul>
+          <span class="btn">biz@neaniyo.iux.kr</span>
+        </div>
+      </div>
+      <div class="sec" style="margin-top:24px">
+        <h2>통계 원칙</h2>
+        <div class="grid2">
+          <div class="box"><h3>30명 미만은 가립니다</h3><p>응답자가 30명이 안 되는 그룹은 비율을 공개하지 않습니다. 소수 그룹에서 개인이 특정되는 것을 막기 위해서입니다.</p></div>
+          <div class="box"><h3>정치 투표는 세부 통계 없음</h3><p>정치 카테고리는 개인 성향 보호를 위해 성별·연령 등 교차분석을 제공하지 않고 전체 결과만 보여줍니다.</p></div>
+          <div class="box"><h3>집계 통계만 제공</h3><p>다운로드는 그룹별 비율과 응답 수만 담습니다. 개인 단위 응답이나 프로필은 어떤 요금제에서도 내보내지 않습니다.</p></div>
+          <div class="box"><h3>표본 조사가 아닙니다</h3><p>참여자 기준 결과라 여론조사와 다릅니다. 다운로드 파일과 리포트에도 이 문구가 함께 들어갑니다.</p></div>
+        </div>
+      </div>
     </section>
 
     <section id="v-analysis" hidden>
@@ -343,6 +468,7 @@ body.embedded .more{display:block}
   </main>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<dialog class="auth" id="auth" aria-labelledby="authTitle"><div class="auth-in" id="authBody"></div></dialog>
 
 <script>
 (function(){
@@ -407,10 +533,11 @@ body.embedded .more{display:block}
     }
     return '<article class="poll'+(done?' done':'')+'" data-id="'+p.id+'">'+
       '<div class="meta"><span class="cat">'+p.cat+'</span><span>·</span><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'</div>'+
-      '<h3 class="q">'+esc(p.q)+'</h3>'+body+
+      '<h3 class="q">'+esc(p.q)+'</h3>'+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+body+
+      (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
       '<div class="foot"><span class="n">'+fmt(sum(p.v))+'명 참여'+(p.closed?' · 마감된 투표':done?'':' · 투표하면 결과 공개')+'</span>'+
-      '<span class="acts"><button class="btn" data-act="copy">링크 복사</button><button class="btn dark" data-act="embed">&lt;/&gt; 임베드</button></span></div>'+
-      '<div class="embed" hidden></div></article>';
+      '<span class="acts">'+(done?'<button class="btn" data-act="stats">상세 통계</button>':'')+'<button class="btn" data-act="copy">링크 복사</button><button class="btn dark" data-act="embed">&lt;/&gt; 임베드</button></span></div>'+
+      '<div class="stats" hidden></div><div class="embed" hidden></div></article>';
   }
 
   function render(){
@@ -454,6 +581,172 @@ body.embedded .more{display:block}
       renderRank();
     };
   });
+
+  // ===== 매일 투표 데이터 =====
+  function ago(t){
+    if(t<1) return '방금'; if(t<24) return Math.floor(t)+'시간 전'; if(t<48) return '어제';
+    if(t<168) return Math.floor(t/24)+'일 전'; if(t<720) return Math.floor(t/168)+'주 전'; return Math.floor(t/720)+'달 전';
+  }
+  function addDaily(x){
+    if(!x||!x.id||!x.q||!Array.isArray(x.o)||x.o.length<2) return;
+    if(polls.some(function(p){return p.id===x.id})) return;
+    var at=Date.parse(x.at); x.t=isNaN(at)?0:Math.max(0,(Date.now()-at)/36e5);
+    x.h=ago(x.t); x.type=x.type==='multi'?'multi':'vs'; if(x.type==='vs') x.o=x.o.slice(0,2);
+    if(!Array.isArray(x.v)||x.v.length!==x.o.length) x.v=x.o.map(function(){return 0});
+    if(x.t>24*30) x.closed=true;
+    polls.push(x);
+  }
+
+  // ===== 로그인·프로필 (시안: 브라우저에만 저장) =====
+  var UKEY='neaniyo-user', user=null;
+  try{user=JSON.parse(localStorage.getItem(UKEY)||'null')}catch(e){user=null}
+  function saveUser(){try{user?localStorage.setItem(UKEY,JSON.stringify(user)):localStorage.removeItem(UKEY)}catch(e){}}
+  var loginBtn=document.getElementById('loginBtn'), auth=document.getElementById('auth'), authBody=document.getElementById('authBody');
+  function authUI(){ loginBtn.innerHTML=user?('내 정보'+(user.pro?' <span class="pro">PRO</span>':'')):'로그인'; }
+  var REGIONS=['서울','경기·인천','부산·울산·경남','대구·경북','광주·전라','대전·세종·충청','강원','제주'];
+  var EDU=['고졸 이하','대학 재학','대졸','대학원 이상'];
+  function openDialog(){ try{auth.showModal()}catch(e){auth.setAttribute('open','')} }
+  function closeDialog(){ try{auth.close()}catch(e){auth.removeAttribute('open')} }
+  function openAuth(){
+    if(user){ return showMe(); }
+    authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">×</button>'+
+      '<h2 id="authTitle">네아니요 시작하기</h2><p>투표는 로그인 없이도 됩니다. 로그인하면 내 그룹별 결과와 투표 기록을 볼 수 있어요.</p>'+
+      '<div class="sso"><button class="kakao" type="button" data-sso="kakao">카카오로 시작하기</button><button class="google" type="button" data-sso="google">Google로 시작하기</button></div>'+
+      '<p style="font-size:12px">시안 화면입니다. 실제 로그인은 연결되어 있지 않습니다.</p>';
+    openDialog();
+  }
+  function showProfile(){
+    var y=new Date().getFullYear(), years='';
+    for(var k=y-14;k>=y-90;k--) years+='<option>'+k+'</option>';
+    authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">×</button>'+
+      '<h2 id="authTitle">프로필 입력</h2><p>그룹별 결과를 만드는 데만 쓰입니다. 다른 사람에게 개인 정보는 보이지 않아요.</p>'+
+      '<form class="pf" id="pf" novalidate>'+
+      '<div class="field"><label for="pf-g">성별 <span class="req">*</span></label><select id="pf-g"><option value="">선택</option><option>남성</option><option>여성</option><option>응답 안 함</option></select></div>'+
+      '<div class="field"><label for="pf-y">출생연도 <span class="req">*</span></label><select id="pf-y"><option value="">선택</option>'+years+'</select></div>'+
+      '<div class="field"><label for="pf-r">지역 <span class="req">*</span></label><select id="pf-r"><option value="">선택</option>'+REGIONS.map(function(r){return '<option>'+r+'</option>'}).join('')+'</select></div>'+
+      '<div class="field"><label for="pf-e">학력 <small>(선택)</small></label><select id="pf-e"><option value="">응답 안 함</option>'+EDU.map(function(r){return '<option>'+r+'</option>'}).join('')+'</select></div>'+
+      '<div class="consent full">'+
+      '<label><input type="checkbox" id="pf-c1"><span>[필수] 이용약관 동의</span></label>'+
+      '<label><input type="checkbox" id="pf-c2"><span>[필수] 개인정보 수집·이용 동의 <small>(성별·출생연도·지역·학력)</small></span></label>'+
+      '<label><input type="checkbox" id="pf-c3"><span>[필수] 만 14세 이상입니다</span></label>'+
+      '<label><input type="checkbox" id="pf-c4"><span>[선택] 집계 통계 활용 동의 <small>(개인 단위 응답은 제공하지 않음)</small></span></label>'+
+      '</div>'+
+      '<p class="msg err full" id="pf-msg" role="status"></p>'+
+      '<button class="btn dark full" type="submit">완료</button></form>';
+    document.getElementById('pf').addEventListener('submit',function(e){
+      e.preventDefault();
+      var g=val('pf-g'),yv=val('pf-y'),r=val('pf-r'),m=document.getElementById('pf-msg');
+      if(!g||!yv||!r){m.textContent='성별, 출생연도, 지역을 선택해 주세요.';return}
+      if(!chk('pf-c1')||!chk('pf-c2')||!chk('pf-c3')){m.textContent='필수 항목에 동의해 주세요.';return}
+      user={via:auth.dataset.via||'kakao',gender:g,birth:+yv,region:r,edu:val('pf-e'),stat:chk('pf-c4'),pro:false};
+      saveUser(); authUI(); closeDialog(); toast('가입을 마쳤습니다. 투표 후 상세 통계를 열어 보세요.'); refreshOpenStats();
+      if(auth.dataset.next==='pro'){ startTrial(); }
+    });
+    openDialog();
+  }
+  function showMe(){
+    var age=user.birth?ageBand(user.birth):'-';
+    authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">×</button>'+
+      '<h2 id="authTitle">내 정보 '+(user.pro?'<span class="pbadge">프리미엄 체험 중</span>':'')+'</h2>'+
+      '<div class="me"><div><span>로그인</span><b>'+(user.via==='google'?'Google':'카카오')+'</b></div><div><span>성별</span><b>'+esc(user.gender)+'</b></div><div><span>연령대</span><b>'+age+'</b></div><div><span>지역</span><b>'+esc(user.region)+'</b></div><div><span>학력</span><b>'+(esc(user.edu)||'응답 안 함')+'</b></div><div><span>참여한 투표</span><b>'+Object.keys(voted).length+'개</b></div></div>'+
+      '<p style="font-size:12px">프로필은 30일에 한 번만 바꿀 수 있습니다.</p>'+
+      '<div class="row">'+(user.pro?'<button class="btn" type="button" data-me="unpro">체험 종료</button>':'<button class="btn gold" type="button" data-me="pro">프리미엄 7일 체험</button>')+'<button class="btn" type="button" data-me="logout">로그아웃</button></div>';
+    openDialog();
+  }
+  function val(id){return document.getElementById(id).value}
+  function chk(id){return document.getElementById(id).checked}
+  authBody.addEventListener('click',function(e){
+    var t=e.target;
+    if(t.closest('[data-close]')) return closeDialog();
+    var sso=t.closest('[data-sso]'); if(sso){ auth.dataset.via=sso.dataset.sso; return showProfile(); }
+    var me=t.closest('[data-me]'); if(!me) return;
+    if(me.dataset.me==='logout'){ user=null; saveUser(); authUI(); closeDialog(); toast('로그아웃했습니다.'); refreshOpenStats(); }
+    if(me.dataset.me==='pro'){ startTrial(); closeDialog(); }
+    if(me.dataset.me==='unpro'){ user.pro=false; saveUser(); authUI(); closeDialog(); toast('프리미엄 체험을 종료했습니다.'); refreshOpenStats(); }
+  });
+  auth.addEventListener('click',function(e){ if(e.target===auth) closeDialog(); });
+  loginBtn.onclick=function(){ auth.dataset.next=''; openAuth(); };
+  function startTrial(){ if(!user){ auth.dataset.next='pro'; return openAuth(); } user.pro=true; saveUser(); authUI(); toast('프리미엄 7일 체험을 시작했습니다.'); refreshOpenStats(); }
+  document.getElementById('v-premium').addEventListener('click',function(e){
+    var b=e.target.closest('[data-plan]'); if(!b) return;
+    if(b.dataset.plan==='pro') startTrial(); else if(!user){ auth.dataset.next=''; openAuth(); } else toast('이미 회원입니다.');
+  });
+
+  // ===== 상세 통계 (시안: 전체 결과를 기준으로 만든 예시 분포) =====
+  var OPC=['var(--a)','var(--b)','var(--c)','var(--d)','var(--e)','var(--f)'];
+  var MIN_N=30;
+  var DIMS=[
+    {k:'gender',label:'성별',tier:'free',g:['남성','여성'],w:[.47,.53]},
+    {k:'age',label:'연령대',tier:'free',g:['10대','20대','30대','40대','50대','60대 이상'],w:[.08,.31,.27,.18,.11,.05]},
+    {k:'region',label:'지역',tier:'pro',g:REGIONS,w:[.27,.31,.11,.08,.08,.1,.03,.02]},
+    {k:'edu',label:'학력',tier:'pro',g:EDU,w:[.2,.22,.5,.08]},
+    {k:'time',label:'시간대',tier:'pro',g:['오전 6~12시','오후 12~18시','저녁 18~24시','심야 0~6시'],w:[.16,.29,.41,.14]}
+  ];
+  function ageBand(b){var a=new Date().getFullYear()-b; if(a<20) return '10대'; if(a>=60) return '60대 이상'; return Math.floor(a/10)*10+'대';}
+  function myGroup(k){ if(!user) return null; if(k==='gender') return user.gender; if(k==='age') return ageBand(user.birth); if(k==='region') return user.region; if(k==='edu') return user.edu; return null; }
+  function rnd(seed){var h=2166136261;for(var i=0;i<seed.length;i++){h^=seed.charCodeAt(i);h=Math.imul(h,16777619)}return function(){h^=h<<13;h^=h>>>17;h^=h<<5;return ((h>>>0)%10000)/10000}}
+  function breakdown(p,d){
+    var tot=sum(p.v), base=p.v.map(function(x){return (x+1)/(tot+p.v.length)});
+    return d.g.map(function(gname,gi){
+      var r=rnd(p.id+d.k+gname), n=Math.round(tot*d.w[gi]*(0.85+r()*0.3));
+      var tilt=(gi/(d.g.length-1||1)-0.5)*(r()*0.5-0.25);
+      var raw=base.map(function(b,oi){return Math.max(0.02,b*(1+(r()-0.5)*0.6)+(oi===0?tilt:-tilt/(p.v.length-1||1)))});
+      var s2=raw.reduce(function(a,b){return a+b},0);
+      var sh=raw.map(function(x){return Math.round(x/s2*1000)/10});
+      return {g:gname,n:n,sh:sh};
+    });
+  }
+  function xtable(p,d,rows){
+    var mine=myGroup(d.k);
+    return '<div class="xt">'+rows.map(function(row){
+      var bar=row.n<MIN_N?'<div class="sb hide">응답 '+MIN_N+'명 미만 비공개</div>':
+        '<div class="sb">'+row.sh.map(function(x,i){return '<span style="flex:'+x+' 1 0;background:'+OPC[i%OPC.length]+'" title="'+esc(p.o[i])+' '+x+'%">'+(x>=12?x+'%':'')+'</span>'}).join('')+'</div>';
+      return '<div class="xr'+(mine===row.g?' mine':'')+'"><span class="g"><b>'+row.g+'</b><small>'+fmt(row.n)+'명</small>'+(mine===row.g?'<em>내 그룹</em>':'')+'</span>'+bar+'</div>';
+    }).join('')+'</div>';
+  }
+  var openStats={};
+  function statsPanel(p,el,dimKey){
+    openStats[p.id]=dimKey;
+    var legend='<div class="legend">'+p.o.map(function(o,i){return '<span><i style="background:'+OPC[i%OPC.length]+'"></i>'+esc(o)+'</span>'}).join('')+'</div>';
+    var head='<h4>상세 통계 '+(user&&user.pro?'<span class="pbadge">PRO</span>':'')+'</h4>';
+    if(p.cat==='정치'){
+      el.innerHTML=head+'<p class="hint">정치 투표는 개인 성향 보호를 위해 성별·연령 등 세부 통계를 제공하지 않습니다. 전체 결과만 공개됩니다.</p>';
+      return resize();
+    }
+    if(!user){
+      el.innerHTML=head+'<div class="gate"><span>로그인하고 프로필을 입력하면 성별·연령대별 결과와 내 그룹의 선택을 볼 수 있어요.</span><button class="btn dark" data-act="login">로그인하고 보기</button></div>';
+      return resize();
+    }
+    var d=DIMS.filter(function(x){return x.k===dimKey})[0]||DIMS[0];
+    var tabs='<div class="dims" role="group" aria-label="통계 기준">'+DIMS.map(function(x){
+      var lock=x.tier==='pro'&&!user.pro;
+      return '<button type="button" data-act="dim" data-dim="'+x.k+'" aria-pressed="'+(x.k===d.k)+'">'+x.label+(lock?' <span class="lk" aria-label="프리미엄">🔒</span>':'')+'</button>';
+    }).join('')+'</div>';
+    var rows=breakdown(p,d), locked=d.tier==='pro'&&!user.pro;
+    var tbl=locked?'<div class="locked">'+xtable(p,d,rows)+'<div class="lockmsg"><b>'+d.label+'별 결과는 프리미엄 기능입니다</b><button class="btn gold" data-act="upgrade">프리미엄 알아보기</button></div></div>':xtable(p,d,rows);
+    var foot='<div class="foot2"><span>참여자 기준 · 표본 조사 아님 · '+MIN_N+'명 미만 그룹 비공개</span>'+
+      (user.pro?'<button class="btn" data-act="csv">엑셀(CSV) 다운로드</button>':'<span><span class="pbadge">PRO</span> 지역·학력·시간대·다운로드</span>')+'</div>';
+    el.innerHTML=head+tabs+legend+tbl+foot;
+    resize();
+  }
+  function refreshOpenStats(){
+    document.querySelectorAll('.poll').forEach(function(art){
+      var el=art.querySelector('.stats'); if(!el||el.hidden) return;
+      var p=polls.find(function(x){return x.id===art.dataset.id}); statsPanel(p,el,openStats[p.id]||'gender');
+    });
+  }
+  function downloadCsv(p){
+    var lines=[['구분','그룹','응답 수'].concat(p.o).join(',')];
+    DIMS.forEach(function(d){ breakdown(p,d).forEach(function(r){ lines.push([d.label,r.g,r.n].concat(r.n<MIN_N?p.o.map(function(){return '비공개'}):r.sh.map(function(x){return x+'%'})).join(',')); }); });
+    lines.push(''); lines.push('"'+p.q.replace(/"/g,'""')+'"'); lines.push('참여자 기준 결과이며 표본 조사가 아닙니다. 출처: 네아니요 '+shareUrl(p));
+    try{
+      var blob=new Blob(['﻿'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+      var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='neaniyo-'+p.id+'.csv';
+      document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);
+      toast('CSV 파일을 내려받았습니다.');
+    }catch(e){ toast('이 환경에서는 다운로드가 막혀 있습니다.'); }
+  }
+  authUI();
 
   function shareUrl(p){return SITE+'?p='+p.id}
   function embedHeight(p){return p.type==='vs'?330:(215+p.o.length*56)}
@@ -509,6 +802,11 @@ body.embedded .more{display:block}
     if(actBtn){
       var act=actBtn.dataset.act, panel=art.querySelector('.embed');
       if(act==='embed'){ panel.hidden=!panel.hidden; if(!panel.hidden) embedPanel(p,panel); }
+      if(act==='stats'){ var sp2=art.querySelector('.stats'); sp2.hidden=!sp2.hidden; actBtn.classList.toggle('on',!sp2.hidden); if(!sp2.hidden) statsPanel(p,sp2,'gender'); }
+      if(act==='dim'){ statsPanel(p,art.querySelector('.stats'),actBtn.dataset.dim); }
+      if(act==='login'){ openAuth(); }
+      if(act==='upgrade'){ location.hash='premium'; }
+      if(act==='csv'){ downloadCsv(p); }
       if(act==='copy'){ copy(shareUrl(p),'투표 링크를 복사했습니다.'); }
       if(act==='copycode'){ copy(panel.querySelector('pre').textContent,'임베드 코드를 복사했습니다.'); }
       resize();
@@ -562,7 +860,7 @@ body.embedded .more{display:block}
     if(o.length<2){msg.className='msg err';msg.textContent='보기를 두 개 이상 입력해 주세요.';return}
     var type=document.getElementById('f-t-multi').checked?'multi':'vs';
     if(type==='vs') o=o.slice(0,2);
-    polls.unshift({id:'u'+Date.now().toString(36),cat:document.getElementById('f-cat').value,type:type,q:q,o:o,v:o.map(function(){return 0}),h:'방금'});
+    polls.unshift({id:'u'+Date.now().toString(36),cat:document.getElementById('f-cat').value,type:type,q:q,o:o,v:o.map(function(){return 0}),h:'방금',t:0});
     form.reset(); syncType();
     msg.textContent='투표를 올렸습니다. 피드 맨 위에서 확인하세요.';
     filter='all'; document.querySelectorAll('.chip[data-c]').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.c==='all')});
@@ -570,9 +868,10 @@ body.embedded .more{display:block}
   });
 
   // 라우팅
-  var views=['vote','ranking','create','analysis'];
+  var views=['vote','ranking','create','premium','analysis'];
   function exists(id){return !!id&&polls.some(function(p){return p.id===id})}
   // ?embed=ID (iframe용), ?p=ID (공유 링크), &theme=light|dark
+  function init(){
   if(exists(params.get('embed'))){
     embedded=true; embedId=params.get('embed'); document.body.classList.add('embedded');
     document.getElementById('more').innerHTML='<a href="'+SITE+'?p='+embedId+'" target="_blank" rel="noopener">네아니요에서 결과·다른 투표 보기 ↗</a>';
@@ -580,6 +879,9 @@ body.embedded .more{display:block}
     shareId=params.get('p'); document.body.classList.add('shared');
     document.getElementById('sharebar').hidden=false;
     var sp=polls.find(function(x){return x.id===shareId}); document.title=sp.q+' | 네아니요';
+  }
+  window.addEventListener('hashchange',route);
+  route();
   }
   var th=params.get('theme'); if(th==='light'||th==='dark') document.documentElement.setAttribute('data-theme',th);
 
@@ -591,8 +893,18 @@ body.embedded .more{display:block}
     document.querySelectorAll('.tabs a, .cta').forEach(function(a){ if(a.dataset.v===h) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
     render();
   }
-  window.addEventListener('hashchange',route);
-  route();
+
+  // 매일 올라오는 투표(data/polls.json)를 불러와 합친 뒤 시작
+  var started=false;
+  function start(){ if(started) return; started=true; init(); }
+  setTimeout(start,2500);
+  try{
+    fetch('data/polls.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():[]}).then(function(list){
+      if(Array.isArray(list)) list.forEach(addDaily);
+      polls.sort(function(a,b){return a.t-b.t});
+      start(); if(started) route();
+    }).catch(start);
+  }catch(e){start()}
 })();
 </script>
 </body>
