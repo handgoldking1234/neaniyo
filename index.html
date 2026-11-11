@@ -336,6 +336,15 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .cmt .who{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);flex-wrap:wrap}
 .side-tag{font-weight:700;font-size:11.5px;padding:1px 7px;border-radius:999px;color:#fff}
 .cmt p{margin:0;line-height:1.5}
+.aibox{border:1px dashed color-mix(in srgb,var(--b) 45%,var(--line));background:color-mix(in srgb,var(--b) 5%,var(--card));border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+.aibox h4{margin:0;display:flex;align-items:center;gap:6px;font-size:13.5px;flex-wrap:wrap}
+.aibox h4 .i{width:16px;height:16px;color:var(--b)}
+.aibox h4 .aitag{font-size:11px;font-weight:700;color:#fff;background:var(--b);padding:2px 7px;border-radius:999px}
+.aibox h4 small{font-weight:400;color:var(--muted);font-size:12px}
+.aibox ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.aibox li{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;line-height:1.5}
+.aibox li .side-tag{flex:none;margin-top:1px}
+.aibox .aifoot{margin:0;font-size:12px;color:var(--muted)}
 .cmt .ops{display:flex;gap:10px;font-size:12px}
 .cmt .ops button{border:0;background:none;color:var(--muted);cursor:pointer;padding:2px 0;font-size:12px}
 .cmt .ops button[aria-pressed="true"]{color:var(--a);font-weight:700}
@@ -824,16 +833,16 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   function save(){try{localStorage.setItem(KEY,JSON.stringify(voted))}catch(e){}}
 
   var polls=[
-    {id:'p1',comments:true,cat:'연예',type:'vs',q:'열애설이 터졌을 때, 소속사 대응은?',o:['바로 인정하는 게 낫다','사생활이니 노코멘트'],v:[6420,4180],h:'1시간 전'},
-    {id:'s1',comments:true,cat:'사회',type:'vs',q:'식당 노키즈존, 업주가 정해도 될까?',o:['업주의 자유','차별이다'],v:[7210,5980],h:'2시간 전'},
-    {id:'e1',cat:'경제',type:'vs',q:'지금 내 집 마련, 살 때일까 기다릴 때일까?',o:['지금 산다','더 기다린다'],v:[4870,6130],h:'2시간 전'},
+    {id:'p1',ai:['숨길수록 추측 기사만 늘어나니 빨리 정리하는 게 팬에게도 낫다는 의견', '연애는 개인의 일이고 확인해 줄 의무가 없다는 의견'],comments:true,cat:'연예',type:'vs',q:'열애설이 터졌을 때, 소속사 대응은?',o:['바로 인정하는 게 낫다','사생활이니 노코멘트'],v:[6420,4180],h:'1시간 전'},
+    {id:'s1',ai:['가게 운영 방식은 업주가 책임지는 만큼 스스로 정할 수 있다는 의견', '특정 나이를 통째로 막는 건 집단 차별이라는 의견'],comments:true,cat:'사회',type:'vs',q:'식당 노키즈존, 업주가 정해도 될까?',o:['업주의 자유','차별이다'],v:[7210,5980],h:'2시간 전'},
+    {id:'e1',ai:['기다리는 동안 가격과 금리가 또 오를 수 있다는 불안', '금리·공급 흐름을 더 보고 판단해도 늦지 않다는 신중론'],cat:'경제',type:'vs',q:'지금 내 집 마련, 살 때일까 기다릴 때일까?',o:['지금 산다','더 기다린다'],v:[4870,6130],h:'2시간 전'},
     {id:'p2',cat:'드라마·예능',type:'multi',q:'요즘 가장 기다려지는 드라마 장르는?',o:['로맨스 코미디','법정·의학 전문직','스릴러·복수극','사극·판타지'],v:[3120,2050,4410,1870],h:'3시간 전'},
     {id:'n2',cat:'연예',type:'vs',q:'멤버 탈퇴 후 그룹 이름, 누가 가져야 할까?',o:['소속사','남은 멤버들'],v:[2310,7840],h:'4시간 전'},
     {id:'p3',cat:'사회',type:'vs',q:'음원 사재기 적발 시 차트 영구 퇴출, 찬성?',o:['찬성','과하다'],v:[8930,1640],h:'5시간 전'},
-    {id:'sp1',cat:'스포츠',type:'vs',q:'프로야구 자동 볼 판정, 계속 가야 할까?',o:['계속 간다','사람 심판이 낫다'],v:[5560,2790],h:'오늘'},
+    {id:'sp1',ai:['판정 시비가 줄고 공정성이 올라갔다는 평가', '스트라이크존의 맛과 사람의 판단도 야구의 일부라는 의견'],cat:'스포츠',type:'vs',q:'프로야구 자동 볼 판정, 계속 가야 할까?',o:['계속 간다','사람 심판이 낫다'],v:[5560,2790],h:'오늘'},
     {id:'e2',cat:'경제',type:'multi',q:'주식 투자, 나에게 맞는 방식은?',o:['우량주 장기 보유','배당주로 현금흐름','ETF 매달 적립','단타·스윙'],v:[3240,1980,4760,1350],h:'오늘'},
     {id:'n3',cat:'연예',type:'vs',q:'연말 시상식 대상, 시청자 투표를 반영해야 할까?',o:['반영해야 한다','심사위원 몫이다'],v:[5120,3360],h:'오늘'},
-    {id:'s2',cat:'사회',type:'vs',q:'주 4.5일제 도입, 찬성?',o:['찬성','아직 이르다'],v:[9340,3870],h:'오늘'},
+    {id:'s2',ai:['생산성은 시간보다 집중도에 달려 있고 삶의 질도 오른다는 의견', '업종·회사 규모별 차이가 커서 준비가 더 필요하다는 의견'],cat:'사회',type:'vs',q:'주 4.5일제 도입, 찬성?',o:['찬성','아직 이르다'],v:[9340,3870],h:'오늘'},
     {id:'g1',cat:'정치',type:'multi',q:'국회의원 정수, 어떻게 해야 할까?',o:['줄여야 한다','지금이 적당하다','늘려야 한다'],v:[8120,2430,1180],h:'어제'},
     {id:'p4',cat:'연예',type:'multi',q:'아이돌 컴백 주기, 몇 개월이 적당할까?',o:['3개월','6개월','1년','상관없음'],v:[1520,4870,2210,690],h:'어제'},
     {id:'p7',cat:'사회',type:'multi',q:'공연 암표 대책으로 가장 효과 있을 것은?',o:['실명 인증 입장','공식 재판매 플랫폼','처벌 강화','추첨제 확대'],v:[5020,3870,2960,1440],h:'어제'},
@@ -854,7 +863,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       {q:'월급에서 저축 비율은?',o:['10% 미만','10~30%','30% 이상'],v:[380,520,280]},
       {q:'연말까지 목표는?',o:['더 모으기','빚 줄이기','버티기'],v:[430,350,400]}]},
     // 패션·쇼핑 사진 투표 예시
-    {id:'mv1',ex:true,comments:true,cat:'연예',sub:'영화',type:'vs',q:'메인 예고편 떴다, 이 영화 봐 안 봐?',o:['본다','안 본다'],v:[2840,1310],h:'40분 전',img:'assets/sample/trailer-capture.svg',capLabel:'예고편 캡처',desc:'예고편이나 뉴스 화면을 캡처해 올리고 의견을 물어보는 투표예요. 캡처를 올릴 때 원본 영상·기사 주소를 함께 넣으면 카드 아래에 붙어요.'},
+    {id:'mv1',ai:['예고편 분위기와 영상미만으로도 극장에서 볼 이유는 충분하다는 쪽', '예고편에 하이라이트를 다 보여 준 것 같아 OTT를 기다리겠다는 쪽'],ex:true,comments:true,cat:'연예',sub:'영화',type:'vs',q:'메인 예고편 떴다, 이 영화 봐 안 봐?',o:['본다','안 본다'],v:[2840,1310],h:'40분 전',img:'assets/sample/trailer-capture.svg',capLabel:'예고편 캡처',desc:'예고편이나 뉴스 화면을 캡처해 올리고 의견을 물어보는 투표예요. 캡처를 올릴 때 원본 영상·기사 주소를 함께 넣으면 카드 아래에 붙어요.'},
     {id:'ph1',ex:true,comments:true,cat:'패션·쇼핑',sub:'패션',type:'vs',q:'올겨울 롱패딩, 이거 산다 vs 안 산다',o:['산다','안 산다'],v:[1840,2260],h:'1시간 전',img:'assets/sample/long-padding.jpg',imgFit:'contain'},
     {id:'ph2',ex:true,cat:'패션·쇼핑',type:'photo',q:'올겨울 패딩 코디, 어떤 스타일이 제일 나아요?',o:['모노톤 패딩','시티 나이트룩','스카프 데일리룩'],v:[1420,2380,960],h:'3시간 전',imgs:['px:15639609|black','px:19426409|charcoal','px:14469824|beige'],credit:'Farshad Sheikhzadeh · Caner Kokcu · Jean-Daniel'},
     {id:'ph3',ex:true,cat:'패션·쇼핑',type:'photo',multiSel:true,n:1650,q:'출근길 패딩 코디, 괜찮은 거 다 골라 주세요',o:['퍼 후드 패딩','블랙 숏패딩','볼캡 매치','스카프 코디'],v:[1120,890,640,380],h:'오늘',imgs:['px:11274805|black','px:15639609|charcoal','px:19714681|navy','px:14469824|ivory'],credit:'Pexels 무료 사진'},
@@ -881,8 +890,8 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     // 마감된 지난 투표: 피드에는 안 나오고 월간·베스트 랭킹과 공유 링크로만 노출
     {id:'a1',cat:'연예',type:'vs',q:'연말 시상식 공동 수상, 어떻게 봐?',o:['상의 가치가 떨어진다','다 같이 받으면 좋다'],v:[18420,6310],h:'12일 전',t:290,closed:true},
     {id:'a2',cat:'스포츠',type:'vs',q:'프로야구 정규시즌 경기 수, 줄여야 할까?',o:['줄여야 한다','지금이 좋다'],v:[9100,7400],h:'18일 전',t:430,closed:true},
-    {id:'a3',cat:'사회',type:'multi',q:'배달앱 수수료, 누가 부담해야 할까?',o:['플랫폼','가게','소비자','나눠서'],v:[14200,3100,2500,9800],h:'3주 전',t:510,closed:true},
-    {id:'a4',cat:'경제',type:'vs',q:'지금이라면 전세 vs 월세',o:['전세','월세'],v:[21300,17600],h:'2달 전',t:1500,closed:true},
+    {id:'a3',ai:['수수료 구조를 정하는 플랫폼이 가장 큰 책임을 져야 한다는 쪽', '결국 가격을 정하는 가게가 감당할 몫이라는 쪽', '편하게 쓰는 만큼 배달비는 소비자가 내는 게 맞다는 쪽', '한쪽에 몰면 결국 다른 쪽으로 전가되니 나누자는 쪽'],cat:'사회',type:'multi',q:'배달앱 수수료, 누가 부담해야 할까?',o:['플랫폼','가게','소비자','나눠서'],v:[14200,3100,2500,9800],h:'3주 전',t:510,closed:true},
+    {id:'a4',ai:['목돈이 묶여도 매달 나가는 돈이 없는 게 낫다는 쪽', '보증금 떼일 걱정 없이 월세가 마음 편하다는 쪽'],cat:'경제',type:'vs',q:'지금이라면 전세 vs 월세',o:['전세','월세'],v:[21300,17600],h:'2달 전',t:1500,closed:true},
     {id:'a5',cat:'밸런스',type:'vs',q:'평생 라면 금지 vs 평생 치킨 금지',o:['라면 끊는다','치킨 끊는다'],v:[25400,29800],h:'5달 전',t:3600,closed:true}
   ];
   // 예시 사진 채우기
@@ -1137,7 +1146,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     return '<article class="poll'+(done?' done':'')+'" data-id="'+p.id+'">'+
       (embedded?embedBrand(p):'')+
       '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+catLabel(p.cat)+(p.sub?' <span class="sub">› '+esc(p.sub)+'</span>':'')+'</span>'+(p.type==='relay'?'<span class="ex rl">릴레이 '+p.qs.length+'문항</span>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+'<span>·</span><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'</div>'+
-      '<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+credit+
+      '<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+credit+aiBlock(p,done)+
       (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
       '<div class="foot"><span class="n">'+fmt(voters(p))+'명 참여'+(p.closed?' · 마감된 투표':done?'':' · 투표하면 결과 공개')+'</span>'+
       (embedded?'<a class="egoto" href="'+SITE+'?p='+p.id+'" target="_blank" rel="noopener">'+(done?'다른 투표 보기':'네아니요에서 보기')+ic('external-link')+'</a>':'')+
@@ -1476,6 +1485,15 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     return cmts[p.id];
   }
   var BAN=['씨발','시발','병신','개새','좆','지랄'];
+  // AI 쟁점 정리: 사람 한줄평이 5개 미만일 때만, 투표한 뒤에 보임 (투표 전에 보여 주면 선택에 영향을 줄 수 있음)
+  function aiBlock(p,done){
+    if(!done||!Array.isArray(p.ai)||!p.ai.length) return '';
+    var human=p.comments?getC(p).filter(function(c){return !c.hidden}).length:0;
+    if(human>=5) return '';
+    return '<div class="aibox"><h4>'+ic('sparkles')+'<span class="aitag">AI</span>양쪽 의견 정리 <small>· 사람 한줄평이 쌓이면 사라져요</small></h4><ul>'+
+      p.ai.map(function(t,i){ return t&&p.o[i]?'<li><span class="side-tag" style="background:'+OPC[i%OPC.length]+'">'+esc(p.o[i])+'</span><span>'+esc(t)+'</span></li>':''; }).join('')+
+      '</ul>'+(p.comments&&!embedded?'<p class="aifoot">AI가 쓴 요약이에요. 내 생각은 아래 한줄평으로 남겨 주세요.</p>':'<p class="aifoot">AI가 쓴 요약이에요. 실제 참여자 의견이 아닙니다.</p>')+'</div>';
+  }
   function cmtBlock(p,done){
     var list=getC(p).filter(function(c){return !c.hidden});
     if(!done) return '<div class="cmts"><h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개</small></h4><p class="hint">투표하면 한줄평을 보고 남길 수 있어요.</p></div>';
