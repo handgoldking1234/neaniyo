@@ -53,7 +53,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .cta{flex:none;text-decoration:none;background:var(--ink);color:var(--surface);font-weight:700;font-size:14px;padding:8px 14px;border-radius:999px}
 .cta[aria-current="page"]{background:var(--a)}
 @media (max-width:720px){
-  .hd-in{flex-wrap:wrap;gap:0 12px;min-height:0;padding-top:10px}
+  .hd-in{flex-wrap:wrap;gap:0 8px;min-height:0;padding-top:10px}
   .logo{flex:1;min-width:0}
   .logo svg{width:26px;height:26px}
   .logo .word{font-size:20px}
@@ -389,6 +389,12 @@ body.embedded .side-hot{display:none!important}
 .rank .rmv.up{color:var(--a)}.rank .rmv.dn{color:var(--b)}.rank .rmv.new{color:var(--ok)}
 .rank .rkw{display:flex;flex-direction:column;align-items:center;gap:0}
 @media (prefers-reduced-motion:reduce){.mv-up > a,.mv-dn > a,.mv-new > a,.mv-up .n,.mv-dn .n,.mv-up .rk,.mv-dn .rk{animation:none}}
+/* 효과음 버튼·콤보 */
+.snd{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.snd .i{width:18px;height:18px}
+.snd[aria-pressed="false"]{color:var(--muted)}
+@media (max-width:720px){.snd{width:32px;height:32px}}
+.burst .plus.combo{font-size:17px;width:120px;left:-60px;top:-82px;letter-spacing:.02em;text-shadow:0 1px 0 #fff,0 0 8px #fff}
 /* Lucide 아이콘 */
 .i{width:1.1em;height:1.1em;flex:none;vertical-align:-0.18em}
 .btn,.cta,.login{display:inline-flex;align-items:center;justify-content:center;gap:5px}
@@ -433,6 +439,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       <a href="./#premium" data-v="premium">프리미엄</a>
       <a href="./#analysis" data-v="analysis">경쟁사 분석</a>
     </nav>
+    <button class="snd" id="sndBtn" type="button" aria-label="효과음 끄기" aria-pressed="true"></button>
     <button class="login" id="loginBtn" type="button">로그인</button>
     <a class="cta" href="./#create" data-v="create"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg>투표 만들기</a>
   </div>
@@ -674,14 +681,51 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   function sum(a){return a.reduce(function(s,x){return s+x},0)}
   function pct(p){var t=sum(p.v)||1;return p.v.map(function(x){return Math.round(x*1000/t)/10})}
   // Lucide 아이콘 (lucide-static 0.460, ISC)
-  var ICONS={"thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />"};
+  var ICONS={"volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />"};
   function ic(n){return '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[n]||'')+'</svg>'}
+  // ===== 효과음 (Web Audio로 합성, 파일 없음) =====
+  var SKEY='neaniyo-sound', soundOn=true, actx=null;
+  try{ soundOn=localStorage.getItem(SKEY)!=='off'; }catch(e){}
+  function ac(){
+    if(!soundOn) return null;
+    try{ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); return actx; }catch(e){ return null; }
+  }
+  function tone(c,o){ // o: {type,f0,f1,t,dur,vol}
+    var t0=c.currentTime+(o.t||0), osc=c.createOscillator(), g=c.createGain();
+    osc.type=o.type||'sine'; osc.frequency.setValueAtTime(o.f0,t0);
+    if(o.f1) osc.frequency.exponentialRampToValueAtTime(o.f1,t0+o.dur*0.7);
+    g.gain.setValueAtTime(0.0001,t0); g.gain.exponentialRampToValueAtTime(o.vol||0.18,t0+0.012); g.gain.exponentialRampToValueAtTime(0.0001,t0+o.dur);
+    osc.connect(g).connect(c.destination); osc.start(t0); osc.stop(t0+o.dur+0.02);
+  }
+  var NOTE=function(semi){return 1046.5*Math.pow(2,semi/12)}; // C6 기준
+  var SFX={
+    vote:function(combo){ var c=ac(); if(!c) return; var k=Math.min(combo-1,7)*2;
+      tone(c,{type:'sine',f0:520,f1:1250,dur:.09,vol:.22});            // 뽁
+      [0,4,7,12].forEach(function(n,i){ tone(c,{type:'triangle',f0:NOTE(n+k),t:.05+i*.055,dur:.16,vol:.12}); }); // 띠리링
+      if(combo>=3) tone(c,{type:'sine',f0:NOTE(19+k),t:.3,dur:.35,vol:.08}); },
+    like:function(){ var c=ac(); if(!c) return; tone(c,{type:'sine',f0:700,f1:1500,dur:.08,vol:.16}); tone(c,{type:'triangle',f0:NOTE(7),t:.05,dur:.12,vol:.07}); },
+    unlike:function(){ var c=ac(); if(!c) return; tone(c,{type:'sine',f0:900,f1:500,dur:.08,vol:.1}); },
+    tick:function(){ var c=ac(); if(!c) return; tone(c,{type:'triangle',f0:1600,dur:.035,vol:.05}); },
+    open:function(){ var c=ac(); if(!c) return; tone(c,{type:'sine',f0:660,t:0,dur:.08,vol:.09}); tone(c,{type:'sine',f0:990,t:.06,dur:.1,vol:.09}); },
+    fail:function(){ var c=ac(); if(!c) return; tone(c,{type:'square',f0:220,f1:160,dur:.16,vol:.05}); }
+  };
+  var combo=0, lastVote=0;
+  function nextCombo(){ var now=Date.now(); combo=(now-lastVote<7000)?combo+1:1; lastVote=now; return combo; }
+  var sndBtn=document.getElementById('sndBtn');
+  function sndUI(){ sndBtn.innerHTML=ic(soundOn?'volume-2':'volume-x'); sndBtn.setAttribute('aria-pressed',soundOn); sndBtn.setAttribute('aria-label',soundOn?'효과음 끄기':'효과음 켜기'); }
+  sndBtn.onclick=function(){ soundOn=!soundOn; try{localStorage.setItem(SKEY,soundOn?'on':'off')}catch(e){} sndUI(); if(soundOn) SFX.open(); toast(soundOn?'효과음을 켰습니다.':'효과음을 껐습니다.'); };
+  // 가벼운 클릭음: 탭·칩·일반 버튼
+  document.addEventListener('click',function(e){
+    var t=e.target.closest('.chip,.tabs a,.dims button,.btn,.cta,.login,.seg label,.seg3 label');
+    if(t&&!t.closest('[data-i]')) SFX.tick();
+  });
+
   // 카톡 리액션처럼 누른 자리에서 따봉이 튀어오르는 효과
   function burst(x,y,color,opts){
     opts=opts||{};
     try{ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){}
     var el=document.createElement('div'); el.className='burst'; el.style.transform='translate('+x+'px,'+y+'px)'; el.style.setProperty('--bc',color);
-    var html=opts.small?'':'<span class="big">'+ic('thumbs-up')+'</span>'+(opts.label?'<span class="plus">'+opts.label+'</span>':'');
+    var html=opts.small?'':'<span class="big">'+ic('thumbs-up')+'</span>'+(opts.label?'<span class="plus'+(opts.combo?' combo':'')+'">'+opts.label+'</span>':'');
     var n=opts.small?6:10;
     for(var k=0;k<n;k++){
       var a=(Math.PI*2*k/n)+(Math.random()-.5)*.6, r=(opts.small?26:56)+Math.random()*(opts.small?10:26);
@@ -1006,6 +1050,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     }catch(e){ toast('이 환경에서는 다운로드가 막혀 있습니다.'); }
   }
   authUI();
+  sndUI();
 
   // ===== 한줄평 (시안: 브라우저에만 저장) =====
   var CKEY='neaniyo-cmt', cmts={};
@@ -1107,7 +1152,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       if(act==='like'||act==='report'){
         var c=getC(p).filter(function(x){return x.id===actBtn.dataset.cid})[0]; if(!c) return;
         if(act==='like'){ c.liked=!c.liked; c.likes+=c.liked?1:-1;
-          if(c.liked){ var rb=actBtn.getBoundingClientRect(); burst(rb.left+12,rb.top+rb.height/2,'var(--a)',{small:true}); }
+          if(c.liked){ var rb=actBtn.getBoundingClientRect(); burst(rb.left+12,rb.top+rb.height/2,'var(--a)',{small:true}); SFX.like(); } else SFX.unlike();
           saveC(); var fr=rerender(art,p); var nb=fr.querySelector('[data-cid="'+c.id+'"][data-act=like]'); if(nb&&c.liked) nb.classList.add('likepop'); return; }
         else { c.reports=(c.reports||0)+1; c.hidden=true; toast('신고했습니다. 검토 전까지 이 한줄평은 가려집니다.'); }
         saveC(); rerender(art,p); return;
@@ -1121,7 +1166,9 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     var bx=e.clientX, by=e.clientY;
     if(!bx&&!by){ var br=b.getBoundingClientRect(); bx=br.left+br.width/2; by=br.top+br.height/2; }
     b.classList.add('pressed');
-    burst(bx,by,OPC[+b.dataset.i%OPC.length],{label:'+1'});
+    var cb=nextCombo();
+    burst(bx,by,OPC[+b.dataset.i%OPC.length],cb>=2?{label:'COMBO x'+cb+'!',combo:true}:{label:'+1'});
+    SFX.vote(cb);
     var i=+b.dataset.i; p.v[i]++; voted[p.id]=i; save();
     var html=card(p), tmp=document.createElement('div'); tmp.innerHTML=html;
     var fresh=tmp.firstChild;
@@ -1143,8 +1190,8 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     var art=f.closest('.poll'), p=polls.find(function(x){return x.id===art.dataset.id});
     if(f.dataset.unlock){
       var v=f.querySelector('input').value;
-      if(pwHash(v)===p.pw){ unlocked[p.id]=1; try{sessionStorage.setItem('neaniyo-open',JSON.stringify(unlocked))}catch(err){} document.title=p.q+' | 네아니요'; rerender(art,p); }
-      else art.querySelector('[data-umsg]').textContent='비밀번호가 맞지 않습니다.';
+      if(pwHash(v)===p.pw){ SFX.open(); unlocked[p.id]=1; try{sessionStorage.setItem('neaniyo-open',JSON.stringify(unlocked))}catch(err){} document.title=p.q+' | 네아니요'; rerender(art,p); }
+      else { SFX.fail(); art.querySelector('[data-umsg]').textContent='비밀번호가 맞지 않습니다.'; }
       return;
     }
     if(f.dataset.cform){
