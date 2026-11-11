@@ -29,7 +29,12 @@ body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;word-break:keep-all;overflow-wrap:break-word}
 .gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
-.wrap{max-width:792px;margin:0 auto;padding-block:8px 60px}
+.wrap{max-width:792px;margin:0 auto;padding-block:8px 60px;display:flex;flex-direction:column}
+.wrap > main{min-width:0}
+@media (min-width:1100px){
+  .wrap{max-width:1140px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px;align-items:start}
+  .hd-in{max-width:1140px!important}
+}
 button,input,select,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--b);outline-offset:2px}
 
@@ -317,6 +322,40 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .cmts .hint{margin:0}
 .cmsg{font-size:12.5px;color:var(--a);margin:0;min-height:0}
 
+/* 실시간 인기 투표 */
+.hotbox{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.hotbox-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px 10px}
+.hotbox-hd h2{margin:0;font-size:15px;display:flex;align-items:center;gap:6px}
+.hotbox-hd h2::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--a);box-shadow:0 0 0 0 var(--a);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--a) 60%,transparent)}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.hotbox-hd time{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.hotbox ol{list-style:none;margin:0;padding:0 6px 6px}
+.hotbox li a{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:start;padding:9px 10px;border-radius:9px;text-decoration:none;color:inherit}
+.hotbox li a:hover{background:var(--bg)}
+.hotbox .n{font-family:var(--display);font-size:16px;line-height:1.3;color:var(--muted);text-align:center}
+.hotbox li:nth-child(-n+3) .n{color:var(--a)}
+.hotbox .t{min-width:0;font-size:13.5px;font-weight:500;line-height:1.4}
+.hotbox .tq{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hotbox .t small{display:block;font-size:11.5px;font-weight:400;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hotbox .mv{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;padding-top:2px;color:var(--muted)}
+.hotbox .mv.up{color:var(--a)}.hotbox .mv.dn{color:var(--b)}.hotbox .mv.new{color:var(--ok)}
+.hotbox-ft{display:block;text-align:center;border-top:1px solid var(--line);padding:11px;font-size:13px;color:var(--muted);text-decoration:none}
+.hotbox-ft:hover{color:var(--ink)}
+.side-hot{display:flex;flex-direction:column;gap:12px}
+@media (min-width:1100px){.side-hot{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);margin-top:14px}}
+@media (max-width:1099px){
+  .side-hot{order:-1;margin-top:10px}
+  body:not(.v-vote) .side-hot,body.shared .side-hot{display:none}
+  .hotbox ol{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 12px 12px}
+  .hotbox ol::-webkit-scrollbar{display:none}
+  .hotbox li{flex:none;width:230px}
+  .hotbox li:nth-child(n+6){display:none}
+  .hotbox li a{background:var(--bg);height:100%}
+  .hotbox-ft{display:none}
+}
+body.embedded .side-hot{display:none!important}
+@media (prefers-reduced-motion:reduce){.hotbox-hd h2::before{animation:none}}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -515,6 +554,13 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
       </div>
     </section>
   </main>
+  <aside class="side-hot" aria-label="실시간 인기 투표">
+    <div class="hotbox">
+      <div class="hotbox-hd"><h2>실시간 인기 투표</h2><time id="hotTime"></time></div>
+      <ol id="hotList"></ol>
+      <a class="hotbox-ft" href="./#ranking">랭킹 전체 보기 →</a>
+    </div>
+  </aside>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <dialog class="auth" id="auth" aria-labelledby="authTitle"><div class="auth-in" id="authBody"></div></dialog>
@@ -606,6 +652,7 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
     var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return isPublic(p)&&!p.closed&&(filter==='all'||p.cat===filter)});
     feed.innerHTML=list.length?list.map(card).join(''):'<p class="tag">이 카테고리에 투표가 아직 없습니다.</p>';
     renderRank();
+    renderHot();
     resize();
   }
 
@@ -613,7 +660,7 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
   var RANK={
     live:{cap:'최근 1시간 동안 표가 가장 많이 몰린 투표',unit:'표/시간',max:10,
       pick:function(p){return !p.closed},
-      score:function(p){return Math.round(sum(p.v)*0.12/(1+p.t/6))}},
+      score:function(p){return Math.round(sum(p.v)*0.12/(1+p.t/6))+(p.boost||0)}},
     day:{cap:'오늘 하루 참여가 많은 순',unit:'명',max:10,
       pick:function(p){return !p.closed&&p.t<=24},score:function(p){return sum(p.v)}},
     week:{cap:'이번 주 참여가 많은 순',unit:'명',max:10,
@@ -624,6 +671,35 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
       pick:function(){return true},score:function(p){return sum(p.v)}}
   };
   var period='live';
+  // 실시간 인기 투표 (사이드)
+  var prevHot={};
+  function renderHot(){
+    var el=document.getElementById('hotList'); if(!el) return;
+    var R=RANK.live;
+    var r=polls.filter(function(p){return isPublic(p)&&R.pick(p)}).map(function(p){return {p:p,s:R.score(p)}})
+      .sort(function(a,b){return b.s-a.s}).slice(0,10);
+    var now=new Date(), hh=('0'+now.getHours()).slice(-2), mm=('0'+now.getMinutes()).slice(-2);
+    document.getElementById('hotTime').textContent=hh+':'+mm+' 기준';
+    var had=Object.keys(prevHot).length>0, next={};
+    el.innerHTML=r.map(function(x,i){
+      var p=x.p,ps=pct(p),lead=ps.indexOf(Math.max.apply(null,ps)); next[p.id]=i;
+      var mv='<span class="mv"></span>';
+      if(had){ var was=prevHot[p.id];
+        if(was===undefined) mv='<span class="mv new">NEW</span>';
+        else if(was>i) mv='<span class="mv up" aria-label="'+(was-i)+'계단 상승">▲'+(was-i)+'</span>';
+        else if(was<i) mv='<span class="mv dn" aria-label="'+(i-was)+'계단 하락">▼'+(i-was)+'</span>';
+      } else if(p.t<=3) mv='<span class="mv new">NEW</span>';
+      return '<li><a href="?p='+p.id+'"><span class="n">'+(i+1)+'</span><span class="t"><span class="tq">'+esc(p.q)+'</span><small>'+p.cat+' · '+esc(p.o[lead])+' '+ps[lead]+'% · +'+fmt(x.s)+'표/시간</small></span>'+mv+'</a></li>';
+    }).join('');
+    prevHot=next;
+  }
+  // 시안용: 20초마다 표가 조금씩 들어오는 것처럼 보이게
+  setInterval(function(){
+    if(document.hidden) return;
+    polls.forEach(function(p){ if(!isPublic(p)||p.closed) return;
+      var r=Math.random(); if(r<0.35){ var add=Math.ceil(Math.random()*40/(1+p.t/6)); p.boost=(p.boost||0)+add; p.v[Math.floor(Math.random()*p.v.length)]+=add; } });
+    renderHot();
+  },20000);
   function renderRank(){
     var R=RANK[period];
     document.getElementById('rankcap').textContent=R.cap;
@@ -1032,7 +1108,7 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
     var h=(location.hash||'').slice(1);
     if(embedded) h='vote';
     if(views.indexOf(h)<0) h='vote';
-    views.forEach(function(v){document.getElementById('v-'+v).hidden=v!==h});
+    views.forEach(function(v){document.getElementById('v-'+v).hidden=v!==h; document.body.classList.toggle('v-'+v,v===h)});
     document.querySelectorAll('.tabs a, .cta').forEach(function(a){ if(a.dataset.v===h) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
     render();
   }
