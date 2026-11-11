@@ -149,8 +149,18 @@ td small{color:var(--muted)}
 .score b{font-variant-numeric:tabular-nums;text-align:right}
 
 /* embed-only view */
-body.embedded .top,body.embedded .chips,body.embedded .foot .acts{display:none}
-body.embedded .wrap{padding-block:8px}
+body.embedded .top,body.embedded .chips,body.embedded .foot .acts,body.embedded .note,body.shared .chips{display:none}
+body.embedded{padding-left:6px;padding-right:6px;background:transparent}
+body.embedded .wrap{padding-block:4px;max-width:none}
+.more{display:none;text-align:center;font-size:12.5px;margin-top:8px}
+body.embedded .more{display:block}
+.more a,.sharebar a{color:var(--muted);text-decoration:none;font-weight:500}
+.more a:hover,.sharebar a:hover{color:var(--ink)}
+.sharebar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0;font-size:13.5px;color:var(--muted)}
+.sharebar a{color:var(--b)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:calc(100% - 32px)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.row input[type=checkbox]{accent-color:var(--a)}
 .note{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
 @media (max-width:440px){.vs{grid-template-columns:1fr}.vsmark{display:none}.q{font-size:17.5px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -181,7 +191,9 @@ body.embedded .wrap{padding-block:8px}
         <button class="chip" data-c="정치" aria-pressed="false">정치</button>
         <button class="chip" data-c="밸런스" aria-pressed="false">밸런스</button>
       </div>
+      <div class="sharebar" id="sharebar" hidden><span>공유받은 투표</span><a href="./">전체 투표 보기 →</a></div>
       <div class="feed" id="feed"></div>
+      <p class="more" id="more"></p>
       <p class="note">예시 투표입니다. 1인 1표는 이 브라우저 기준으로만 체크합니다.</p>
     </section>
 
@@ -285,6 +297,7 @@ body.embedded .wrap{padding-block:8px}
     </section>
   </main>
 </div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (function(){
@@ -314,7 +327,9 @@ body.embedded .wrap{padding-block:8px}
   ];
   var filter='all';
   var feed=document.getElementById('feed');
-  var embedded=false, embedId=null;
+  var SITE='https://neaniyo.iux.kr/';
+  var params=new URLSearchParams(location.search);
+  var embedded=false, embedId=null, shareId=null;
 
   function sum(a){return a.reduce(function(s,x){return s+x},0)}
   function pct(p){var t=sum(p.v)||1;return p.v.map(function(x){return Math.round(x*1000/t)/10})}
@@ -346,9 +361,11 @@ body.embedded .wrap{padding-block:8px}
   }
 
   function render(){
-    var list=embedded?polls.filter(function(p){return p.id===embedId}):polls.filter(function(p){return filter==='all'||p.cat===filter});
+    var only=embedded?embedId:shareId;
+    var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return filter==='all'||p.cat===filter});
     feed.innerHTML=list.length?list.map(card).join(''):'<p class="tag">이 카테고리에 투표가 아직 없습니다.</p>';
     renderRank();
+    resize();
   }
 
   function renderRank(){
@@ -359,27 +376,52 @@ body.embedded .wrap{padding-block:8px}
     }).join('');
   }
 
+  function shareUrl(p){return SITE+'?p='+p.id}
+  function embedHeight(p){return p.type==='vs'?330:(215+p.o.length*56)}
+
   function embedPanel(p,el){
     el.innerHTML='<h4>이 투표를 내 사이트에 붙이기</h4>'+
       '<div class="row"><label for="w-'+p.id+'">너비</label><select id="w-'+p.id+'"><option value="100%">반응형 100%</option><option value="560">560px</option><option value="400">400px</option></select>'+
       '<label for="t-'+p.id+'">테마</label><select id="t-'+p.id+'"><option value="auto">자동</option><option value="light">라이트</option><option value="dark">다크</option></select></div>'+
+      '<div class="row"><input type="checkbox" id="a-'+p.id+'"><label for="a-'+p.id+'">높이 자동 맞춤 스크립트 포함 (스크립트를 허용하는 사이트용)</label></div>'+
       '<pre class="code" id="c-'+p.id+'"></pre>'+
-      '<div class="row"><button class="btn dark" data-act="copycode">코드 복사</button><span class="hint" data-hint></span></div>'+
-      '<p class="hint">티스토리·네이버 블로그(HTML 모드)·워드프레스·카페에 그대로 붙여 넣으면 됩니다. 투표 결과는 원본과 실시간으로 같습니다.</p>';
-    var w=el.querySelector('#w-'+p.id),t=el.querySelector('#t-'+p.id),c=el.querySelector('#c-'+p.id);
+      '<div class="row"><button class="btn dark" data-act="copycode">코드 복사</button><a class="btn" href="'+SITE+'?embed='+p.id+'" target="_blank" rel="noopener">미리보기 ↗</a></div>'+
+      '<p class="hint">티스토리·워드프레스는 HTML 편집에, 네이버 블로그·카페는 HTML 모드나 링크 붙여넣기로 넣으면 됩니다. 투표 결과는 원본과 같은 데이터를 씁니다.</p>';
+    var w=el.querySelector('#w-'+p.id),t=el.querySelector('#t-'+p.id),a=el.querySelector('#a-'+p.id),c=el.querySelector('#c-'+p.id);
     function upd(){
-      var h=p.type==='vs'?260:(200+p.o.length*52);
-      c.textContent='<iframe src="https://neaniyo.kr/embed/'+p.id+'?theme='+t.value+'" width="'+w.value+'" height="'+h+'" frameborder="0" title="네아니요 투표: '+p.q.replace(/"/g,'')+'" loading="lazy"></iframe>';
+      var src=SITE+'?embed='+p.id+(t.value!=='auto'?'&theme='+t.value:'');
+      var code='<iframe id="neaniyo-'+p.id+'" src="'+src+'" width="'+w.value+'" height="'+embedHeight(p)+'" style="border:0;max-width:100%" title="네아니요 투표: '+p.q.replace(/"/g,'')+'" loading="lazy"></iframe>';
+      if(a.checked) code+='\n<script>addEventListener("message",function(e){if(e.origin==="https://neaniyo.iux.kr"&&e.data&&e.data.neaniyo==="'+p.id+'"){document.getElementById("neaniyo-'+p.id+'").style.height=e.data.h+"px"}})<\/script>';
+      c.textContent=code;
     }
-    w.onchange=upd;t.onchange=upd;upd();
+    w.onchange=upd;t.onchange=upd;a.onchange=upd;upd();
   }
 
-  function copy(text,hintEl,okMsg){
-    function fallback(){ if(hintEl) hintEl.textContent='위 코드를 길게 눌러 선택해 복사하세요.'; }
-    try{
-      navigator.clipboard.writeText(text).then(function(){ if(hintEl) hintEl.textContent=okMsg; },fallback);
-    }catch(e){fallback()}
+  var toastEl=document.getElementById('toast'), toastT;
+  function toast(m){toastEl.textContent=m;toastEl.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){toastEl.classList.remove('on')},1800)}
+
+  function legacyCopy(text){
+    var ta=document.createElement('textarea'); ta.value=text; ta.setAttribute('readonly','');
+    ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta);
+    ta.select(); ta.setSelectionRange(0,text.length);
+    var ok=false; try{ok=document.execCommand('copy')}catch(e){}
+    ta.remove(); return ok;
   }
+  function copy(text,okMsg){
+    function fail(){ toast(legacyCopy(text)?okMsg:'복사가 막혀 있어요. 길게 눌러 직접 복사해 주세요.'); }
+    if(navigator.clipboard&&window.isSecureContext){
+      navigator.clipboard.writeText(text).then(function(){toast(okMsg)},fail);
+    }else fail();
+  }
+
+  // 임베드 높이를 부모 페이지에 알림
+  function resize(){
+    if(!embedded||window.parent===window) return;
+    requestAnimationFrame(function(){
+      try{window.parent.postMessage({neaniyo:embedId,h:Math.ceil(document.documentElement.scrollHeight)},'*')}catch(e){}
+    });
+  }
+  window.addEventListener('resize',resize);
 
   feed.addEventListener('click',function(e){
     var art=e.target.closest('.poll'); if(!art) return;
@@ -388,8 +430,9 @@ body.embedded .wrap{padding-block:8px}
     if(actBtn){
       var act=actBtn.dataset.act, panel=art.querySelector('.embed');
       if(act==='embed'){ panel.hidden=!panel.hidden; if(!panel.hidden) embedPanel(p,panel); }
-      if(act==='copy'){ copy('https://neaniyo.kr/p/'+p.id,null,''); actBtn.textContent='복사됨'; setTimeout(function(){actBtn.textContent='링크 복사'},1500); }
-      if(act==='copycode'){ copy(panel.querySelector('pre').textContent,panel.querySelector('[data-hint]'),'복사했습니다.'); }
+      if(act==='copy'){ copy(shareUrl(p),'투표 링크를 복사했습니다.'); }
+      if(act==='copycode'){ copy(panel.querySelector('pre').textContent,'임베드 코드를 복사했습니다.'); }
+      resize();
       return;
     }
     var b=e.target.closest('[data-i]'); if(!b||voted[p.id]!==undefined) return;
@@ -405,6 +448,7 @@ body.embedded .wrap{padding-block:8px}
       fresh.querySelectorAll('.bar span').forEach(function(s){s.style.flexBasis=s.dataset.w});
     })});
     renderRank();
+    setTimeout(resize,750);
   });
 
   document.querySelectorAll('.chip[data-c]').forEach(function(c){
@@ -448,12 +492,21 @@ body.embedded .wrap{padding-block:8px}
 
   // 라우팅
   var views=['vote','ranking','create','analysis'];
+  function exists(id){return !!id&&polls.some(function(p){return p.id===id})}
+  // ?embed=ID (iframe용), ?p=ID (공유 링크), &theme=light|dark
+  if(exists(params.get('embed'))){
+    embedded=true; embedId=params.get('embed'); document.body.classList.add('embedded');
+    document.getElementById('more').innerHTML='<a href="'+SITE+'?p='+embedId+'" target="_blank" rel="noopener">네아니요에서 결과·다른 투표 보기 ↗</a>';
+  }else if(exists(params.get('p'))){
+    shareId=params.get('p'); document.body.classList.add('shared');
+    document.getElementById('sharebar').hidden=false;
+    var sp=polls.find(function(x){return x.id===shareId}); document.title=sp.q+' | 네아니요';
+  }
+  var th=params.get('theme'); if(th==='light'||th==='dark') document.documentElement.setAttribute('data-theme',th);
+
   function route(){
     var h=(location.hash||'').slice(1);
-    var m=h.match(/^embed-(\w+)$/);
-    if(m && polls.some(function(p){return p.id===m[1]})){
-      embedded=true; embedId=m[1]; document.body.classList.add('embedded'); h='vote';
-    }else{ embedded=false; document.body.classList.remove('embedded'); }
+    if(embedded) h='vote';
     if(views.indexOf(h)<0) h='vote';
     views.forEach(function(v){document.getElementById('v-'+v).hidden=v!==h});
     document.querySelectorAll('.tabs a').forEach(function(a){ if(a.dataset.v===h) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
