@@ -437,13 +437,15 @@ body.embedded .side-hot{display:none!important}
 .rblock .rx{border:0;background:none;color:var(--muted);cursor:pointer;font-size:12px}
 /* 사진 투표 */
 .pimg{border-radius:14px;overflow:hidden;background:var(--bg);margin-top:-4px}
-.pimg img{display:block;width:100%;max-height:440px;object-fit:cover;aspect-ratio:4/3}
+.pimg img{display:block;width:100%;max-height:520px;min-height:200px;object-fit:cover;object-position:center 25%;background:var(--line)}
+.credit{margin:-10px 0 0;font-size:11.5px;color:var(--muted)}
+.credit a{color:var(--muted)}
 .pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .pgrid.n3{grid-template-columns:repeat(3,1fr)}
 @media (max-width:520px){.pgrid.n3{grid-template-columns:repeat(2,1fr)}}
 .ptile{position:relative;padding:0;border:2px solid var(--line);border-radius:14px;overflow:hidden;background:var(--bg);cursor:pointer;display:flex;flex-direction:column;text-align:left;color:inherit;transition:transform .12s,border-color .15s}
 .ptile:hover{transform:translateY(-2px)}
-.ptile img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover}
+.ptile img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;object-position:center 20%;background:var(--line)}
 .ptile .pcap{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:9px 11px;font-size:14px;background:var(--surface);position:relative;z-index:1}
 .ptile .pcap b{display:inline-flex;align-items:center;gap:3px}
 .ptile .pcap .i{width:14px;height:14px;color:var(--ok);stroke-width:3}
@@ -466,6 +468,15 @@ body.embedded .side-hot{display:none!important}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .thumb button{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
 .thumb button .i{width:13px;height:13px}
+.drop{border:2px dashed var(--line);border-radius:12px;background:var(--bg);padding:20px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;cursor:pointer;color:var(--muted);font-size:13px;transition:border-color .15s,background .15s}
+.drop b{color:var(--ink);font-size:14px}
+.drop:hover,.drop:focus-visible{border-color:var(--b)}
+.drop.over{border-color:var(--a);background:var(--a-soft);color:var(--a)}
+.drop.full{display:none}
+.drop-ic .i{width:28px;height:28px;color:var(--b)}
+.drop kbd{font:inherit;font-size:11.5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface);color:var(--ink)}
+.thumbs:empty{display:none}
+@media (hover:none){#drop-hint{display:none}}
 .upbtn{width:84px;height:104px;border:2px dashed var(--line);border-radius:10px;display:grid;place-items:center;color:var(--muted);cursor:pointer;font-size:12px;text-align:center;background:var(--bg)}
 .upbtn input{position:absolute;opacity:0;width:1px;height:1px}
 .seg{flex-wrap:wrap}
@@ -576,9 +587,15 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
         <div class="field" id="f-relay-wrap" hidden><label>질문 목록 <small>(2~5개, 이어서 답하는 투표)</small></label>
           <div class="rbuild" id="rbuild"></div>
           <button type="button" class="btn" id="raddq">질문 추가</button></div>
-        <div class="field" id="f-photo-wrap" hidden><label>사진 <small>(최대 4장)</small></label>
-          <div class="thumbs" id="thumbs"><label class="upbtn" id="upbtn"><input type="file" id="f-photo" accept="image/*" multiple><span>+ 사진<br>올리기</span></label></div>
-          <p class="hint">1장: 산다·안 산다처럼 보기로 투표 · 2~4장: 사진 중에서 고르기. 사람 얼굴이 나온 사진은 본인 동의가 있을 때만 올려 주세요. 아이 그림은 이름·학교가 보이지 않게 가려 주세요.</p></div>
+        <div class="field" id="f-photo-wrap"><label id="f-photo-label">사진 첨부 <small>(선택, 1장)</small></label>
+          <div class="drop" id="drop" tabindex="0" role="button" aria-describedby="drop-hint">
+            <span class="drop-ic" id="drop-ic"></span>
+            <b>사진을 끌어다 놓거나 클릭해서 선택</b>
+            <span id="drop-hint">복사한 이미지는 <kbd>Ctrl</kbd>+<kbd>V</kbd>(맥은 <kbd>⌘</kbd>+<kbd>V</kbd>)로 붙여넣기</span>
+            <input type="file" id="f-photo" accept="image/*" multiple hidden>
+          </div>
+          <div class="thumbs" id="thumbs"></div>
+          <p class="hint" id="f-photo-hint">사진 투표: 1장은 산다·안 산다처럼 보기로, 2~4장은 사진 중에서 고르기. 사람 얼굴은 본인 동의가 있을 때만, 아이 그림은 이름·학교가 보이지 않게 올려 주세요.</p></div>
         <div class="field" id="f-opt-wrap"><label>보기</label>
           <div class="optlist" id="optlist">
             <input id="f-o1" placeholder="보기 1" maxlength="30">
@@ -765,13 +782,13 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       {q:'월급에서 저축 비율은?',o:['10% 미만','10~30%','30% 이상'],v:[380,520,280]},
       {q:'연말까지 목표는?',o:['더 모으기','빚 줄이기','버티기'],v:[430,350,400]}]},
     // 패션·쇼핑 사진 투표 예시
-    {id:'ph1',ex:true,comments:true,cat:'패션·쇼핑',type:'vs',q:'이 롱패딩 39만 원, 산다 vs 안 산다',o:['산다','안 산다'],v:[1840,2260],h:'1시간 전',img:'@long'},
-    {id:'ph2',ex:true,cat:'패션·쇼핑',type:'photo',q:'올겨울 숏패딩, 어떤 색이 제일 예뻐요?',o:['블랙','베이지','카키'],v:[1420,2380,960],h:'3시간 전',imgs:['@black','@beige','@khaki']},
-    {id:'ph3',ex:true,cat:'패션·쇼핑',type:'photo',multiSel:true,n:1650,q:'출근용 패딩, 괜찮은 색 다 골라 주세요',o:['네이비','차콜','아이보리','버건디'],v:[1120,890,640,380],h:'오늘',imgs:['@navy','@charcoal','@ivory','@burgundy']},
+    {id:'ph1',ex:true,comments:true,cat:'패션·쇼핑',type:'vs',q:'퍼 후드 블랙 패딩, 산다 vs 안 산다',o:['산다','안 산다'],v:[1840,2260],h:'1시간 전',img:'px:11274805|black',credit:'Aqib Shahid'},
+    {id:'ph2',ex:true,cat:'패션·쇼핑',type:'photo',q:'올겨울 패딩 코디, 어떤 스타일이 제일 나아요?',o:['모노톤 패딩','시티 나이트룩','스카프 데일리룩'],v:[1420,2380,960],h:'3시간 전',imgs:['px:15639609|black','px:19426409|charcoal','px:14469824|beige'],credit:'Farshad Sheikhzadeh · Caner Kokcu · Jean-Daniel'},
+    {id:'ph3',ex:true,cat:'패션·쇼핑',type:'photo',multiSel:true,n:1650,q:'출근길 패딩 코디, 괜찮은 거 다 골라 주세요',o:['퍼 후드 패딩','블랙 숏패딩','볼캡 매치','스카프 코디'],v:[1120,890,640,380],h:'오늘',imgs:['px:11274805|black','px:15639609|charcoal','px:19714681|navy','px:14469824|ivory'],credit:'Pexels 무료 사진'},
     // 그림·재능 예시
-    {id:'dr1',ex:true,comments:true,cat:'그림·재능',type:'vs',q:'일곱 살 아이 그림, 미술학원 보낼까요?',o:['보낸다','안 보낸다'],v:[2210,1360],h:'2시간 전',img:'@drawing',
+    {id:'dr1',ex:true,comments:true,cat:'그림·재능',type:'vs',q:'일곱 살 아이 그림, 미술학원 보낼까요?',o:['보낸다','안 보낸다'],v:[2210,1360],h:'2시간 전',img:'px:33590129|@drawing',credit:'Çiğdem Bilgin',
       story:'아이가 혼자 그린 그림이에요. 요즘 하루에도 몇 장씩 그리는데, 색을 쓰는 게 꽤 과감해서 주변에서 미술학원을 권하네요. 좋아서 하는 걸 학원에 보내면 오히려 흥미를 잃을까 봐 고민입니다.'},
-    {id:'dr2',ex:true,cat:'그림·재능',type:'multi',q:'이 그림, 재능 몇 점 줄래요?',o:['그냥 귀엽다','소질 있어 보인다','재능 보인다','작가 될 듯'],v:[640,1180,890,410],h:'오늘',img:'@drawing2'},
+    {id:'dr2',ex:true,cat:'그림·재능',type:'multi',credit:'Pexels 무료 사진',q:'아이가 그린 가족 그림, 재능 몇 점 줄래요?',o:['그냥 귀엽다','소질 있어 보인다','재능 보인다','작가 될 듯'],v:[640,1180,890,410],h:'오늘',img:'px:8524997|@drawing2'},
     // 사연·고민 예시 (운영 예시로 만든 글, 화면에 '예시 사연' 표시)
     {id:'st1',ex:true,comments:true,cat:'사연',type:'vs',q:'축의금 냈는데 제 결혼식엔 안 온 친구, 서운한 게 맞죠?',o:['서운할 만하다','이해해야 한다'],v:[3120,1840],h:'2시간 전',
       story:'대학 동기 결혼식에 지방까지 내려가서 축의금 10만 원을 냈어요. 2년 뒤 제 결혼식 날, 그 친구는 당일 아침에 "일이 생겼다"는 문자만 보내고 오지 않았고 축의금도 따로 없었어요.\n\n나중에 SNS를 보니 그날 다른 친구들과 캠핑을 갔더라고요. 따로 연락해서 따지기도 애매하고, 그냥 넘기자니 계속 생각나요. 제가 너무 계산적인 걸까요?'},
@@ -804,11 +821,20 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   }
   polls.forEach(function(p){ if(p.type==='relay'){ p.o=p.qs[0].o; p.v=p.qs[0].v; } });
   var JK={long:['#283A5E',1],black:['#24262B'],beige:['#D9C3A0'],khaki:['#6E6B45'],navy:['#283A5E'],charcoal:['#4A4D55'],ivory:['#EDE6D6',0,'#DCE3EE'],burgundy:['#7A2737']};
+  // 예시 사진: Pexels 무료 사진(px:사진번호|대체그림). 사진을 못 불러오면 대체 그림으로 바꿈
+  var FALLBACK={};
+  function fbOf(key){ if(key==='@drawing'||key==='@drawing2') return drawing(key==='@drawing2'); var a=JK[key.replace('@','')]||JK.black; return jacket(a[0],a[1],a[2]); }
+  function resolveImg(x){
+    if(!x||x.indexOf('px:')!==0) return x;
+    var parts=x.slice(3).split('|'), id=parts[0], url='https://images.pexels.com/photos/'+id+'/pexels-photo-'+id+'.jpeg?auto=compress&cs=tinysrgb&w=800';
+    FALLBACK[url]=fbOf(parts[1]||'black'); return url;
+  }
   polls.forEach(function(p){
-    if(p.img==='@drawing'||p.img==='@drawing2'){ p.img=drawing(p.img==='@drawing2'); }
-    else if(p.img&&p.img[0]==='@'){ var a=JK[p.img.slice(1)]; p.img=jacket(a[0],a[1],a[2]); }
-    if(p.imgs) p.imgs=p.imgs.map(function(x){ if(x[0]!=='@') return x; var b=JK[x.slice(1)]; return jacket(b[0],b[1],b[2]); });
+    if(p.img) p.img=resolveImg(p.img);
+    if(p.imgs) p.imgs=p.imgs.map(resolveImg);
   });
+  // 사진 로딩 실패 시 대체 그림
+  document.addEventListener('error',function(e){ var t=e.target; if(t&&t.tagName==='IMG'&&FALLBACK[t.getAttribute('src')]){ t.src=FALLBACK[t.getAttribute('src')]; } },true);
   // ===== 카테고리: 대분류(cat) + 소분류(sub) =====
   var TAX=[
     {c:'연예',l:'연예',s:['아이돌·K팝','배우·드라마','예능·방송','영화','유튜버·인플루언서']},
@@ -859,7 +885,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sv);
   }
   // Lucide 아이콘 (lucide-static 0.460, ISC)
-  var ICONS={"clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />"};
+  var ICONS={"image-plus": "<path d=\"M16 5h6\" /> <path d=\"M19 2v6\" /> <path d=\"M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5\" /> <path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\" /> <circle cx=\"9\" cy=\"9\" r=\"2\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />"};
   function ic(n){return '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[n]||'')+'</svg>'}
   // ===== 효과음 (Web Audio로 합성, 파일 없음) =====
   var SKEY='neaniyo-sound', soundOn=true, actx=null;
@@ -978,7 +1004,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       var mx=Math.max.apply(null,p.v), pk=p.multiSel?'data-pick':'data-i';
       body='<div class="pgrid n'+p.imgs.length+'">'+p.imgs.map(function(src,i){
         var cls='ptile'+(done&&p.v[i]===mx&&mx>0?' top':'')+(isMine(p,i)?' mine':'');
-        return '<button class="'+cls+'" '+(done?'tabindex="-1"':pk+'="'+i+'"')+' aria-label="'+esc(p.o[i])+'"><img src="'+src+'" alt="" loading="lazy">'+
+        return '<button class="'+cls+'" '+(done?'tabindex="-1"':pk+'="'+i+'"')+' aria-label="'+esc(p.o[i])+'"><img src="'+src+'" alt="'+esc(p.o[i])+'" loading="lazy" referrerpolicy="no-referrer">'+
           '<span class="pcap"><b>'+esc(p.o[i])+(isMine(p,i)?' '+ic('check'):'')+'</b>'+(done?'<em>'+ps[i]+'%</em>':'')+'</span>'+(done?'<span class="pfill" style="--w:'+ps[i]+'%"></span>':'')+'</button>';
       }).join('')+'</div>'+(p.multiSel&&!done?'<button class="btn dark pick-go" data-act="pickgo" disabled>여러 개 고른 뒤 투표하기</button>':'');
     }else{
@@ -989,10 +1015,11 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       }).join('')+'</div>'+(p.multiSel&&!done?'<button class="btn dark pick-go" data-act="pickgo" disabled>여러 개 고른 뒤 투표하기</button>':'');
     }
     if(p.multiSel&&!done) body='<p class="hint pick-hint">'+ic('check')+'복수 선택 · 마음에 드는 걸 모두 고르세요</p>'+body;
-    var media=p.img?'<div class="pimg"><img src="'+p.img+'" alt="" loading="lazy"></div>':'';
+    var media=p.img?'<div class="pimg"><img src="'+p.img+'" alt="'+esc(p.q)+'" loading="lazy" referrerpolicy="no-referrer"></div>':'';
+    var credit=p.credit?'<p class="credit">사진: '+esc(p.credit)+' · <a href="https://www.pexels.com" target="_blank" rel="noopener">Pexels</a></p>':'';
     return '<article class="poll'+(done?' done':'')+'" data-id="'+p.id+'">'+
       '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+catLabel(p.cat)+(p.sub?' <span class="sub">› '+esc(p.sub)+'</span>':'')+'</span>'+(p.type==='relay'?'<span class="ex rl">릴레이 '+p.qs.length+'문항</span>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+'<span>·</span><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'</div>'+
-      '<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+
+      '<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+credit+
       (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
       '<div class="foot"><span class="n">'+fmt(voters(p))+'명 참여'+(p.closed?' · 마감된 투표':done?'':' · 투표하면 결과 공개')+'</span>'+
       '<span class="acts">'+(done&&p.type!=='relay'?'<button class="btn" data-act="stats">'+ic('chart-column')+'상세 통계</button>':'')+'<button class="btn" data-act="copy">'+ic('link')+'링크 복사</button>'+(p.vis==='secret'?'':'<button class="btn dark" data-act="embed">'+ic('code')+'임베드</button>')+'</span></div>'+
@@ -1538,16 +1565,38 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       c.getContext('2d').drawImage(im,0,0,c.width,c.height); cb(c.toDataURL('image/jpeg',0.82)); }; im.onerror=function(){cb(null)}; im.src=rd.result; };
     rd.onerror=function(){cb(null)}; rd.readAsDataURL(file);
   }
+  var drop=document.getElementById('drop');
+  document.getElementById('drop-ic').innerHTML=ic('image-plus');
+  function maxImgs(){ return document.getElementById('f-t-photo').checked?4:1; }
   function drawThumbs(){
-    [].forEach.call(thumbs.querySelectorAll('.thumb'),function(t){t.remove()});
-    upImgs.forEach(function(src,i){ var d=document.createElement('div'); d.className='thumb'; d.innerHTML='<img src="'+src+'" alt="'+(i+1)+'번 사진"><button type="button" aria-label="'+(i+1)+'번 사진 빼기" data-rm="'+i+'">'+ic('x')+'</button>'; thumbs.insertBefore(d,upbtn); });
-    upbtn.hidden=upImgs.length>=4; syncType();
+    thumbs.innerHTML='';
+    upImgs.forEach(function(src,i){ var d=document.createElement('div'); d.className='thumb'; d.innerHTML='<img src="'+src+'" alt="'+(i+1)+'번 사진"><button type="button" aria-label="'+(i+1)+'번 사진 빼기" data-rm="'+i+'">'+ic('x')+'</button>'; thumbs.appendChild(d); });
+    drop.classList.toggle('full',upImgs.length>=maxImgs()); syncType();
   }
-  photoIn.addEventListener('change',function(){
-    var files=[].slice.call(photoIn.files||[]).filter(function(f){return /^image\//.test(f.type)}).slice(0,4-upImgs.length);
-    var left=files.length; if(!left) return;
-    files.forEach(function(f){ shrink(f,function(d){ if(d) upImgs.push(d); if(--left===0){ photoIn.value=''; drawThumbs(); } }); });
+  function addFiles(list){
+    var room=maxImgs()-upImgs.length;
+    var files=[].slice.call(list||[]).filter(function(f){return f&&/^image\//.test(f.type)});
+    if(!files.length){ toast('이미지 파일만 올릴 수 있어요.'); return; }
+    if(room<=0){ toast(maxImgs()===1?'사진은 1장만 첨부할 수 있어요. 여러 장은 사진 투표로 만들어 주세요.':'사진은 최대 4장까지예요.'); return; }
+    if(files.length>room) toast('최대 '+maxImgs()+'장까지라 '+room+'장만 넣었어요.');
+    files=files.slice(0,room); var left=files.length;
+    files.forEach(function(f){ shrink(f,function(d){ if(d) upImgs.push(d); else toast('읽을 수 없는 이미지가 있어요.'); if(--left===0){ photoIn.value=''; drawThumbs(); try{SFX.like()}catch(e){} } }); });
+  }
+  photoIn.addEventListener('change',function(){ addFiles(photoIn.files); });
+  drop.addEventListener('click',function(){ photoIn.click(); });
+  drop.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); photoIn.click(); } });
+  ['dragenter','dragover'].forEach(function(t){ drop.addEventListener(t,function(e){ e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave','drop'].forEach(function(t){ drop.addEventListener(t,function(e){ e.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop',function(e){ addFiles(e.dataTransfer&&e.dataTransfer.files); });
+  // 만들기 화면 어디서든 Ctrl+V로 이미지 붙여넣기 (글자 붙여넣기는 그대로 둠)
+  document.addEventListener('paste',function(e){
+    if(document.getElementById('v-create').hidden||document.getElementById('f-t-relay').checked) return;
+    var items=(e.clipboardData&&e.clipboardData.items)||[], files=[];
+    for(var k=0;k<items.length;k++){ if(items[k].kind==='file'&&/^image\//.test(items[k].type)) files.push(items[k].getAsFile()); }
+    if(files.length){ e.preventDefault(); addFiles(files); }
   });
+  // 화면 밖에 떨어뜨려도 브라우저가 이미지를 열지 않게
+  ['dragover','drop'].forEach(function(t){ window.addEventListener(t,function(e){ if(!e.target.closest||!e.target.closest('#drop')) e.preventDefault(); }); });
   thumbs.addEventListener('click',function(e){ var b=e.target.closest('[data-rm]'); if(!b) return; upImgs.splice(+b.dataset.rm,1); drawThumbs(); });
   function setOptCount(n,defs){
     var ins=optlist.querySelectorAll('input');
@@ -1573,7 +1622,11 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     var relay=document.getElementById('f-t-relay').checked;
     relayWrap.hidden=!relay; optWrap.hidden=relay;
     var multi=document.getElementById('f-t-multi').checked, story=document.getElementById('f-t-story').checked, photo=document.getElementById('f-t-photo').checked;
-    photoWrap.hidden=!photo;
+    photoWrap.hidden=relay;
+    document.getElementById('f-photo-label').innerHTML=photo?'사진 <small>(1~4장)</small>':'사진 첨부 <small>(선택, 1장)</small>';
+    document.getElementById('f-photo-hint').hidden=!photo;
+    if(!photo&&upImgs.length>1){ upImgs=upImgs.slice(0,1); thumbs.innerHTML=''; upImgs.forEach(function(src,i){ var d=document.createElement('div'); d.className='thumb'; d.innerHTML='<img src="'+src+'" alt="1번 사진"><button type="button" aria-label="1번 사진 빼기" data-rm="0">'+ic('x')+'</button>'; thumbs.appendChild(d); }); toast('사진 투표가 아니라서 첫 장만 남겼어요.'); }
+    drop.classList.toggle('full',upImgs.length>=(photo?4:1));
     mselWrap.hidden=!(multi||story||(photo&&upImgs.length!==1));
     if(photo){ if(catSel.value==='사연'||catSel.value==='연예') catSel.value='패션·쇼핑'; fillSubs();
       if(upImgs.length>=2){ [].forEach.call(optlist.querySelectorAll('input'),function(x){ if(x.value==='산다'||x.value==='안 산다') x.value=''; }); setOptCount(upImgs.length,['A','B','C','D']); add.hidden=true; }
@@ -1637,6 +1690,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       vis:vis,comments:isStory||document.getElementById('f-cmt').checked,own:true,created:Date.now()};
     if(isStory) np.story=storyTxt;
     if(isPhoto){ if(type==='photo') np.imgs=upImgs.slice(); else np.img=upImgs[0]; }
+    else if(upImgs.length) np.img=upImgs[0];
     if(!mselWrap.hidden&&document.getElementById('f-msel').checked&&o.length>2||(type==='photo'&&document.getElementById('f-msel').checked)){ np.multiSel=true; np.n=0; }
     if(vis==='secret') np.pw=pwHash(pwIn.value);
     polls.unshift(np); saveMine();
