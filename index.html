@@ -498,6 +498,27 @@ body.embedded .side-hot{display:none!important}
 .ex{font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px}
 .cat.story-cat{color:var(--e)}
 #f-story{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:12px;resize:vertical;line-height:1.6;font:inherit;width:100%}
+/* 만들기: 자동 형식 */
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px}
+.quick button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:12.5px;cursor:pointer;color:var(--muted)}
+.quick button:hover{border-color:var(--ink);color:var(--ink)}
+.relay-toggle{align-self:flex-start;border:0;background:none;color:var(--e);font-weight:700;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:2px 0}
+.relay-toggle .i{width:16px;height:16px}
+.autotype{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 14px;border-radius:12px;background:var(--bg);font-size:13.5px;color:var(--muted)}
+.autotype .i{width:16px;height:16px;color:var(--a)}
+.autotype .at-label{font-weight:700;color:var(--ink)}
+.autotype .at-main{font-weight:800;color:var(--a);background:var(--a-soft);border-radius:6px;padding:1px 8px}
+.autotype .at-tag{font-size:12px;font-weight:700;color:var(--e);border:1px solid color-mix(in srgb,var(--e) 40%,transparent);border-radius:6px;padding:0 6px}
+.catrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.catrow .field{min-width:0}
+.more-set{border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.more-set summary{cursor:pointer;padding:12px 14px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;list-style:none}
+.more-set summary::-webkit-details-marker{display:none}
+.more-set summary small{font-weight:400;color:var(--muted);font-size:12.5px;margin-left:4px}
+.more-set summary .i{width:16px;height:16px;color:var(--muted)}
+.more-set[open] summary{border-bottom:1px solid var(--line)}
+.more-in{padding:14px;display:flex;flex-direction:column;gap:12px}
+#f-story{min-height:84px}
 /* 다음 공개 안내 */
 .nextup{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-8px 0 18px;padding:11px 14px;border-radius:12px;background:var(--surface);border:1px dashed var(--line);font-size:13px;color:var(--muted)}
 .nextup .i{width:16px;height:16px;color:var(--a)}
@@ -584,25 +605,11 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
 
     <section id="v-create" hidden>
       <form class="make" id="make" novalidate>
-        <div class="field"><label for="f-q" id="f-q-label">질문</label><input id="f-q" maxlength="60" placeholder="예) 아이돌 컴백 주기, 몇 개월이 적당할까?"></div>
-        <div class="field"><label for="f-cat">카테고리</label>
-          <select id="f-cat"></select></div>
-        <div class="field"><label for="f-sub">세부 분류</label><select id="f-sub"></select></div>
-        <div class="field"><label>형식</label>
-          <div class="seg">
-            <label><input type="radio" name="f-type" id="f-t-vs" value="vs" checked><span class="fmt"><span class="oxmark" aria-hidden="true"><i>O</i><i>X</i></span><b>OX</b><small>둘 중 하나</small></span></label>
-            <label><input type="radio" name="f-type" id="f-t-multi" value="multi"><span class="fmt"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 2 2 4-4" /> <path d="m3 7 2 2 4-4" /> <path d="M13 6h8" /> <path d="M13 12h8" /> <path d="M13 18h8" /></svg><b>객관식</b><small>여러 개 중 고르기</small></span></label>
-            <label><input type="radio" name="f-type" id="f-t-story" value="story"><span class="fmt"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /> <path d="M13 8H7" /> <path d="M17 12H7" /></svg><b>사연 판정</b><small>사연 읽고 판결</small></span></label>
-            <label><input type="radio" name="f-type" id="f-t-photo" value="photo"><span class="fmt"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg><b>사진 픽</b><small>사진 보고 고르기</small></span></label>
-            <label><input type="radio" name="f-type" id="f-t-relay" value="relay"><span class="fmt"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="19" r="3" /> <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" /> <circle cx="18" cy="5" r="3" /></svg><b>릴레이</b><small>질문 이어 풀기</small></span></label>
-          </div></div>
-        <div class="field" id="f-story-wrap" hidden><label for="f-story">사연</label>
-          <textarea id="f-story" maxlength="1000" rows="7" placeholder="있었던 일을 적어 주세요. 실명·연락처·회사명처럼 누군지 알 수 있는 정보는 빼 주세요."></textarea>
-          <p class="hint"><span id="f-story-n">0</span> / 1000자 · 사연 판정은 한줄평이 자동으로 열립니다. 보기를 더 추가하면 객관식이 됩니다.</p></div>
-        <div class="field" id="f-relay-wrap" hidden><label>질문 목록 <small>(2~5개, 이어서 답하는 투표)</small></label>
-          <div class="rbuild" id="rbuild"></div>
-          <button type="button" class="btn" id="raddq">질문 추가</button></div>
-        <div class="field" id="f-photo-wrap"><label id="f-photo-label">사진 첨부 <small>(선택, 1장)</small></label>
+        <div class="field"><label for="f-q">제목</label><input id="f-q" maxlength="60" placeholder="무엇을 물어볼까요? 예) 지금 주식, 팔 때일까?"></div>
+        <div class="field"><label for="f-story">내용 <small>(선택)</small></label>
+          <textarea id="f-story" maxlength="1000" rows="3" placeholder="사연이나 상황을 적으면 사연 판정으로 올라가요. 실명·연락처·회사명은 빼 주세요."></textarea>
+          <p class="hint" id="f-story-hint" hidden><span id="f-story-n">0</span> / 1000자 · 한줄평이 자동으로 열려요</p></div>
+        <div class="field" id="f-photo-wrap"><label>사진 <small>(선택, 최대 4장)</small></label>
           <div class="drop" id="drop" tabindex="0" role="button" aria-describedby="drop-hint">
             <span class="drop-ic" id="drop-ic"></span>
             <b>사진을 끌어다 놓거나 클릭해서 선택</b>
@@ -610,25 +617,42 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
             <input type="file" id="f-photo" accept="image/*" multiple hidden>
           </div>
           <div class="thumbs" id="thumbs"></div>
-          <p class="hint" id="f-photo-hint">사진 픽: 1장은 산다·안 산다처럼 보기로, 2~4장은 사진 중에서 고르기. 사람 얼굴은 본인 동의가 있을 때만, 아이 그림은 이름·학교가 보이지 않게 올려 주세요.</p></div>
-        <div class="field" id="f-opt-wrap"><label>보기</label>
+          <p class="hint">2장 이상 올리면 사진 중에서 고르는 투표가 돼요. 사람 얼굴은 본인 동의가 있을 때만, 아이 그림은 이름·학교가 보이지 않게 올려 주세요.</p></div>
+        <div class="field" id="f-opt-wrap"><label id="f-opt-label">보기</label>
+          <div class="quick" id="quick" role="group" aria-label="보기 빠른 입력">
+            <button type="button" data-q="찬성|반대">찬성 / 반대</button><button type="button" data-q="O|X">O / X</button><button type="button" data-q="산다|안 산다">산다 / 안 산다</button><button type="button" data-q="한다|안 한다">한다 / 안 한다</button><button type="button" data-q="사귄다|안 사귄다">사귄다 / 안 사귄다</button>
+          </div>
           <div class="optlist" id="optlist">
-            <input id="f-o1" placeholder="보기 1" maxlength="30">
-            <input id="f-o2" placeholder="보기 2" maxlength="30">
+            <input id="f-o1" placeholder="보기 1 · 비워 두면 찬성" maxlength="30">
+            <input id="f-o2" placeholder="보기 2 · 비워 두면 반대" maxlength="30">
           </div>
-          <button type="button" class="btn" id="addopt" hidden><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg>보기 추가</button>
+          <button type="button" class="btn" id="addopt">보기 추가</button>
         </div>
-        <div class="field"><label>공개 범위</label>
-          <div class="seg3">
-            <label><input type="radio" name="f-vis" id="f-v-pub" value="public" checked>전체 공개<small>피드·랭킹 노출</small></label>
-            <label><input type="radio" name="f-vis" id="f-v-link" value="link">링크 공유만<small>주소 아는 사람만</small></label>
-            <label><input type="radio" name="f-vis" id="f-v-pw" value="secret">비밀방<small>비밀번호 필요</small></label>
+        <div class="field" id="f-relay-wrap" hidden><label>이어서 물어볼 질문 <small>(최대 5개)</small></label>
+          <div class="rbuild" id="rbuild"></div>
+          <button type="button" class="btn" id="raddq">질문 추가</button></div>
+        <button type="button" class="relay-toggle" id="relayToggle"></button>
+        <div class="autotype" id="autotype" aria-live="polite"></div>
+        <div class="catrow">
+          <div class="field"><label for="f-cat">카테고리</label><select id="f-cat"></select></div>
+          <div class="field"><label for="f-sub">세부</label><select id="f-sub"></select></div>
+        </div>
+        <details class="more-set" id="moreSet">
+          <summary id="moreSum"></summary>
+          <div class="more-in">
+            <div class="field"><label>공개 범위</label>
+              <div class="seg3">
+                <label><input type="radio" name="f-vis" id="f-v-pub" value="public" checked>전체 공개<small>피드·랭킹 노출</small></label>
+                <label><input type="radio" name="f-vis" id="f-v-link" value="link">링크 공유만<small>주소 아는 사람만</small></label>
+                <label><input type="radio" name="f-vis" id="f-v-pw" value="secret">비밀방<small>비밀번호 필요</small></label>
+              </div>
+              <input id="f-pw" type="password" maxlength="20" autocomplete="new-password" placeholder="비밀번호 4자 이상" hidden style="border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px">
+            </div>
+            <label class="sw" for="f-msel" id="f-msel-wrap" hidden><span>복수 선택 허용<small>보기나 사진을 여러 개 고를 수 있어요</small></span><input type="checkbox" id="f-msel"></label>
+            <label class="sw" for="f-cmt"><span>한줄평 열기<small>투표한 사람이 80자 한줄평을 남길 수 있어요</small></span><input type="checkbox" id="f-cmt"></label>
           </div>
-          <input id="f-pw" type="password" maxlength="20" autocomplete="new-password" placeholder="비밀번호 4자 이상" hidden style="border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px">
-        </div>
-        <label class="sw" for="f-msel" id="f-msel-wrap" hidden><span>복수 선택 허용<small>보기나 사진을 여러 개 고를 수 있어요</small></span><input type="checkbox" id="f-msel"></label>
-        <label class="sw" for="f-cmt"><span>한줄평 열기<small>투표한 사람이 80자 한줄평을 남길 수 있어요</small></span><input type="checkbox" id="f-cmt"></label>
-        <button class="btn dark" type="submit" style="padding:12px">투표 올리기</button>
+        </details>
+        <button class="btn dark" type="submit" style="padding:14px;font-size:15px">투표 올리기</button>
         <p class="msg" id="f-msg" role="status"></p>
         <div class="made" id="made" hidden></div>
         <p class="hint">예시로 둘러보기: <a href="?p=x1">링크 공유 투표</a> · <a href="?p=x2">비밀방 투표</a> (비밀번호 1234)</p>
@@ -900,7 +924,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sv);
   }
   // Lucide 아이콘 (lucide-static 0.460, ISC)
-  var ICONS={"image-plus": "<path d=\"M16 5h6\" /> <path d=\"M19 2v6\" /> <path d=\"M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5\" /> <path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\" /> <circle cx=\"9\" cy=\"9\" r=\"2\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />"};
+  var ICONS={"sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />", "route": "<circle cx=\"6\" cy=\"19\" r=\"3\" /> <path d=\"M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15\" /> <circle cx=\"18\" cy=\"5\" r=\"3\" />", "settings-2": "<path d=\"M20 7h-9\" /> <path d=\"M14 17H5\" /> <circle cx=\"17\" cy=\"17\" r=\"3\" /> <circle cx=\"7\" cy=\"7\" r=\"3\" />", "image-plus": "<path d=\"M16 5h6\" /> <path d=\"M19 2v6\" /> <path d=\"M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5\" /> <path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\" /> <circle cx=\"9\" cy=\"9\" r=\"2\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />"};
   function ic(n){return '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[n]||'')+'</svg>'}
   // ===== 효과음 (Web Audio로 합성, 파일 없음) =====
   var SKEY='neaniyo-sound', soundOn=true, actx=null;
@@ -1581,36 +1605,41 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   catChips.addEventListener('click',function(e){ var c=e.target.closest('[data-c]'); if(c) setFilter(c.dataset.c,''); });
   subChips.addEventListener('click',function(e){ var c=e.target.closest('[data-s]'); if(c) setFilter(filter,c.dataset.s); });
 
-  // 만들기
+  // 만들기 — 형식은 고르지 않고, 쓴 내용으로 자동 결정
+  //   내용을 쓰면 사연 판정 · 사진 2장 이상이면 사진 픽 · 보기 3개 이상이면 객관식 · 그 외 OX · 질문을 이어 붙이면 릴레이
   var form=document.getElementById('make'), optlist=document.getElementById('optlist'), add=document.getElementById('addopt'), msg=document.getElementById('f-msg');
-  var subSel=document.getElementById('f-sub'), catSelEl=document.getElementById('f-cat');
-  catSelEl.innerHTML=TAX.map(function(t){return '<option value="'+t.c+'"'+(t.c==='연예'?' selected':'')+'>'+t.l+'</option>'}).join('');
-  function fillSubs(){ var t=TAX.filter(function(x){return x.c===catSelEl.value})[0]; subSel.innerHTML=t.s.map(function(x){return '<option>'+x+'</option>'}).join(''); }
-  catSelEl.addEventListener('change',fillSubs); fillSubs();
-  var storyWrap=document.getElementById('f-story-wrap'), storyIn=document.getElementById('f-story'), qIn=document.getElementById('f-q'), catSel=document.getElementById('f-cat');
-  storyIn.addEventListener('input',function(){ document.getElementById('f-story-n').textContent=storyIn.value.length; });
-  var photoWrap=document.getElementById('f-photo-wrap'), photoIn=document.getElementById('f-photo'), thumbs=document.getElementById('thumbs'), upbtn=document.getElementById('upbtn'), mselWrap=document.getElementById('f-msel-wrap');
-  var upImgs=[];
+  var qIn=document.getElementById('f-q'), storyIn=document.getElementById('f-story'), catSel=document.getElementById('f-cat'), subSel=document.getElementById('f-sub');
+  var thumbs=document.getElementById('thumbs'), photoIn=document.getElementById('f-photo'), drop=document.getElementById('drop');
+  var relayWrap=document.getElementById('f-relay-wrap'), rbuild=document.getElementById('rbuild'), raddq=document.getElementById('raddq'), relayToggle=document.getElementById('relayToggle');
+  var optWrap=document.getElementById('f-opt-wrap'), photoWrap=document.getElementById('f-photo-wrap'), mselWrap=document.getElementById('f-msel-wrap'), pwIn=document.getElementById('f-pw');
+  var upImgs=[], relayMode=false, catTouched=false;
+  document.getElementById('drop-ic').innerHTML=ic('image-plus');
+  add.innerHTML=ic('plus')+'보기 추가'; raddq.innerHTML=ic('plus')+'질문 추가';
+
+  // 카테고리
+  catSel.innerHTML=TAX.map(function(t){return '<option value="'+t.c+'">'+t.l+'</option>'}).join('');
+  function fillSubs(){ var t=TAX.filter(function(x){return x.c===catSel.value})[0]; subSel.innerHTML=t.s.map(function(x){return '<option>'+x+'</option>'}).join(''); }
+  function setCat(c){ if(catTouched||catSel.value===c) return; catSel.value=c; fillSubs(); }
+  catSel.addEventListener('change',function(){ catTouched=true; fillSubs(); });
+  catSel.value='연예'; fillSubs();
+
+  // 사진: 클릭·드래그·붙여넣기
   function shrink(file,cb){
     var rd=new FileReader(); rd.onload=function(){ var im=new Image(); im.onload=function(){
       var m=900, w=im.width, h=im.height, k=Math.min(1,m/Math.max(w,h)), c=document.createElement('canvas'); c.width=Math.round(w*k); c.height=Math.round(h*k);
       c.getContext('2d').drawImage(im,0,0,c.width,c.height); cb(c.toDataURL('image/jpeg',0.82)); }; im.onerror=function(){cb(null)}; im.src=rd.result; };
     rd.onerror=function(){cb(null)}; rd.readAsDataURL(file);
   }
-  var drop=document.getElementById('drop');
-  document.getElementById('drop-ic').innerHTML=ic('image-plus');
-  function maxImgs(){ return document.getElementById('f-t-photo').checked?4:1; }
   function drawThumbs(){
     thumbs.innerHTML='';
     upImgs.forEach(function(src,i){ var d=document.createElement('div'); d.className='thumb'; d.innerHTML='<img src="'+src+'" alt="'+(i+1)+'번 사진"><button type="button" aria-label="'+(i+1)+'번 사진 빼기" data-rm="'+i+'">'+ic('x')+'</button>'; thumbs.appendChild(d); });
-    drop.classList.toggle('full',upImgs.length>=maxImgs()); syncType();
+    drop.classList.toggle('full',upImgs.length>=4); sync();
   }
   function addFiles(list){
-    var room=maxImgs()-upImgs.length;
-    var files=[].slice.call(list||[]).filter(function(f){return f&&/^image\//.test(f.type)});
+    var room=4-upImgs.length, files=[].slice.call(list||[]).filter(function(f){return f&&/^image\//.test(f.type)});
     if(!files.length){ toast('이미지 파일만 올릴 수 있어요.'); return; }
-    if(room<=0){ toast(maxImgs()===1?'사진은 1장만 첨부할 수 있어요. 여러 장은 사진 픽으로 만들어 주세요.':'사진은 최대 4장까지예요.'); return; }
-    if(files.length>room) toast('최대 '+maxImgs()+'장까지라 '+room+'장만 넣었어요.');
+    if(room<=0){ toast('사진은 최대 4장까지예요.'); return; }
+    if(files.length>room) toast('최대 4장이라 '+room+'장만 넣었어요.');
     files=files.slice(0,room); var left=files.length;
     files.forEach(function(f){ shrink(f,function(d){ if(d) upImgs.push(d); else toast('읽을 수 없는 이미지가 있어요.'); if(--left===0){ photoIn.value=''; drawThumbs(); try{SFX.like()}catch(e){} } }); });
   }
@@ -1620,114 +1649,114 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   ['dragenter','dragover'].forEach(function(t){ drop.addEventListener(t,function(e){ e.preventDefault(); drop.classList.add('over'); }); });
   ['dragleave','drop'].forEach(function(t){ drop.addEventListener(t,function(e){ e.preventDefault(); drop.classList.remove('over'); }); });
   drop.addEventListener('drop',function(e){ addFiles(e.dataTransfer&&e.dataTransfer.files); });
-  // 만들기 화면 어디서든 Ctrl+V로 이미지 붙여넣기 (글자 붙여넣기는 그대로 둠)
   document.addEventListener('paste',function(e){
-    if(document.getElementById('v-create').hidden||document.getElementById('f-t-relay').checked) return;
+    if(document.getElementById('v-create').hidden||relayMode) return;
     var items=(e.clipboardData&&e.clipboardData.items)||[], files=[];
     for(var k=0;k<items.length;k++){ if(items[k].kind==='file'&&/^image\//.test(items[k].type)) files.push(items[k].getAsFile()); }
     if(files.length){ e.preventDefault(); addFiles(files); }
   });
-  // 화면 밖에 떨어뜨려도 브라우저가 이미지를 열지 않게
   ['dragover','drop'].forEach(function(t){ window.addEventListener(t,function(e){ if(!e.target.closest||!e.target.closest('#drop')) e.preventDefault(); }); });
   thumbs.addEventListener('click',function(e){ var b=e.target.closest('[data-rm]'); if(!b) return; upImgs.splice(+b.dataset.rm,1); drawThumbs(); });
-  function setOptCount(n,defs){
-    var ins=optlist.querySelectorAll('input');
+
+  // 보기
+  function optInputs(){ return [].slice.call(optlist.querySelectorAll('input')); }
+  function setOptCount(n){
+    var ins=optInputs();
     for(var k=ins.length;k<n;k++){ var inp=document.createElement('input'); inp.id='f-o'+(k+1); inp.maxLength=30; optlist.appendChild(inp); }
-    ins=optlist.querySelectorAll('input');
-    for(var j=ins.length-1;j>=n;j--) ins[j].remove();
-    [].forEach.call(optlist.querySelectorAll('input'),function(inp,i){ inp.placeholder=defs?defs[i]+' 사진 이름':'보기 '+(i+1); if(defs&&!inp.value) inp.value=defs[i]; });
+    ins=optInputs(); for(var j=ins.length-1;j>=n;j--) ins[j].remove();
   }
-  var relayWrap=document.getElementById('f-relay-wrap'), rbuild=document.getElementById('rbuild'), raddq=document.getElementById('raddq'), optWrap=document.getElementById('f-opt-wrap');
+  add.onclick=function(){ var n=optInputs().length; if(n>=6) return; setOptCount(n+1); var last=optInputs()[n]; last.placeholder='보기 '+(n+1); last.focus(); sync(); };
+  document.getElementById('quick').addEventListener('click',function(e){
+    var b=e.target.closest('[data-q]'); if(!b) return; var v=b.dataset.q.split('|'); setOptCount(2); var ins=optInputs(); ins[0].value=v[0]; ins[1].value=v[1]; try{SFX.tick()}catch(err){} sync();
+  });
+  optlist.addEventListener('input',sync);
+  storyIn.addEventListener('input',function(){ document.getElementById('f-story-n').textContent=storyIn.value.length; sync(); });
+
+  // 릴레이
   function rblock(k){
     var d=document.createElement('div'); d.className='rblock';
     d.innerHTML='<div class="rh"><span>Q'+(k+1)+'</span><button type="button" class="rx" data-rx>삭제</button></div><label hidden for="rq'+k+'">질문 '+(k+1)+'</label><input class="rqi" id="rq'+k+'" maxlength="40" placeholder="질문 '+(k+1)+'">'+
       '<div class="ro"><input class="roi" maxlength="20" placeholder="보기 1"><input class="roi" maxlength="20" placeholder="보기 2"><input class="roi" maxlength="20" placeholder="보기 3 (선택)"><input class="roi" maxlength="20" placeholder="보기 4 (선택)"></div>';
     return d;
   }
-  function renumber(){ [].forEach.call(rbuild.children,function(b,k){ b.querySelector('.rh span').textContent='Q'+(k+1); b.querySelector('.rqi').placeholder='질문 '+(k+1); }); raddq.hidden=rbuild.children.length>=5; }
-  raddq.innerHTML=ic('plus')+'질문 추가';
+  function renumber(){ [].forEach.call(rbuild.children,function(b,k){ b.querySelector('.rh span').textContent='Q'+(k+1); b.querySelector('.rqi').placeholder='질문 '+(k+1); }); raddq.hidden=rbuild.children.length>=5; sync(); }
   raddq.onclick=function(){ if(rbuild.children.length<5){ rbuild.appendChild(rblock(rbuild.children.length)); renumber(); } };
   rbuild.addEventListener('click',function(e){ var x=e.target.closest('[data-rx]'); if(!x||rbuild.children.length<=2) return; x.closest('.rblock').remove(); renumber(); });
   function resetRelay(){ rbuild.innerHTML=''; rbuild.appendChild(rblock(0)); rbuild.appendChild(rblock(1)); renumber(); }
-  resetRelay();
-  function syncType(){
-    var relay=document.getElementById('f-t-relay').checked;
-    relayWrap.hidden=!relay; optWrap.hidden=relay;
-    var multi=document.getElementById('f-t-multi').checked, story=document.getElementById('f-t-story').checked, photo=document.getElementById('f-t-photo').checked;
-    photoWrap.hidden=relay;
-    document.getElementById('f-photo-label').innerHTML=photo?'사진 <small>(1~4장)</small>':'사진 첨부 <small>(선택, 1장)</small>';
-    document.getElementById('f-photo-hint').hidden=!photo;
-    if(!photo&&upImgs.length>1){ upImgs=upImgs.slice(0,1); thumbs.innerHTML=''; upImgs.forEach(function(src,i){ var d=document.createElement('div'); d.className='thumb'; d.innerHTML='<img src="'+src+'" alt="1번 사진"><button type="button" aria-label="1번 사진 빼기" data-rm="0">'+ic('x')+'</button>'; thumbs.appendChild(d); }); toast('사진 픽이 아니라서 첫 장만 남겼어요.'); }
-    drop.classList.toggle('full',upImgs.length>=(photo?4:1));
-    mselWrap.hidden=!(multi||story||(photo&&upImgs.length!==1));
-    if(photo){ if(catSel.value==='사연'||catSel.value==='연예') catSel.value='패션·쇼핑'; fillSubs();
-      if(upImgs.length>=2){ [].forEach.call(optlist.querySelectorAll('input'),function(x){ if(x.value==='산다'||x.value==='안 산다') x.value=''; }); setOptCount(upImgs.length,['A','B','C','D']); add.hidden=true; }
-      else { var o1p=document.getElementById('f-o1'),o2p=document.getElementById('f-o2'); if(o1p&&(o1p.value==='A'||!o1p.value)) o1p.value='산다'; if(o2p&&(o2p.value==='B'||!o2p.value)) o2p.value='안 산다'; add.hidden=false; }
-    }
-    storyWrap.hidden=!story;
-    document.getElementById('f-q-label').textContent=(story||relay)?'제목':'질문';
-    if(relay){ mselWrap.hidden=true; qIn.placeholder='예) 겨울 취향 릴레이 5문항'; return; }
-    qIn.placeholder=story?'예) 축의금 냈는데 제 결혼식엔 안 온 친구, 서운한 게 맞죠?':'예) 아이돌 컴백 주기, 몇 개월이 적당할까?';
-    var o1=document.getElementById('f-o1'), o2=document.getElementById('f-o2');
-    if(story){ catSel.value='사연'; fillSubs(); if(!o1.value) o1.value='찬성'; if(!o2.value) o2.value='반대'; document.getElementById('f-cmt').checked=true; }
-    else { if(o1&&o1.value==='찬성'&&o2.value==='반대'){o1.value='';o2.value='';} if(catSel.value==='사연'){ catSel.value='연예'; fillSubs(); } }
-    if(photo) return;
-    add.hidden=!(multi||story);
-    var ins=optlist.querySelectorAll('input');
-    if(!multi&&!story) for(var k=ins.length-1;k>=2;k--) ins[k].remove();
+  relayToggle.onclick=function(){ relayMode=!relayMode; if(relayMode&&!rbuild.children.length) resetRelay(); sync(); if(relayMode) rbuild.querySelector('.rqi').focus(); };
+
+  // 지금 입력한 내용으로 형식 판단
+  function detect(){
+    var opts=optInputs().map(function(i){return i.value.trim()}).filter(Boolean);
+    var story=storyIn.value.trim().length>0, nImg=upImgs.length;
+    if(relayMode) return {kind:'relay',name:'릴레이',desc:'질문 '+rbuild.children.length+'개를 이어서 답해요',story:false};
+    if(nImg>=2) return {kind:'photo',name:'사진 픽',desc:'사진 '+nImg+'장 중에서 골라요',story:story};
+    var n=Math.max(2,opts.length,optInputs().length>2?optInputs().length:2);
+    if(n>2) return {kind:'multi',name:'객관식',desc:'보기 '+n+'개 중에서 골라요',story:story,img:nImg===1};
+    return {kind:'vs',name:'OX',desc:'둘 중 하나를 골라요',story:story,img:nImg===1};
   }
-  var pwIn=document.getElementById('f-pw');
-  function syncVis(){ pwIn.hidden=!document.getElementById('f-v-pw').checked; }
+  function sync(){
+    var d=detect();
+    relayWrap.hidden=!relayMode; optWrap.hidden=relayMode; photoWrap.hidden=relayMode;
+    storyIn.closest('.field').hidden=relayMode;
+    relayToggle.innerHTML=relayMode?ic('x')+'릴레이 그만두기 (질문 하나로)':ic('route')+'질문을 이어 붙여 릴레이로 만들기';
+    document.getElementById('f-story-hint').hidden=!d.story;
+    // 사진 2장 이상: 보기 = 사진 이름
+    var photoMode=d.kind==='photo';
+    document.getElementById('quick').hidden=photoMode;
+    add.hidden=photoMode||optInputs().length>=6;
+    document.getElementById('f-opt-label').innerHTML=photoMode?'사진 이름 <small>(비워 두면 A, B…)</small>':'보기';
+    if(photoMode){ setOptCount(upImgs.length); optInputs().forEach(function(inp,i){ inp.placeholder=String.fromCharCode(65+i)+' 사진 이름'; }); }
+    else if(optInputs().length<2) setOptCount(2);
+    var labels=['찬성','반대'];
+    if(!photoMode) optInputs().forEach(function(inp,i){ if(i<2) inp.placeholder='보기 '+(i+1)+' · 비워 두면 '+labels[i]; });
+    mselWrap.hidden=!(d.kind==='multi'||d.kind==='photo');
+    // 카테고리 자동 제안
+    var autoC=d.story?'사연':(upImgs.length&&!relayMode?'패션·쇼핑':null);
+    if(!catTouched){ if(autoC){ setCat(autoC); sync.auto=true; } else if(sync.auto){ catSel.value='연예'; fillSubs(); sync.auto=false; } }
+    var tags='<span class="at-main">'+d.name+'</span><span>'+d.desc+'</span>'+(d.story?'<span class="at-tag">사연 판정</span>':'')+(d.img?'<span class="at-tag">사진 1장</span>':'');
+    document.getElementById('autotype').innerHTML=ic('sparkles')+'<span class="at-label">이렇게 올라가요</span>'+tags;
+    var vis=document.querySelector('input[name="f-vis"]:checked').value;
+    document.getElementById('moreSum').innerHTML=ic('settings-2')+'설정 <small>'+(vis==='public'?'전체 공개':vis==='link'?'링크 공유만':'비밀방')+(d.story||document.getElementById('f-cmt').checked?' · 한줄평 켜짐':'')+(!mselWrap.hidden&&document.getElementById('f-msel').checked?' · 복수 선택':'')+'</small>';
+  }
+  function syncVis(){ pwIn.hidden=!document.getElementById('f-v-pw').checked; if(!pwIn.hidden) document.getElementById('moreSet').open=true; sync(); }
   ['f-v-pub','f-v-link','f-v-pw'].forEach(function(id){document.getElementById(id).onchange=syncVis});
-  document.getElementById('f-t-vs').onchange=syncType;
-  document.getElementById('f-t-multi').onchange=syncType;
-  document.getElementById('f-t-story').onchange=syncType;
-  document.getElementById('f-t-photo').onchange=syncType;
-  document.getElementById('f-t-relay').onchange=syncType;
-  add.onclick=function(){
-    var n=optlist.querySelectorAll('input').length; if(n>=6) return;
-    var inp=document.createElement('input'); inp.id='f-o'+(n+1); inp.placeholder='보기 '+(n+1); inp.maxLength=30;
-    optlist.appendChild(inp); inp.focus();
-  };
+  document.getElementById('f-cmt').onchange=sync; document.getElementById('f-msel').onchange=sync;
+  sync();
+
+  function fail(t){ msg.className='msg err'; msg.textContent=t; }
   form.addEventListener('submit',function(e){
-    e.preventDefault();
-    var q=document.getElementById('f-q').value.trim();
-    var o=[].map.call(optlist.querySelectorAll('input'),function(i){return i.value.trim()}).filter(Boolean);
-    msg.className='msg';
-    if(document.getElementById('f-t-relay').checked){
-      if(!q){msg.className='msg err';msg.textContent='제목을 입력해 주세요.';return}
+    e.preventDefault(); msg.className='msg'; msg.textContent='';
+    var q=qIn.value.trim(), d=detect(), vis=document.querySelector('input[name="f-vis"]:checked').value;
+    if(!q){ fail('제목을 입력해 주세요.'); qIn.focus(); return; }
+    if(vis==='secret'&&pwIn.value.length<4){ fail('비밀번호를 4자 이상 입력해 주세요.'); document.getElementById('moreSet').open=true; return; }
+    var np={id:'u'+Date.now().toString(36),cat:catSel.value,sub:subSel.value,q:q,h:'방금',t:0,vis:vis,comments:document.getElementById('f-cmt').checked,own:true,created:Date.now()};
+    if(d.kind==='relay'){
       var qs=[].map.call(rbuild.children,function(b){ return {q:b.querySelector('.rqi').value.trim(),o:[].map.call(b.querySelectorAll('.roi'),function(x){return x.value.trim()}).filter(Boolean)}; });
       var bad=qs.findIndex(function(x){return !x.q||x.o.length<2});
-      if(bad>=0){msg.className='msg err';msg.textContent='Q'+(bad+1)+'에 질문과 보기 두 개 이상을 입력해 주세요.';return}
+      if(bad>=0){ fail('Q'+(bad+1)+'에 질문과 보기 두 개 이상을 입력해 주세요.'); return; }
       qs.forEach(function(x){x.v=x.o.map(function(){return 0})});
-      var rvis=document.querySelector('input[name="f-vis"]:checked').value;
-      if(rvis==='secret'&&pwIn.value.length<4){msg.className='msg err';msg.textContent='비밀번호를 4자 이상 입력해 주세요.';return}
-      var rp={id:'u'+Date.now().toString(36),cat:catSel.value==='사연'?'밸런스':catSel.value,sub:catSel.value==='사연'?'취향':subSel.value,type:'relay',q:q,qs:qs,o:qs[0].o,v:qs[0].v,n:0,h:'방금',t:0,vis:rvis,comments:document.getElementById('f-cmt').checked,own:true,created:Date.now()};
-      if(rvis==='secret') rp.pw=pwHash(pwIn.value);
-      polls.unshift(rp); saveMine(); form.reset(); resetRelay(); syncType(); syncVis(); showMade(rp,rvis); render(); return;
+      np.type='relay'; np.qs=qs; np.o=qs[0].o; np.v=qs[0].v; np.n=0;
+      if(np.cat==='사연'){ np.cat='밸런스'; np.sub='취향'; }
+    }else{
+      var vals=optInputs().map(function(i){return i.value.trim()});
+      var o;
+      if(d.kind==='photo'){ o=upImgs.map(function(_,i){ return vals[i]||String.fromCharCode(65+i); }); np.type='photo'; np.imgs=upImgs.slice(); }
+      else{
+        o=vals.filter(Boolean);
+        if(o.length===0) o=['찬성','반대'];
+        else if(o.length===1){ fail('보기를 하나 더 입력하거나 둘 다 비워 두세요.'); return; }
+        np.type=o.length>2?'multi':'vs';
+        if(upImgs.length===1) np.img=upImgs[0];
+      }
+      np.o=o; np.v=o.map(function(){return 0});
+      if(d.story){ np.story=storyIn.value.trim(); np.comments=true; }
+      if(!mselWrap.hidden&&document.getElementById('f-msel').checked&&(o.length>2||np.type==='photo')){ np.multiSel=true; np.n=0; }
     }
-    var isStory=document.getElementById('f-t-story').checked, storyTxt=storyIn.value.trim();
-    var isPhoto=document.getElementById('f-t-photo').checked;
-    if(!q){msg.className='msg err';msg.textContent=isStory?'제목을 입력해 주세요.':'질문을 입력해 주세요.';return}
-    if(isPhoto&&!upImgs.length){msg.className='msg err';msg.textContent='사진을 한 장 이상 올려 주세요.';return}
-    if(isStory&&storyTxt.length<20){msg.className='msg err';msg.textContent='사연을 20자 이상 적어 주세요.';return}
-    if(o.length<2){msg.className='msg err';msg.textContent='보기를 두 개 이상 입력해 주세요.';return}
-    var type=(document.getElementById('f-t-multi').checked||((isStory||isPhoto)&&o.length>2))?'multi':'vs';
-    if(isPhoto&&upImgs.length>=2){ type='photo'; o=o.slice(0,upImgs.length); while(o.length<upImgs.length) o.push(String.fromCharCode(65+o.length)); }
-    if(type==='vs') o=o.slice(0,2);
-    var catV=isStory?'사연':catSel.value;
-    var vis=document.querySelector('input[name="f-vis"]:checked').value;
-    if(vis==='secret'&&pwIn.value.length<4){msg.className='msg err';msg.textContent='비밀번호를 4자 이상 입력해 주세요.';return}
-    var np={id:'u'+Date.now().toString(36),cat:catV,sub:subSel.value,type:type,q:q,o:o,v:o.map(function(){return 0}),h:'방금',t:0,
-      vis:vis,comments:isStory||document.getElementById('f-cmt').checked,own:true,created:Date.now()};
-    if(isStory) np.story=storyTxt;
-    if(isPhoto){ if(type==='photo') np.imgs=upImgs.slice(); else np.img=upImgs[0]; }
-    else if(upImgs.length) np.img=upImgs[0];
-    if(!mselWrap.hidden&&document.getElementById('f-msel').checked&&o.length>2||(type==='photo'&&document.getElementById('f-msel').checked)){ np.multiSel=true; np.n=0; }
     if(vis==='secret') np.pw=pwHash(pwIn.value);
     polls.unshift(np); saveMine();
-    form.reset(); upImgs=[]; drawThumbs(); document.getElementById('f-story-n').textContent='0'; syncType(); syncVis();
-    msg.textContent='';
+    form.reset(); upImgs=[]; relayMode=false; catTouched=false; rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='연예'; fillSubs();
+    document.getElementById('f-story-n').textContent='0'; syncVis();
     showMade(np,vis);
     setFilter('all','');
   });
