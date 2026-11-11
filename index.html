@@ -91,7 +91,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .bar .pa{background:var(--a)}
 .bar .pb{background:var(--b);justify-content:flex-end}
 .labels{display:flex;justify-content:space-between;gap:10px;font-size:13.5px}
-.labels b.mine::after{content:" ✓ 내 선택";color:var(--ok);font-size:12px}
+
 
 /* multi */
 .opts{display:flex;flex-direction:column;gap:8px}
@@ -270,9 +270,9 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .plan .price small{font-family:var(--body);font-size:13px;color:var(--muted);font-weight:400}
 .plan ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px;font-size:13.5px;flex:1}
 .plan li{padding-left:20px;position:relative}
-.plan li::before{content:"✓";position:absolute;left:0;color:var(--ok);font-weight:700}
+
 .plan li.no{color:var(--muted)}
-.plan li.no::before{content:"–";color:var(--muted)}
+
 .plan .btn{padding:11px;text-align:center;font-size:14px}
 .cmp td:first-child{font-weight:500}
 .cmp td{text-align:center}.cmp td:first-child,.cmp th:first-child{text-align:left}
@@ -355,6 +355,27 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 }
 body.embedded .side-hot{display:none!important}
 @media (prefers-reduced-motion:reduce){.hotbox-hd h2::before{animation:none}}
+/* Lucide 아이콘 */
+.i{width:1.1em;height:1.1em;flex:none;vertical-align:-0.18em}
+.btn,.cta,.login{display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.cmt .ops button{display:inline-flex;align-items:center;gap:4px}
+.cmt .ops .i{width:14px;height:14px}
+.cmt .ops button[aria-pressed="true"] .i{fill:currentColor}
+.lockcard .ic .i{width:24px;height:24px;color:var(--muted)}
+.mine-ck{display:inline-flex;align-items:center;gap:2px;color:var(--ok);font-size:12px;font-weight:700;margin-inline:4px}
+.mine-ck .i{width:13px;height:13px;stroke-width:3}
+.plan li .i{position:absolute;left:0;top:.2em;width:15px;height:15px;color:var(--ok);stroke-width:3}
+.plan li.no .i{color:var(--muted)}
+.hotbox .mv{display:inline-flex;align-items:center;gap:1px}
+.hotbox .mv .i{width:12px;height:12px;stroke-width:3}
+.rank .go .i{width:18px;height:18px}
+.auth .x{display:grid;place-items:center}
+.auth .x .i{width:20px;height:20px}
+.dims .lk .i{width:12px;height:12px}
+.cmts h4 .ttl{display:inline-flex;align-items:center;gap:6px}
+.vis .i{width:13px;height:13px}
+.sharebar a,.more a{display:inline-flex;align-items:center;gap:4px}
+@media (min-width:1100px){.hotbox-ft{display:flex;align-items:center;justify-content:center;gap:4px}}
 /* 셀렉트: 화살표 아이콘 좌우 여백 통일 */
 body select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237A8094' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 12px center!important;background-size:12px 8px!important;padding-left:12px!important;padding-right:36px!important;cursor:pointer}
 .row select{padding-right:30px!important;background-position:right 9px center!important}
@@ -379,7 +400,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       <a href="./#analysis" data-v="analysis">경쟁사 분석</a>
     </nav>
     <button class="login" id="loginBtn" type="button">로그인</button>
-    <a class="cta" href="./#create" data-v="create">+ 투표 만들기</a>
+    <a class="cta" href="./#create" data-v="create"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg>투표 만들기</a>
   </div>
 </header>
 
@@ -397,7 +418,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
         <button class="chip" data-c="정치" aria-pressed="false">정치</button>
         <button class="chip" data-c="밸런스" aria-pressed="false">밸런스</button>
       </div>
-      <div class="sharebar" id="sharebar" hidden><span>공유받은 투표</span><a href="./">전체 투표 보기 →</a></div>
+      <div class="sharebar" id="sharebar" hidden><span>공유받은 투표</span><a href="./">전체 투표 보기 <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="m12 5 7 7-7 7" /></svg></a></div>
       <div class="feed" id="feed"></div>
       <p class="more" id="more"></p>
       <p class="note">예시 투표입니다. 1인 1표는 이 브라우저 기준으로만 체크합니다.</p>
@@ -430,7 +451,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
             <input id="f-o1" placeholder="보기 1" maxlength="30">
             <input id="f-o2" placeholder="보기 2" maxlength="30">
           </div>
-          <button type="button" class="btn" id="addopt" hidden>+ 보기 추가</button>
+          <button type="button" class="btn" id="addopt" hidden><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg>보기 추가</button>
         </div>
         <div class="field"><label>공개 범위</label>
           <div class="seg3">
@@ -457,25 +478,25 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
         <div class="plan">
           <h3>비로그인</h3>
           <div class="price">0원</div>
-          <ul><li>투표 참여</li><li>전체 결과 보기</li><li>링크 공유·임베드</li><li class="no">세부 통계</li></ul>
+          <ul><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>투표 참여</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>전체 결과 보기</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>링크 공유·임베드</li><li class="no"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /></svg>세부 통계</li></ul>
           <a class="btn" href="./#vote">투표하러 가기</a>
         </div>
         <div class="plan">
           <h3>무료 회원</h3>
           <div class="price">0원</div>
-          <ul><li>성별·연령대별 결과</li><li>"나와 같은 그룹" 결과</li><li>내 투표 기록</li><li>투표 만들기</li><li class="no">지역·학력·시간대 분석</li></ul>
+          <ul><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>성별·연령대별 결과</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>"나와 같은 그룹" 결과</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>내 투표 기록</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>투표 만들기</li><li class="no"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /></svg>지역·학력·시간대 분석</li></ul>
           <button class="btn dark" type="button" data-plan="free">무료로 시작하기</button>
         </div>
         <div class="plan hot">
           <h3>프리미엄 <span class="pbadge">추천</span></h3>
           <div class="price">9,900원 <small>/ 월</small></div>
-          <ul><li>무료 회원 기능 전부</li><li>지역·학력·시간대 교차분석</li><li>엑셀(CSV) 다운로드</li><li>내 투표 응답자 조건 지정</li><li>임베드 로고 제거</li></ul>
-          <button class="btn gold" type="button" data-plan="pro">7일 무료 체험</button>
+          <ul><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>무료 회원 기능 전부</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>지역·학력·시간대 교차분석</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>엑셀(CSV) 다운로드</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>내 투표 응답자 조건 지정</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>임베드 로고 제거</li></ul>
+          <button class="btn gold" type="button" data-plan="pro"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" /> <path d="M5 21h14" /></svg>7일 무료 체험</button>
         </div>
         <div class="plan">
           <h3>비즈니스</h3>
           <div class="price">문의</div>
-          <ul><li>브랜드 스폰서 투표</li><li>맞춤 응답자 모집</li><li>리포트 제작</li><li>언론사·커뮤니티 화이트라벨 임베드</li></ul>
+          <ul><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>브랜드 스폰서 투표</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>맞춤 응답자 모집</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>리포트 제작</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>언론사·커뮤니티 화이트라벨 임베드</li></ul>
           <span class="btn">biz@neaniyo.iux.kr</span>
         </div>
       </div>
@@ -566,7 +587,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     <div class="hotbox">
       <div class="hotbox-hd"><h2>실시간 인기 투표</h2><time id="hotTime"></time></div>
       <ol id="hotList"></ol>
-      <a class="hotbox-ft" href="./#ranking">랭킹 전체 보기 →</a>
+      <a class="hotbox-ft" href="./#ranking">랭킹 전체 보기 <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="m12 5 7 7-7 7" /></svg></a>
     </div>
   </aside>
 </div>
@@ -618,13 +639,16 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
 
   function sum(a){return a.reduce(function(s,x){return s+x},0)}
   function pct(p){var t=sum(p.v)||1;return p.v.map(function(x){return Math.round(x*1000/t)/10})}
+  // Lucide 아이콘 (lucide-static 0.460, ISC)
+  var ICONS={"lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />"};
+  function ic(n){return '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[n]||'')+'</svg>'}
   function fmt(n){return n.toLocaleString('ko-KR')}
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 
   function isPublic(p){return !p.vis||p.vis==='public'}
   var unlocked={}; try{unlocked=JSON.parse(sessionStorage.getItem('neaniyo-open')||'{}')||{}}catch(e){}
   function lockCard(p){
-    return '<article class="poll lockcard" data-id="'+p.id+'"><span class="ic" aria-hidden="true">🔒</span><h3 class="q">비밀 투표입니다</h3>'+
+    return '<article class="poll lockcard" data-id="'+p.id+'"><span class="ic" aria-hidden="true">'+ic('lock')+'</span><h3 class="q">비밀 투표입니다</h3>'+
       '<p class="hint">만든 사람에게 받은 비밀번호를 입력하면 참여할 수 있어요.</p>'+
       '<form data-unlock="'+p.id+'" novalidate><label class="sr" for="pw-'+p.id+'" hidden>비밀번호</label><input id="pw-'+p.id+'" type="password" placeholder="비밀번호" autocomplete="off"><button class="btn dark" type="submit">입장</button></form>'+
       '<p class="cmsg" data-umsg></p></article>';
@@ -637,21 +661,21 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
         body='<div class="vs"><button class="side a" data-i="0">'+esc(p.o[0])+'</button><span class="vsmark">VS</span><button class="side b" data-i="1">'+esc(p.o[1])+'</button></div>';
       }else{
         body='<div class="split"><div class="bar"><span class="pa" style="flex-basis:'+ps[0]+'%">'+ps[0]+'%</span><span class="pb" style="flex-basis:'+ps[1]+'%">'+ps[1]+'%</span></div>'+
-          '<div class="labels"><b'+(mine===0?' class="mine"':'')+'>'+esc(p.o[0])+'</b><b'+(mine===1?' class="mine"':'')+' style="text-align:right">'+esc(p.o[1])+'</b></div></div>';
+          '<div class="labels"><b>'+esc(p.o[0])+(mine===0?'<span class="mine-ck">'+ic('check')+'내 선택</span>':'')+'</b><b style="text-align:right">'+(mine===1?'<span class="mine-ck">'+ic('check')+'내 선택</span>':'')+esc(p.o[1])+'</b></div></div>';
       }
     }else{
       var max=Math.max.apply(null,p.v);
       body='<div class="opts">'+p.o.map(function(o,i){
         var cls='opt'+(done&&p.v[i]===max?' top':'')+(mine===i?' mine':'');
-        return '<button class="'+cls+'" data-i="'+i+'"'+(done?' tabindex="-1"':'')+'><span class="fill" style="width:'+(done?ps[i]:0)+'%"></span><span>'+esc(o)+(mine===i?' ✓':'')+'</span><span class="pct">'+(done?ps[i]+'%':'')+'</span></button>';
+        return '<button class="'+cls+'" data-i="'+i+'"'+(done?' tabindex="-1"':'')+'><span class="fill" style="width:'+(done?ps[i]:0)+'%"></span><span>'+esc(o)+(mine===i?'<span class="mine-ck">'+ic('check')+'</span>':'')+'</span><span class="pct">'+(done?ps[i]+'%':'')+'</span></button>';
       }).join('')+'</div>';
     }
     return '<article class="poll'+(done?' done':'')+'" data-id="'+p.id+'">'+
-      '<div class="meta"><span class="cat">'+p.cat+'</span><span>·</span><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+(p.vis==='link'?'<span class="vis">· 링크 공유</span>':p.vis==='secret'?'<span class="vis">· 🔒 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'</div>'+
+      '<div class="meta"><span class="cat">'+p.cat+'</span><span>·</span><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'</div>'+
       '<h3 class="q">'+esc(p.q)+'</h3>'+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+body+
       (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
       '<div class="foot"><span class="n">'+fmt(sum(p.v))+'명 참여'+(p.closed?' · 마감된 투표':done?'':' · 투표하면 결과 공개')+'</span>'+
-      '<span class="acts">'+(done?'<button class="btn" data-act="stats">상세 통계</button>':'')+'<button class="btn" data-act="copy">링크 복사</button>'+(p.vis==='secret'?'':'<button class="btn dark" data-act="embed">&lt;/&gt; 임베드</button>')+'</span></div>'+
+      '<span class="acts">'+(done?'<button class="btn" data-act="stats">'+ic('chart-column')+'상세 통계</button>':'')+'<button class="btn" data-act="copy">'+ic('link')+'링크 복사</button>'+(p.vis==='secret'?'':'<button class="btn dark" data-act="embed">'+ic('code')+'임베드</button>')+'</span></div>'+
       '<div class="stats" hidden></div><div class="embed" hidden></div>'+(p.comments&&!embedded?cmtBlock(p,done):'')+'</article>';
   }
 
@@ -694,8 +718,8 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       var mv='<span class="mv"></span>';
       if(had){ var was=prevHot[p.id];
         if(was===undefined) mv='<span class="mv new">NEW</span>';
-        else if(was>i) mv='<span class="mv up" aria-label="'+(was-i)+'계단 상승">▲'+(was-i)+'</span>';
-        else if(was<i) mv='<span class="mv dn" aria-label="'+(i-was)+'계단 하락">▼'+(i-was)+'</span>';
+        else if(was>i) mv='<span class="mv up" aria-label="'+(was-i)+'계단 상승">'+ic('chevron-up')+(was-i)+'</span>';
+        else if(was<i) mv='<span class="mv dn" aria-label="'+(i-was)+'계단 하락">'+ic('chevron-down')+(i-was)+'</span>';
       } else if(p.t<=3) mv='<span class="mv new">NEW</span>';
       return '<li><a href="?p='+p.id+'"><span class="n">'+(i+1)+'</span><span class="t"><span class="tq">'+esc(p.q)+'</span><small>'+p.cat+' · '+esc(p.o[lead])+' '+ps[lead]+'% · +'+fmt(x.s)+'표/시간</small></span>'+mv+'</a></li>';
     }).join('');
@@ -716,7 +740,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     document.getElementById('rank').innerHTML=r.length?r.map(function(x,i){
       var p=x.p,ps=pct(p),lead=ps.indexOf(Math.max.apply(null,ps));
       var badge=p.closed?' <em class="badge">마감</em>':(p.t<=3?' <em class="badge new">NEW</em>':'');
-      return '<li><a href="?p='+p.id+'"><span class="rk">'+(i+1)+'</span><span class="t">'+esc(p.q)+badge+'<small>'+p.cat+' · '+p.h+' · 우세: '+esc(p.o[lead])+' '+ps[lead]+'%</small></span><span class="v">'+(period==='live'?'+':'')+fmt(x.s)+'<small>'+R.unit+'</small></span><span class="go" aria-hidden="true">›</span></a></li>';
+      return '<li><a href="?p='+p.id+'"><span class="rk">'+(i+1)+'</span><span class="t">'+esc(p.q)+badge+'<small>'+p.cat+' · '+p.h+' · 우세: '+esc(p.o[lead])+' '+ps[lead]+'%</small></span><span class="v">'+(period==='live'?'+':'')+fmt(x.s)+'<small>'+R.unit+'</small></span><span class="go" aria-hidden="true">'+ic('chevron-right')+'</span></a></li>';
     }).join(''):'<li><p class="empty">이 기간에 집계된 투표가 아직 없습니다.</p></li>';
   }
   document.querySelectorAll('.chip[data-r]').forEach(function(c){
@@ -747,14 +771,14 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   try{user=JSON.parse(localStorage.getItem(UKEY)||'null')}catch(e){user=null}
   function saveUser(){try{user?localStorage.setItem(UKEY,JSON.stringify(user)):localStorage.removeItem(UKEY)}catch(e){}}
   var loginBtn=document.getElementById('loginBtn'), auth=document.getElementById('auth'), authBody=document.getElementById('authBody');
-  function authUI(){ loginBtn.innerHTML=user?('내 정보'+(user.pro?' <span class="pro">PRO</span>':'')):'로그인'; }
+  function authUI(){ loginBtn.innerHTML=user?(ic('user-round')+'내 정보'+(user.pro?' <span class="pro">PRO</span>':'')):(ic('log-in')+'로그인'); }
   var REGIONS=['서울','경기·인천','부산·울산·경남','대구·경북','광주·전라','대전·세종·충청','강원','제주'];
   var EDU=['고졸 이하','대학 재학','대졸','대학원 이상'];
   function openDialog(){ try{auth.showModal()}catch(e){auth.setAttribute('open','')} }
   function closeDialog(){ try{auth.close()}catch(e){auth.removeAttribute('open')} }
   function openAuth(){
     if(user){ return showMe(); }
-    authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">×</button>'+
+    authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>'+
       '<h2 id="authTitle">네아니요 시작하기</h2><p>투표는 로그인 없이도 됩니다. 로그인하면 내 그룹별 결과와 투표 기록을 볼 수 있어요.</p>'+
       '<div class="sso"><button class="kakao" type="button" data-sso="kakao">카카오로 시작하기</button><button class="google" type="button" data-sso="google">Google로 시작하기</button></div>'+
       '<p style="font-size:12px">시안 화면입니다. 실제 로그인은 연결되어 있지 않습니다.</p>';
@@ -763,7 +787,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   function showProfile(){
     var y=new Date().getFullYear(), years='';
     for(var k=y-14;k>=y-90;k--) years+='<option>'+k+'</option>';
-    authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">×</button>'+
+    authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>'+
       '<h2 id="authTitle">프로필 입력</h2><p>그룹별 결과를 만드는 데만 쓰입니다. 다른 사람에게 개인 정보는 보이지 않아요.</p>'+
       '<form class="pf" id="pf" novalidate>'+
       '<div class="field"><label for="pf-g">성별 <span class="req">*</span></label><select id="pf-g"><option value="">선택</option><option>남성</option><option>여성</option><option>응답 안 함</option></select></div>'+
@@ -795,7 +819,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   }
   function showMe(){
     var age=user.birth?ageBand(user.birth):'-';
-    authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">×</button>'+
+    authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>'+
       '<h2 id="authTitle">내 정보 '+(user.pro?'<span class="pbadge">프리미엄 체험 중</span>':'')+'</h2>'+
       '<div class="me"><div><span>로그인</span><b>'+(user.via==='google'?'Google':'카카오')+'</b></div><div><span>성별</span><b>'+esc(user.gender)+'</b></div><div><span>연령대</span><b>'+age+'</b></div><div><span>지역</span><b>'+esc(user.region)+'</b></div><div><span>학력</span><b>'+(esc(user.edu)||'응답 안 함')+'</b></div><div><span>참여한 투표</span><b>'+Object.keys(voted).length+'개</b></div></div>'+
       '<p style="font-size:12px">프로필은 30일에 한 번만 바꿀 수 있습니다.</p>'+
@@ -869,12 +893,12 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     var d=DIMS.filter(function(x){return x.k===dimKey})[0]||DIMS[0];
     var tabs='<div class="dims" role="group" aria-label="통계 기준">'+DIMS.map(function(x){
       var lock=x.tier==='pro'&&!user.pro;
-      return '<button type="button" data-act="dim" data-dim="'+x.k+'" aria-pressed="'+(x.k===d.k)+'">'+x.label+(lock?' <span class="lk" aria-label="프리미엄">🔒</span>':'')+'</button>';
+      return '<button type="button" data-act="dim" data-dim="'+x.k+'" aria-pressed="'+(x.k===d.k)+'">'+x.label+(lock?' <span class="lk" aria-label="프리미엄">'+ic('lock')+'</span>':'')+'</button>';
     }).join('')+'</div>';
     var rows=breakdown(p,d), locked=d.tier==='pro'&&!user.pro;
-    var tbl=locked?'<div class="locked">'+xtable(p,d,rows)+'<div class="lockmsg"><b>'+d.label+'별 결과는 프리미엄 기능입니다</b><button class="btn gold" data-act="upgrade">프리미엄 알아보기</button></div></div>':xtable(p,d,rows);
+    var tbl=locked?'<div class="locked">'+xtable(p,d,rows)+'<div class="lockmsg"><b>'+d.label+'별 결과는 프리미엄 기능입니다</b><button class="btn gold" data-act="upgrade">'+ic('crown')+'프리미엄 알아보기</button></div></div>':xtable(p,d,rows);
     var foot='<div class="foot2"><span>참여자 기준 · 표본 조사 아님 · '+MIN_N+'명 미만 그룹 비공개</span>'+
-      (user.pro?'<button class="btn" data-act="csv">엑셀(CSV) 다운로드</button>':'<span><span class="pbadge">PRO</span> 지역·학력·시간대·다운로드</span>')+'</div>';
+      (user.pro?'<button class="btn" data-act="csv">'+ic('download')+'엑셀(CSV) 다운로드</button>':'<span><span class="pbadge">PRO</span> 지역·학력·시간대·다운로드</span>')+'</div>';
     el.innerHTML=head+tabs+legend+tbl+foot;
     resize();
   }
@@ -918,17 +942,17 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   var BAN=['씨발','시발','병신','개새','좆','지랄'];
   function cmtBlock(p,done){
     var list=getC(p).filter(function(c){return !c.hidden});
-    if(!done) return '<div class="cmts"><h4>한줄평 <small>'+list.length+'개</small></h4><p class="hint">투표하면 한줄평을 보고 남길 수 있어요.</p></div>';
+    if(!done) return '<div class="cmts"><h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개</small></h4><p class="hint">투표하면 한줄평을 보고 남길 수 있어요.</p></div>';
     var sorted=list.slice().sort(function(a,b){return b.likes-a.likes});
     var bestIds={};
     p.o.forEach(function(_,oi){var b=sorted.filter(function(c){return c.o===oi})[0]; if(b&&b.likes>0) bestIds[b.id]=1;});
     var ordered=sorted.filter(function(c){return bestIds[c.id]}).concat(list.slice().reverse().filter(function(c){return !bestIds[c.id]}));
     var form=user?'<form class="cform" data-cform="'+p.id+'" novalidate><label for="c-'+p.id+'" hidden>한줄평</label><input id="c-'+p.id+'" maxlength="80" placeholder="'+esc(p.o[voted[p.id]]||'내 선택')+' 쪽 한줄평 (80자)" autocomplete="off"><button class="btn dark" type="submit">등록</button></form><p class="cmsg" data-cmsg></p>'
-      :'<button class="btn" data-act="login">로그인하고 한줄평 남기기</button>';
-    return '<div class="cmts"><h4>한줄평 <small>'+list.length+'개 · 공감 많은 대표 의견 먼저</small></h4>'+
+      :'<button class="btn" data-act="login">'+ic('log-in')+'로그인하고 한줄평 남기기</button>';
+    return '<div class="cmts"><h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개 · 공감 많은 대표 의견 먼저</small></h4>'+
       ordered.map(function(c){
         return '<div class="cmt'+(bestIds[c.id]?' best':'')+'"><span class="who"><span class="side-tag" style="background:'+OPC[c.o%OPC.length]+'">'+esc(p.o[c.o]||'')+'</span>'+(bestIds[c.id]?'<b>대표 의견</b> · ':'')+esc(c.at)+(c.mine?' · 내 글':'')+'</span><p>'+esc(c.text)+'</p>'+
-          '<span class="ops"><button type="button" data-act="like" data-cid="'+c.id+'" aria-pressed="'+!!c.liked+'">공감 '+fmt(c.likes)+'</button><button type="button" data-act="report" data-cid="'+c.id+'">신고</button></span></div>';
+          '<span class="ops"><button type="button" data-act="like" data-cid="'+c.id+'" aria-pressed="'+!!c.liked+'">'+ic('heart')+'공감 '+fmt(c.likes)+'</button><button type="button" data-act="report" data-cid="'+c.id+'">'+ic('flag')+'신고</button></span></div>';
       }).join('')+form+'</div>';
   }
   function rerender(art,p){
@@ -950,7 +974,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       '<label for="t-'+p.id+'">테마</label><select id="t-'+p.id+'"><option value="auto">자동</option><option value="light">라이트</option><option value="dark">다크</option></select></div>'+
       '<div class="row"><input type="checkbox" id="a-'+p.id+'"><label for="a-'+p.id+'">높이 자동 맞춤 스크립트 포함 (스크립트를 허용하는 사이트용)</label></div>'+
       '<pre class="code" id="c-'+p.id+'"></pre>'+
-      '<div class="row"><button class="btn dark" data-act="copycode">코드 복사</button><a class="btn" href="'+SITE+'?embed='+p.id+'" target="_blank" rel="noopener">미리보기 ↗</a></div>'+
+      '<div class="row"><button class="btn dark" data-act="copycode">코드 복사</button><a class="btn" href="'+SITE+'?embed='+p.id+'" target="_blank" rel="noopener">'+ic('external-link')+'미리보기</a></div>'+
       '<p class="hint">티스토리·워드프레스는 HTML 편집에, 네이버 블로그·카페는 HTML 모드나 링크 붙여넣기로 넣으면 됩니다. 투표 결과는 원본과 같은 데이터를 씁니다.</p>';
     var w=el.querySelector('#w-'+p.id),t=el.querySelector('#t-'+p.id),a=el.querySelector('#a-'+p.id),c=el.querySelector('#c-'+p.id);
     function upd(){
@@ -1091,7 +1115,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     msg.textContent='';
     var made=document.getElementById('made'), url=shareUrl(np);
     made.innerHTML='<h3>투표를 만들었습니다</h3><p class="hint">'+(vis==='public'?'피드 맨 위에도 올라갔어요.':vis==='link'?'피드와 랭킹에는 나오지 않고, 이 주소를 받은 사람만 참여할 수 있어요.':'피드와 랭킹에는 나오지 않고, 주소와 비밀번호를 모두 아는 사람만 참여할 수 있어요. 비밀번호는 따로 알려 주세요.')+(np.comments?' 한줄평이 열려 있어요.':'')+'</p>'+
-      '<div class="url">'+esc(url)+'</div><div class="row"><button class="btn dark" type="button" data-copyurl="'+esc(url)+'">주소 복사</button><a class="btn" href="?p='+np.id+'">투표 보러 가기</a></div>';
+      '<div class="url">'+esc(url)+'</div><div class="row"><button class="btn dark" type="button" data-copyurl="'+esc(url)+'">'+ic('copy')+'주소 복사</button><a class="btn" href="?p='+np.id+'">투표 보러 가기</a></div>';
     made.hidden=false;
     made.querySelector('[data-copyurl]').onclick=function(){copy(url,'투표 주소를 복사했습니다.')};
     filter='all'; document.querySelectorAll('.chip[data-c]').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.c==='all')});
@@ -1105,7 +1129,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   function init(){
   if(exists(params.get('embed'))){
     embedded=true; embedId=params.get('embed'); document.body.classList.add('embedded');
-    document.getElementById('more').innerHTML='<a href="'+SITE+'?p='+embedId+'" target="_blank" rel="noopener">네아니요에서 결과·다른 투표 보기 ↗</a>';
+    document.getElementById('more').innerHTML='<a href="'+SITE+'?p='+embedId+'" target="_blank" rel="noopener">네아니요에서 결과·다른 투표 보기 '+ic('external-link')+'</a>';
   }else if(exists(params.get('p'))){
     shareId=params.get('p'); document.body.classList.add('shared');
     document.getElementById('sharebar').hidden=false;
