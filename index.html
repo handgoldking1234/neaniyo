@@ -438,6 +438,8 @@ body.embedded .side-hot{display:none!important}
 /* 사진 투표 */
 .pimg{border-radius:14px;overflow:hidden;background:var(--bg);margin-top:-4px}
 .pimg img{display:block;width:100%;max-height:520px;min-height:200px;object-fit:cover;object-position:center 25%;background:var(--line)}
+.pimg.fit{background:#fff}
+.pimg.fit img{object-fit:contain;max-height:420px;background:#fff}
 .credit{margin:-10px 0 0;font-size:11.5px;color:var(--muted)}
 .credit a{color:var(--muted)}
 .pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
@@ -782,7 +784,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       {q:'월급에서 저축 비율은?',o:['10% 미만','10~30%','30% 이상'],v:[380,520,280]},
       {q:'연말까지 목표는?',o:['더 모으기','빚 줄이기','버티기'],v:[430,350,400]}]},
     // 패션·쇼핑 사진 투표 예시
-    {id:'ph1',ex:true,comments:true,cat:'패션·쇼핑',type:'vs',q:'퍼 후드 블랙 패딩, 산다 vs 안 산다',o:['산다','안 산다'],v:[1840,2260],h:'1시간 전',img:'px:11274805|black',credit:'Aqib Shahid'},
+    {id:'ph1',ex:true,comments:true,cat:'패션·쇼핑',sub:'패션',type:'vs',q:'올겨울 롱패딩, 이거 산다 vs 안 산다',o:['산다','안 산다'],v:[1840,2260],h:'1시간 전',img:'assets/sample/long-padding.jpg',imgFit:'contain'},
     {id:'ph2',ex:true,cat:'패션·쇼핑',type:'photo',q:'올겨울 패딩 코디, 어떤 스타일이 제일 나아요?',o:['모노톤 패딩','시티 나이트룩','스카프 데일리룩'],v:[1420,2380,960],h:'3시간 전',imgs:['px:15639609|black','px:19426409|charcoal','px:14469824|beige'],credit:'Farshad Sheikhzadeh · Caner Kokcu · Jean-Daniel'},
     {id:'ph3',ex:true,cat:'패션·쇼핑',type:'photo',multiSel:true,n:1650,q:'출근길 패딩 코디, 괜찮은 거 다 골라 주세요',o:['퍼 후드 패딩','블랙 숏패딩','볼캡 매치','스카프 코디'],v:[1120,890,640,380],h:'오늘',imgs:['px:11274805|black','px:15639609|charcoal','px:19714681|navy','px:14469824|ivory'],credit:'Pexels 무료 사진'},
     // 그림·재능 예시
@@ -1015,7 +1017,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       }).join('')+'</div>'+(p.multiSel&&!done?'<button class="btn dark pick-go" data-act="pickgo" disabled>여러 개 고른 뒤 투표하기</button>':'');
     }
     if(p.multiSel&&!done) body='<p class="hint pick-hint">'+ic('check')+'복수 선택 · 마음에 드는 걸 모두 고르세요</p>'+body;
-    var media=p.img?'<div class="pimg"><img src="'+p.img+'" alt="'+esc(p.q)+'" loading="lazy" referrerpolicy="no-referrer"></div>':'';
+    var media=p.img?'<div class="pimg'+(p.imgFit==='contain'?' fit':'')+'"><img src="'+p.img+'" alt="'+esc(p.q)+'" loading="lazy" referrerpolicy="no-referrer"></div>':'';
     var credit=p.credit?'<p class="credit">사진: '+esc(p.credit)+' · <a href="https://www.pexels.com" target="_blank" rel="noopener">Pexels</a></p>':'';
     return '<article class="poll'+(done?' done':'')+'" data-id="'+p.id+'">'+
       '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+catLabel(p.cat)+(p.sub?' <span class="sub">› '+esc(p.sub)+'</span>':'')+'</span>'+(p.type==='relay'?'<span class="ex rl">릴레이 '+p.qs.length+'문항</span>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+'<span>·</span><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'</div>'+
