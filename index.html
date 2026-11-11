@@ -355,6 +355,22 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 }
 body.embedded .side-hot{display:none!important}
 @media (prefers-reduced-motion:reduce){.hotbox-hd h2::before{animation:none}}
+/* 따봉 리액션 애니메이션 */
+.burst{position:fixed;left:0;top:0;width:0;height:0;pointer-events:none;z-index:50}
+.burst .big{position:absolute;left:-28px;top:-28px;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;color:#fff;background:var(--bc);border:3px solid #fff;box-shadow:0 6px 18px rgba(0,0,0,.22);animation:bpop .95s cubic-bezier(.2,.9,.3,1.2) forwards}
+.burst .big .i{width:30px;height:30px;fill:#fff;stroke:var(--bc);stroke-width:1.5}
+.burst .pt{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:var(--bc);animation:bfly .8s ease-out forwards}
+.burst .pt.ic{width:auto;height:auto;background:none;color:var(--bc);left:-9px;top:-9px}
+.burst .pt.ic .i{width:18px;height:18px;fill:currentColor}
+.burst .plus{position:absolute;left:-30px;top:-70px;width:60px;text-align:center;font-weight:800;font-size:15px;color:var(--bc);animation:bup .95s ease-out forwards}
+@keyframes bpop{0%{transform:scale(0) rotate(-25deg);opacity:0}35%{transform:scale(1.25) rotate(8deg);opacity:1}55%{transform:scale(.95) rotate(-4deg)}70%{transform:scale(1.05) rotate(0)}100%{transform:translateY(-46px) scale(.9);opacity:0}}
+@keyframes bfly{0%{transform:translate(0,0) scale(.4);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1);opacity:0}}
+@keyframes bup{0%{transform:translateY(10px);opacity:0}30%{opacity:1}100%{transform:translateY(-34px);opacity:0}}
+.pressed{animation:press .35s ease}
+@keyframes press{0%{transform:scale(1)}40%{transform:scale(.94)}100%{transform:scale(1)}}
+.cmt .ops .likepop .i{animation:heartpop .45s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes heartpop{0%{transform:scale(1)}40%{transform:scale(1.6)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.burst{display:none}.pressed,.cmt .ops .likepop .i{animation:none}}
 /* Lucide 아이콘 */
 .i{width:1.1em;height:1.1em;flex:none;vertical-align:-0.18em}
 .btn,.cta,.login{display:inline-flex;align-items:center;justify-content:center;gap:5px}
@@ -640,8 +656,24 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
   function sum(a){return a.reduce(function(s,x){return s+x},0)}
   function pct(p){var t=sum(p.v)||1;return p.v.map(function(x){return Math.round(x*1000/t)/10})}
   // Lucide 아이콘 (lucide-static 0.460, ISC)
-  var ICONS={"lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />"};
+  var ICONS={"thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />"};
   function ic(n){return '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[n]||'')+'</svg>'}
+  // 카톡 리액션처럼 누른 자리에서 따봉이 튀어오르는 효과
+  function burst(x,y,color,opts){
+    opts=opts||{};
+    try{ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){}
+    var el=document.createElement('div'); el.className='burst'; el.style.transform='translate('+x+'px,'+y+'px)'; el.style.setProperty('--bc',color);
+    var html=opts.small?'':'<span class="big">'+ic('thumbs-up')+'</span>'+(opts.label?'<span class="plus">'+opts.label+'</span>':'');
+    var n=opts.small?6:10;
+    for(var k=0;k<n;k++){
+      var a=(Math.PI*2*k/n)+(Math.random()-.5)*.6, r=(opts.small?26:56)+Math.random()*(opts.small?10:26);
+      var dx=Math.round(Math.cos(a)*r)+'px', dy=Math.round(Math.sin(a)*r-(opts.small?6:18))+'px';
+      var useIc=!opts.small&&k%3===0;
+      html+='<span class="pt'+(useIc?' ic':'')+'" style="--dx:'+dx+';--dy:'+dy+';animation-delay:'+(opts.small?0:80)+'ms">'+(useIc?ic(k%2?'heart':'thumbs-up'):'')+'</span>';
+    }
+    el.innerHTML=html; document.body.appendChild(el);
+    setTimeout(function(){el.remove()},1100);
+  }
   function fmt(n){return n.toLocaleString('ko-KR')}
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 
@@ -1026,7 +1058,9 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       if(act==='csv'){ downloadCsv(p); }
       if(act==='like'||act==='report'){
         var c=getC(p).filter(function(x){return x.id===actBtn.dataset.cid})[0]; if(!c) return;
-        if(act==='like'){ c.liked=!c.liked; c.likes+=c.liked?1:-1; }
+        if(act==='like'){ c.liked=!c.liked; c.likes+=c.liked?1:-1;
+          if(c.liked){ var rb=actBtn.getBoundingClientRect(); burst(rb.left+12,rb.top+rb.height/2,'var(--a)',{small:true}); }
+          saveC(); var fr=rerender(art,p); var nb=fr.querySelector('[data-cid="'+c.id+'"][data-act=like]'); if(nb&&c.liked) nb.classList.add('likepop'); return; }
         else { c.reports=(c.reports||0)+1; c.hidden=true; toast('신고했습니다. 검토 전까지 이 한줄평은 가려집니다.'); }
         saveC(); rerender(art,p); return;
       }
@@ -1036,6 +1070,10 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       return;
     }
     var b=e.target.closest('[data-i]'); if(!b||voted[p.id]!==undefined) return;
+    var bx=e.clientX, by=e.clientY;
+    if(!bx&&!by){ var br=b.getBoundingClientRect(); bx=br.left+br.width/2; by=br.top+br.height/2; }
+    b.classList.add('pressed');
+    burst(bx,by,OPC[+b.dataset.i%OPC.length],{label:'+1'});
     var i=+b.dataset.i; p.v[i]++; voted[p.id]=i; save();
     var html=card(p), tmp=document.createElement('div'); tmp.innerHTML=html;
     var fresh=tmp.firstChild;
