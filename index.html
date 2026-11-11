@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>네아니요</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+
+/* Layout: 상단 탭(투표·랭킹·만들기·경쟁사) + 단일 컬럼 피드, 투표 카드 = 임베드 단위 */
+:root{
+  --bg:#F3F4F8; --surface:#FFFFFF; --ink:#14161F; --muted:#5E6378; --line:#E2E4EC;
+  --a:#E8336D; --a-soft:#FCE3EB; --b:#2F5BEA; --b-soft:#E2E9FD; --ok:#1F9D6B;
+  --display:"Black Han Sans","IBM Plex Sans KR",system-ui,sans-serif;
+  --body:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1118; --surface:#181B25; --ink:#ECEEF5; --muted:#9AA0B5; --line:#2A2E3C;
+  --a:#FF5A8A; --a-soft:#3A1A27; --b:#6C8CFF; --b-soft:#1C2445; --ok:#3CC48C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1118; --surface:#181B25; --ink:#ECEEF5; --muted:#9AA0B5; --line:#2A2E3C;
+  --a:#FF5A8A; --a-soft:#3A1A27; --b:#6C8CFF; --b-soft:#1C2445; --ok:#3CC48C; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:760px;margin:0 auto;padding-block:20px 60px}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--b);outline-offset:2px}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px 10px;display:flex;flex-direction:column;gap:12px}
+.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.logo{font-family:var(--display);font-size:30px;letter-spacing:-.5px;line-height:1}
+.logo i{font-style:normal;color:var(--a)}
+.tag{color:var(--muted);font-size:13px}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.tabs a{flex:none;text-decoration:none;color:var(--muted);padding:7px 14px;border-radius:999px;font-weight:500;font-size:14px;border:1px solid var(--line);background:var(--surface)}
+.tabs a[aria-current="page"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* filters */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
+.chip{border:0;background:transparent;color:var(--muted);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:14px}
+.chip[aria-pressed="true"]{color:var(--ink);background:var(--surface);font-weight:700;box-shadow:0 0 0 1px var(--line)}
+
+/* poll card */
+.feed{display:flex;flex-direction:column;gap:14px}
+.poll{background:var(--surface);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;border:1px solid var(--line)}
+.meta{display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.cat{font-weight:700;color:var(--a);letter-spacing:.02em}
+.live{display:inline-flex;align-items:center;gap:4px}
+.live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ok)}
+.q{font-size:19px;font-weight:700;line-height:1.35;margin:0;text-wrap:balance}
+
+/* VS binary */
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:stretch}
+.side{border:0;border-radius:12px;padding:16px 12px;cursor:pointer;font-weight:700;font-size:15.5px;text-align:center;line-height:1.35;transition:transform .12s}
+.side:hover{transform:translateY(-2px)}
+.side.a{background:var(--a-soft);color:var(--a)}
+.side.b{background:var(--b-soft);color:var(--b)}
+.vsmark{align-self:center;font-family:var(--display);color:var(--muted);font-size:18px}
+.split{display:flex;flex-direction:column;gap:8px}
+.bar{display:flex;height:44px;border-radius:10px;overflow:hidden;font-weight:700;font-variant-numeric:tabular-nums}
+.bar span{display:flex;align-items:center;padding:0 12px;color:#fff;transition:flex-basis .7s cubic-bezier(.2,.8,.2,1);min-width:44px;white-space:nowrap}
+.bar .pa{background:var(--a)}
+.bar .pb{background:var(--b);justify-content:flex-end}
+.labels{display:flex;justify-content:space-between;gap:10px;font-size:13.5px}
+.labels b.mine::after{content:" ✓ 내 선택";color:var(--ok);font-size:12px}
+
+/* multi */
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{position:relative;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:12px 14px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;gap:10px;overflow:hidden;font-weight:500}
+.opt:hover{border-color:var(--ink)}
+.opt .fill{position:absolute;inset:0 auto 0 0;background:var(--b-soft);width:0;transition:width .7s cubic-bezier(.2,.8,.2,1);z-index:0}
+.opt.top .fill{background:var(--a-soft)}
+.opt > *:not(.fill){position:relative;z-index:1}
+.opt .pct{font-variant-numeric:tabular-nums;font-weight:700;color:var(--muted)}
+.opt.top .pct{color:var(--a)}
+.opt.mine{border-color:var(--ok)}
+.done .opt{cursor:default}
+
+.foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px;font-size:13px;color:var(--muted)}
+.foot .n{font-variant-numeric:tabular-nums}
+.acts{display:flex;gap:6px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:13px;font-weight:500}
+.btn.dark{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn:hover{border-color:var(--ink)}
+
+/* embed panel */
+.embed{background:var(--bg);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.embed h4{margin:0;font-size:14px}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13px}
+.row label{color:var(--muted)}
+.row select{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:4px 6px}
+pre.code{margin:0;background:var(--ink);color:var(--bg);border-radius:8px;padding:12px;font-family:var(--mono);font-size:12px;white-space:pre-wrap;word-break:break-all;user-select:all}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+
+/* ranking */
+.rank{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.rank li{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding:14px 16px;border-top:1px solid var(--line)}
+.rank li:first-child{border-top:0}
+.rank ol{list-style:none;margin:0;padding:0}
+.rk{font-family:var(--display);font-size:20px;color:var(--muted)}
+.rank li:nth-child(-n+3) .rk{color:var(--a)}
+.rank .t{font-weight:500;min-width:0}
+.rank .t small{display:block;color:var(--muted);font-size:12px}
+.rank .v{font-variant-numeric:tabular-nums;font-weight:700}
+
+/* create */
+form.make{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field > label{font-weight:700;font-size:14px}
+.field input,.field select{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px}
+.seg{display:flex;gap:6px}
+.seg label{flex:1;border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center;cursor:pointer;font-size:14px}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg input:checked + span{font-weight:700;color:var(--a)}
+.seg label:has(input:checked){border-color:var(--a);background:var(--a-soft)}
+.optlist{display:flex;flex-direction:column;gap:6px}
+.msg{font-size:13px;color:var(--ok);margin:0;min-height:1em}
+.msg.err{color:var(--a)}
+
+/* analysis */
+.sec{display:flex;flex-direction:column;gap:12px;margin-bottom:28px}
+.sec h2{font-family:var(--display);font-weight:400;font-size:24px;margin:0;letter-spacing:-.3px}
+.sec p{margin:0;max-width:65ch}
+.lede{color:var(--muted)}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:680px;font-size:13.5px}
+th,td{padding:10px 12px;text-align:left;vertical-align:top;border-top:1px solid var(--line)}
+thead th{border-top:0;font-size:12px;color:var(--muted);letter-spacing:.04em;background:var(--bg)}
+td b{display:block}
+td small{color:var(--muted)}
+.y{color:var(--ok);font-weight:700}.n{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.box h3{margin:0;font-size:15px}
+.box p{font-size:13.5px;color:var(--muted)}
+.box.key{border-color:var(--a)}
+.box.key h3{color:var(--a)}
+.score{display:flex;flex-direction:column;gap:8px}
+.score div{display:grid;grid-template-columns:132px 1fr 40px;gap:10px;align-items:center;font-size:13.5px}
+.score i{height:8px;border-radius:4px;background:var(--line);position:relative;overflow:hidden}
+.score i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);background:var(--b);border-radius:4px}
+.score b{font-variant-numeric:tabular-nums;text-align:right}
+
+/* embed-only view */
+body.embedded .top,body.embedded .chips,body.embedded .foot .acts{display:none}
+body.embedded .wrap{padding-block:8px}
+.note{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
+@media (max-width:440px){.vs{grid-template-columns:1fr}.vsmark{display:none}.q{font-size:17.5px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="logo">네아니요<i>.</i></span><span class="tag">연예·이슈 투표, 어디든 붙여 넣는 한 장의 카드</span></div>
+    <nav class="tabs" aria-label="메뉴">
+      <a href="#vote" data-v="vote">투표</a>
+      <a href="#ranking" data-v="ranking">실시간 랭킹</a>
+      <a href="#create" data-v="create">투표 만들기</a>
+      <a href="#analysis" data-v="analysis">경쟁사 분석</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="v-vote">
+      <div class="chips" role="group" aria-label="카테고리">
+        <button class="chip" data-c="all" aria-pressed="true">전체</button>
+        <button class="chip" data-c="연예" aria-pressed="false">연예</button>
+        <button class="chip" data-c="드라마·예능" aria-pressed="false">드라마·예능</button>
+        <button class="chip" data-c="사회" aria-pressed="false">사회</button>
+        <button class="chip" data-c="경제" aria-pressed="false">경제·부동산·주식</button>
+        <button class="chip" data-c="스포츠" aria-pressed="false">스포츠</button>
+        <button class="chip" data-c="정치" aria-pressed="false">정치</button>
+        <button class="chip" data-c="밸런스" aria-pressed="false">밸런스</button>
+      </div>
+      <div class="feed" id="feed"></div>
+      <p class="note">예시 투표입니다. 1인 1표는 이 브라우저 기준으로만 체크합니다.</p>
+    </section>
+
+    <section id="v-ranking" hidden>
+      <div class="chips"><span class="tag">참여 많은 순 · 지금 가장 뜨거운 판</span></div>
+      <div class="rank"><ol id="rank"></ol></div>
+    </section>
+
+    <section id="v-create" hidden>
+      <form class="make" id="make" novalidate>
+        <div class="field"><label for="f-q">질문</label><input id="f-q" maxlength="60" placeholder="예) 아이돌 컴백 주기, 몇 개월이 적당할까?"></div>
+        <div class="field"><label for="f-cat">카테고리</label>
+          <select id="f-cat"><option>연예</option><option>드라마·예능</option><option>사회</option><option value="경제">경제·부동산·주식</option><option>스포츠</option><option>정치</option><option>밸런스</option></select></div>
+        <div class="field"><label>형식</label>
+          <div class="seg">
+            <label><input type="radio" name="f-type" id="f-t-vs" value="vs" checked><span>VS 양자택일</span></label>
+            <label><input type="radio" name="f-type" id="f-t-multi" value="multi"><span>다지선다</span></label>
+          </div></div>
+        <div class="field"><label>보기</label>
+          <div class="optlist" id="optlist">
+            <input id="f-o1" placeholder="보기 1" maxlength="30">
+            <input id="f-o2" placeholder="보기 2" maxlength="30">
+          </div>
+          <button type="button" class="btn" id="addopt" hidden>+ 보기 추가</button>
+        </div>
+        <button class="btn dark" type="submit" style="padding:12px">투표 올리기</button>
+        <p class="msg" id="f-msg" role="status"></p>
+      </form>
+    </section>
+
+    <section id="v-analysis" hidden>
+      <div class="sec">
+        <h2>시장 지형</h2>
+        <p class="lede">연예 투표는 아이돌 팬덤 앱이, 이슈 투표는 커뮤니티와 메신저가 나눠 갖고 있습니다. 두 진영 모두 투표를 자기 앱 안에 가둬 두고, 외부 사이트에 붙이는 임베드는 해외 위젯 업체만 합니다. 네아니요가 들어갈 자리는 그 사이입니다.</p>
+      </div>
+
+      <div class="sec">
+        <h2>경쟁사 비교</h2>
+        <div class="tbl"><table>
+          <thead><tr><th>서비스</th><th>영역</th><th>투표 방식</th><th>외부 임베드</th><th>수익 모델</th><th>약점</th></tr></thead>
+          <tbody>
+            <tr><td><b>최애돌</b><small>팬덤 앱</small></td><td>아이돌 순위</td><td>하트 충전 후 투표, 테마픽·이미지픽</td><td class="n">없음</td><td>투표권 인앱결제, 광고</td><td>아이돌 한정, 앱 설치 필수</td></tr>
+            <tr><td><b>아이돌챔프</b><small>MBC플러스</small></td><td>음악방송 연계</td><td>쇼챔피언 사전투표, 차트 투표</td><td class="n">없음</td><td>인앱결제, 광고 리워드</td><td>방송사 종속, 이슈 투표 없음</td></tr>
+            <tr><td><b>아이돌픽</b><small>동아닷컴</small></td><td>아이돌 랭킹</td><td>위클리·스페셜 투표, 투표 인증서</td><td class="n">없음</td><td>스타픽 판매, 포털 기사 노출</td><td>팬 과금 의존</td></tr>
+            <tr><td><b>팬앤스타</b><small>더팩트</small></td><td>아이돌 순위</td><td>출석·광고 시청으로 포인트 적립</td><td class="n">없음</td><td>광고, 이벤트</td><td>포인트 노동, 후보 선정 불만</td></tr>
+            <tr><td><b>논전</b><small>찬반 커뮤니티</small></td><td>이슈 토론</td><td>진영 선택 후 팀 게시판·논쟁</td><td class="n">없음</td><td>미확인</td><td>토론 피로도, 규모 작음</td></tr>
+            <tr><td><b>치즈버튼</b><small>투표 SaaS</small></td><td>공모전·행사</td><td>OTP 인증 1인 1표, QR, 실시간 결과</td><td>링크·QR 중심</td><td>기관·행사 유료</td><td>엔터·이슈 콘텐츠 없음</td></tr>
+            <tr><td><b>카톡·네이버폼·인스타</b><small>플랫폼 내장</small></td><td>범용</td><td>단톡방·스토리 스티커·폼</td><td class="n">없음</td><td>무료</td><td>플랫폼 밖으로 못 나감</td></tr>
+            <tr><td><b>Elfsight·Embeddable</b><small>해외 위젯</small></td><td>범용 위젯</td><td>스크립트·iframe 임베드</td><td class="y">있음</td><td>월 구독</td><td>영어권 UX, 콘텐츠 없음</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="sec">
+        <h2>네아니요가 노리는 빈자리</h2>
+        <div class="grid2">
+          <div class="box key"><h3>투표가 콘텐츠다</h3><p>위젯 업체는 틀만 팔고, 팬덤 앱은 앱 안에서만 돕니다. 네아니요는 매일 올라오는 연예·이슈 투표 자체가 상품이고, 그 카드를 블로그·카페·기사 어디든 붙이게 합니다.</p></div>
+          <div class="box"><h3>유튜브식 임베드</h3><p>iframe 한 줄, 테마와 크기 선택만. 티스토리·네이버 블로그·워드프레스에 맞춘 높이 자동 조절이 기본입니다.</p></div>
+          <div class="box"><h3>로그인 없는 1인 1표</h3><p>팬덤 앱의 투표권 과금과 포인트 노동이 가장 큰 불만입니다. 무료 1표에 기기·쿠키·IP 조합 중복 차단으로 대응합니다.</p></div>
+          <div class="box"><h3>임베드 = 유입 경로</h3><p>임베드 카드마다 원문 링크와 관련 투표가 걸려, 붙인 곳이 많을수록 본진 검색 유입과 백링크가 늘어납니다.</p></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2>성공 가능성 진단</h2>
+        <div class="score">
+          <div><span>시장 수요</span><i style="--w:80%"></i><b>8</b></div>
+          <div><span>차별성</span><i style="--w:70%"></i><b>7</b></div>
+          <div><span>구현 난이도</span><i style="--w:85%"></i><b>8.5</b></div>
+          <div><span>초기 트래픽</span><i style="--w:45%"></i><b>4.5</b></div>
+          <div><span>수익화</span><i style="--w:55%"></i><b>5.5</b></div>
+        </div>
+        <p class="lede">구현 난이도 점수가 높을수록 만들기 쉽다는 뜻입니다. 기술은 5일 MVP 범위지만, 투표를 매일 채울 콘텐츠 운영과 첫 임베드처 확보가 승부처입니다.</p>
+      </div>
+
+      <div class="sec">
+        <h2>카테고리 운영 비율</h2>
+        <div class="score">
+          <div><span>연예</span><i style="--w:30%"></i><b>30%</b></div>
+          <div><span>사회 이슈</span><i style="--w:25%"></i><b>25%</b></div>
+          <div><span>경제·부동산·주식</span><i style="--w:15%"></i><b>15%</b></div>
+          <div><span>드라마·예능</span><i style="--w:10%"></i><b>10%</b></div>
+          <div><span>스포츠</span><i style="--w:10%"></i><b>10%</b></div>
+          <div><span>정치</span><i style="--w:5%"></i><b>5%</b></div>
+          <div><span>밸런스</span><i style="--w:5%"></i><b>5%</b></div>
+        </div>
+        <p class="lede">연예·사회 이슈가 공유와 임베드가 가장 잘 일어나는 주제라 절반 이상을 채웁니다. 부동산·주식은 재테크 블로그와 카페에 붙이기 좋아 임베드 확산용으로 꾸준히 둡니다. 정치는 반응은 크지만 운영 부담이 커서 제도·정책 질문으로만 소량 운영합니다.</p>
+      </div>
+
+      <div class="sec">
+        <h2>리스크와 대응</h2>
+        <div class="grid2">
+          <div class="box"><h3>정치 편향 논란</h3><p>특정 정당·후보 대상 투표는 열지 않고 제도·정책 질문만 둡니다. 보기는 양쪽을 같은 무게로 쓰고, 선거 기간에는 정치 카테고리를 쉬는 규칙을 둡니다. 결과가 여론조사로 오해받지 않게 "참여자 기준, 표본 아님"을 표시합니다.</p></div>
+          <div class="box"><h3>투자 조언 오해</h3><p>부동산·주식 투표 결과는 투자 판단 근거가 아니라는 문구를 카드에 붙이고, 특정 종목·단지 이름을 건 투표는 검수 후 노출합니다.</p></div>
+          <div class="box"><h3>조작·어뷰징</h3><p>팬덤 단체 투표가 몰리면 신뢰가 깨집니다. 시간당 투표 속도 감지, 이상치 표시, 결과에 "집계 기준" 공개.</p></div>
+          <div class="box"><h3>실명 연예인 이슈</h3><p>열애·논란 투표는 명예훼손 소지가 있습니다. 실명 인물 대상 투표는 운영자 검수 후 노출, 신고 버튼 필수.</p></div>
+          <div class="box"><h3>콘텐츠 고갈</h3><p>AI로 그날 실검·기사에서 투표 초안을 뽑고 사람이 다듬는 하루 10건 파이프라인을 둡니다.</p></div>
+          <div class="box"><h3>수익 구조</h3><p>초기는 결과 화면 광고, 이후 브랜드 스폰서 투표와 언론사·커뮤니티 대상 화이트라벨 임베드.</p></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  var KEY='neaniyo-voted';
+  var voted={}; try{voted=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){voted={}}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(voted))}catch(e){}}
+
+  var polls=[
+    {id:'p1',cat:'연예',type:'vs',q:'열애설이 터졌을 때, 소속사 대응은?',o:['바로 인정하는 게 낫다','사생활이니 노코멘트'],v:[6420,4180],h:'1시간 전'},
+    {id:'s1',cat:'사회',type:'vs',q:'식당 노키즈존, 업주가 정해도 될까?',o:['업주의 자유','차별이다'],v:[7210,5980],h:'2시간 전'},
+    {id:'e1',cat:'경제',type:'vs',q:'지금 내 집 마련, 살 때일까 기다릴 때일까?',o:['지금 산다','더 기다린다'],v:[4870,6130],h:'2시간 전'},
+    {id:'p2',cat:'드라마·예능',type:'multi',q:'요즘 가장 기다려지는 드라마 장르는?',o:['로맨스 코미디','법정·의학 전문직','스릴러·복수극','사극·판타지'],v:[3120,2050,4410,1870],h:'3시간 전'},
+    {id:'n2',cat:'연예',type:'vs',q:'멤버 탈퇴 후 그룹 이름, 누가 가져야 할까?',o:['소속사','남은 멤버들'],v:[2310,7840],h:'4시간 전'},
+    {id:'p3',cat:'사회',type:'vs',q:'음원 사재기 적발 시 차트 영구 퇴출, 찬성?',o:['찬성','과하다'],v:[8930,1640],h:'5시간 전'},
+    {id:'sp1',cat:'스포츠',type:'vs',q:'프로야구 자동 볼 판정, 계속 가야 할까?',o:['계속 간다','사람 심판이 낫다'],v:[5560,2790],h:'오늘'},
+    {id:'e2',cat:'경제',type:'multi',q:'주식 투자, 나에게 맞는 방식은?',o:['우량주 장기 보유','배당주로 현금흐름','ETF 매달 적립','단타·스윙'],v:[3240,1980,4760,1350],h:'오늘'},
+    {id:'n3',cat:'연예',type:'vs',q:'연말 시상식 대상, 시청자 투표를 반영해야 할까?',o:['반영해야 한다','심사위원 몫이다'],v:[5120,3360],h:'오늘'},
+    {id:'s2',cat:'사회',type:'vs',q:'주 4.5일제 도입, 찬성?',o:['찬성','아직 이르다'],v:[9340,3870],h:'오늘'},
+    {id:'g1',cat:'정치',type:'multi',q:'국회의원 정수, 어떻게 해야 할까?',o:['줄여야 한다','지금이 적당하다','늘려야 한다'],v:[8120,2430,1180],h:'어제'},
+    {id:'p4',cat:'연예',type:'multi',q:'아이돌 컴백 주기, 몇 개월이 적당할까?',o:['3개월','6개월','1년','상관없음'],v:[1520,4870,2210,690],h:'어제'},
+    {id:'p7',cat:'사회',type:'multi',q:'공연 암표 대책으로 가장 효과 있을 것은?',o:['실명 인증 입장','공식 재판매 플랫폼','처벌 강화','추첨제 확대'],v:[5020,3870,2960,1440],h:'어제'},
+    {id:'e3',cat:'경제',type:'vs',q:'첫 집이라면, 청약 vs 구축 매매',o:['청약 끝까지 노린다','구축 사서 들어간다'],v:[3910,3470],h:'어제'},
+    {id:'p5',cat:'밸런스',type:'vs',q:'최애의 콘서트 맨 앞줄 vs 최애와 10분 영상통화',o:['콘서트 맨 앞줄','10분 영상통화'],v:[3380,3610],h:'2일 전'},
+    {id:'p6',cat:'드라마·예능',type:'vs',q:'예능 속 PPL, 이 정도면 괜찮다?',o:['괜찮다','몰입 깨진다'],v:[2140,5290],h:'2일 전'},
+    {id:'sp2',cat:'스포츠',type:'vs',q:'축구 국가대표 감독, 외국인 vs 국내 지도자',o:['외국인 감독','국내 지도자'],v:[4410,3020],h:'2일 전'},
+    {id:'g2',cat:'정치',type:'vs',q:'선거 연령 16세로 낮추기, 찬성?',o:['찬성','반대'],v:[2870,5640],h:'3일 전'}
+  ];
+  var filter='all';
+  var feed=document.getElementById('feed');
+  var embedded=false, embedId=null;
+
+  function sum(a){return a.reduce(function(s,x){return s+x},0)}
+  function pct(p){var t=sum(p.v)||1;return p.v.map(function(x){return Math.round(x*1000/t)/10})}
+  function fmt(n){return n.toLocaleString('ko-KR')}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+  function card(p){
+    var mine=voted[p.id], done=mine!==undefined, ps=pct(p), body='';
+    if(p.type==='vs'){
+      if(!done){
+        body='<div class="vs"><button class="side a" data-i="0">'+esc(p.o[0])+'</button><span class="vsmark">VS</span><button class="side b" data-i="1">'+esc(p.o[1])+'</button></div>';
+      }else{
+        body='<div class="split"><div class="bar"><span class="pa" style="flex-basis:'+ps[0]+'%">'+ps[0]+'%</span><span class="pb" style="flex-basis:'+ps[1]+'%">'+ps[1]+'%</span></div>'+
+          '<div class="labels"><b'+(mine===0?' class="mine"':'')+'>'+esc(p.o[0])+'</b><b'+(mine===1?' class="mine"':'')+' style="text-align:right">'+esc(p.o[1])+'</b></div></div>';
+      }
+    }else{
+      var max=Math.max.apply(null,p.v);
+      body='<div class="opts">'+p.o.map(function(o,i){
+        var cls='opt'+(done&&p.v[i]===max?' top':'')+(mine===i?' mine':'');
+        return '<button class="'+cls+'" data-i="'+i+'"'+(done?' tabindex="-1"':'')+'><span class="fill" style="width:'+(done?ps[i]:0)+'%"></span><span>'+esc(o)+(mine===i?' ✓':'')+'</span><span class="pct">'+(done?ps[i]+'%':'')+'</span></button>';
+      }).join('')+'</div>';
+    }
+    return '<article class="poll'+(done?' done':'')+'" data-id="'+p.id+'">'+
+      '<div class="meta"><span class="cat">'+p.cat+'</span><span>·</span><span>'+p.h+'</span><span class="live">진행 중</span>'+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'</div>'+
+      '<h3 class="q">'+esc(p.q)+'</h3>'+body+
+      '<div class="foot"><span class="n">'+fmt(sum(p.v))+'명 참여'+(done?'':' · 투표하면 결과 공개')+'</span>'+
+      '<span class="acts"><button class="btn" data-act="copy">링크 복사</button><button class="btn dark" data-act="embed">&lt;/&gt; 임베드</button></span></div>'+
+      '<div class="embed" hidden></div></article>';
+  }
+
+  function render(){
+    var list=embedded?polls.filter(function(p){return p.id===embedId}):polls.filter(function(p){return filter==='all'||p.cat===filter});
+    feed.innerHTML=list.length?list.map(card).join(''):'<p class="tag">이 카테고리에 투표가 아직 없습니다.</p>';
+    renderRank();
+  }
+
+  function renderRank(){
+    var r=polls.slice().sort(function(a,b){return sum(b.v)-sum(a.v)});
+    document.getElementById('rank').innerHTML=r.map(function(p,i){
+      var ps=pct(p),lead=ps.indexOf(Math.max.apply(null,ps));
+      return '<li><span class="rk">'+(i+1)+'</span><span class="t">'+esc(p.q)+'<small>'+p.cat+' · 우세: '+esc(p.o[lead])+' '+ps[lead]+'%</small></span><span class="v">'+fmt(sum(p.v))+'</span></li>';
+    }).join('');
+  }
+
+  function embedPanel(p,el){
+    el.innerHTML='<h4>이 투표를 내 사이트에 붙이기</h4>'+
+      '<div class="row"><label for="w-'+p.id+'">너비</label><select id="w-'+p.id+'"><option value="100%">반응형 100%</option><option value="560">560px</option><option value="400">400px</option></select>'+
+      '<label for="t-'+p.id+'">테마</label><select id="t-'+p.id+'"><option value="auto">자동</option><option value="light">라이트</option><option value="dark">다크</option></select></div>'+
+      '<pre class="code" id="c-'+p.id+'"></pre>'+
+      '<div class="row"><button class="btn dark" data-act="copycode">코드 복사</button><span class="hint" data-hint></span></div>'+
+      '<p class="hint">티스토리·네이버 블로그(HTML 모드)·워드프레스·카페에 그대로 붙여 넣으면 됩니다. 투표 결과는 원본과 실시간으로 같습니다.</p>';
+    var w=el.querySelector('#w-'+p.id),t=el.querySelector('#t-'+p.id),c=el.querySelector('#c-'+p.id);
+    function upd(){
+      var h=p.type==='vs'?260:(200+p.o.length*52);
+      c.textContent='<iframe src="https://neaniyo.kr/embed/'+p.id+'?theme='+t.value+'" width="'+w.value+'" height="'+h+'" frameborder="0" title="네아니요 투표: '+p.q.replace(/"/g,'')+'" loading="lazy"></iframe>';
+    }
+    w.onchange=upd;t.onchange=upd;upd();
+  }
+
+  function copy(text,hintEl,okMsg){
+    function fallback(){ if(hintEl) hintEl.textContent='위 코드를 길게 눌러 선택해 복사하세요.'; }
+    try{
+      navigator.clipboard.writeText(text).then(function(){ if(hintEl) hintEl.textContent=okMsg; },fallback);
+    }catch(e){fallback()}
+  }
+
+  feed.addEventListener('click',function(e){
+    var art=e.target.closest('.poll'); if(!art) return;
+    var p=polls.find(function(x){return x.id===art.dataset.id});
+    var actBtn=e.target.closest('[data-act]');
+    if(actBtn){
+      var act=actBtn.dataset.act, panel=art.querySelector('.embed');
+      if(act==='embed'){ panel.hidden=!panel.hidden; if(!panel.hidden) embedPanel(p,panel); }
+      if(act==='copy'){ copy('https://neaniyo.kr/p/'+p.id,null,''); actBtn.textContent='복사됨'; setTimeout(function(){actBtn.textContent='링크 복사'},1500); }
+      if(act==='copycode'){ copy(panel.querySelector('pre').textContent,panel.querySelector('[data-hint]'),'복사했습니다.'); }
+      return;
+    }
+    var b=e.target.closest('[data-i]'); if(!b||voted[p.id]!==undefined) return;
+    var i=+b.dataset.i; p.v[i]++; voted[p.id]=i; save();
+    var html=card(p), tmp=document.createElement('div'); tmp.innerHTML=html;
+    var fresh=tmp.firstChild;
+    // 애니메이션: 0에서 시작해 실제 비율로
+    fresh.querySelectorAll('.fill').forEach(function(f){f.dataset.w=f.style.width;f.style.width='0'});
+    fresh.querySelectorAll('.bar span').forEach(function(s){s.dataset.w=s.style.flexBasis;s.style.flexBasis='50%'});
+    art.replaceWith(fresh);
+    requestAnimationFrame(function(){requestAnimationFrame(function(){
+      fresh.querySelectorAll('.fill').forEach(function(f){f.style.width=f.dataset.w});
+      fresh.querySelectorAll('.bar span').forEach(function(s){s.style.flexBasis=s.dataset.w});
+    })});
+    renderRank();
+  });
+
+  document.querySelectorAll('.chip[data-c]').forEach(function(c){
+    c.onclick=function(){
+      filter=c.dataset.c;
+      document.querySelectorAll('.chip[data-c]').forEach(function(x){x.setAttribute('aria-pressed',x===c)});
+      render();
+    };
+  });
+
+  // 만들기
+  var form=document.getElementById('make'), optlist=document.getElementById('optlist'), add=document.getElementById('addopt'), msg=document.getElementById('f-msg');
+  function syncType(){
+    var multi=document.getElementById('f-t-multi').checked;
+    add.hidden=!multi;
+    var ins=optlist.querySelectorAll('input');
+    if(!multi) for(var k=ins.length-1;k>=2;k--) ins[k].remove();
+  }
+  document.getElementById('f-t-vs').onchange=syncType;
+  document.getElementById('f-t-multi').onchange=syncType;
+  add.onclick=function(){
+    var n=optlist.querySelectorAll('input').length; if(n>=6) return;
+    var inp=document.createElement('input'); inp.id='f-o'+(n+1); inp.placeholder='보기 '+(n+1); inp.maxLength=30;
+    optlist.appendChild(inp); inp.focus();
+  };
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var q=document.getElementById('f-q').value.trim();
+    var o=[].map.call(optlist.querySelectorAll('input'),function(i){return i.value.trim()}).filter(Boolean);
+    msg.className='msg';
+    if(!q){msg.className='msg err';msg.textContent='질문을 입력해 주세요.';return}
+    if(o.length<2){msg.className='msg err';msg.textContent='보기를 두 개 이상 입력해 주세요.';return}
+    var type=document.getElementById('f-t-multi').checked?'multi':'vs';
+    if(type==='vs') o=o.slice(0,2);
+    polls.unshift({id:'u'+Date.now().toString(36),cat:document.getElementById('f-cat').value,type:type,q:q,o:o,v:o.map(function(){return 0}),h:'방금'});
+    form.reset(); syncType();
+    msg.textContent='투표를 올렸습니다. 피드 맨 위에서 확인하세요.';
+    filter='all'; document.querySelectorAll('.chip[data-c]').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.c==='all')});
+    render();
+  });
+
+  // 라우팅
+  var views=['vote','ranking','create','analysis'];
+  function route(){
+    var h=(location.hash||'').slice(1);
+    var m=h.match(/^embed-(\w+)$/);
+    if(m && polls.some(function(p){return p.id===m[1]})){
+      embedded=true; embedId=m[1]; document.body.classList.add('embedded'); h='vote';
+    }else{ embedded=false; document.body.classList.remove('embedded'); }
+    if(views.indexOf(h)<0) h='vote';
+    views.forEach(function(v){document.getElementById('v-'+v).hidden=v!==h});
+    document.querySelectorAll('.tabs a').forEach(function(a){ if(a.dataset.v===h) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+    render();
+  }
+  window.addEventListener('hashchange',route);
+  route();
+})();
+</script>
+</body>
+</html>
