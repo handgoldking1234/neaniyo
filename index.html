@@ -103,7 +103,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px;font-size:13px;color:var(--muted)}
 .foot .n{font-variant-numeric:tabular-nums}
 .acts{display:flex;gap:6px}
-.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:13px;font-weight:500}
+.btn{text-decoration:none;color:inherit;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:13px;font-weight:500}
 .btn.dark{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .btn:hover{border-color:var(--ink)}
 
@@ -279,6 +279,44 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .btn.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 @media (max-width:520px){.xr{grid-template-columns:76px 1fr}.foot .acts{flex-wrap:wrap}}
 
+/* 공개 범위·한줄평 */
+.seg3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg3 label{border:1px solid var(--line);border-radius:8px;padding:10px 6px;text-align:center;cursor:pointer;font-size:13.5px;display:flex;flex-direction:column;gap:2px}
+.seg3 input{position:absolute;opacity:0;pointer-events:none}
+.seg3 small{color:var(--muted);font-size:11.5px}
+.seg3 label:has(input:checked){border-color:var(--a);background:var(--a-soft);color:var(--a);font-weight:700}
+.seg3 label:has(input:focus-visible){outline:2px solid var(--b);outline-offset:2px}
+.sw{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer}
+.sw span{display:flex;flex-direction:column;gap:2px;font-weight:700;font-size:14px}
+.sw small{font-weight:400;color:var(--muted);font-size:12.5px}
+.sw input{appearance:none;width:44px;height:26px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;flex:none;transition:background .2s}
+.sw input::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .2s}
+.sw input:checked{background:var(--a)}
+.sw input:checked::after{left:21px}
+.made{background:var(--surface);border:2px solid var(--ok);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.made h3{margin:0;font-size:16px}
+.made .url{font-family:var(--mono);font-size:13px;background:var(--bg);border-radius:8px;padding:10px;word-break:break-all;user-select:all}
+.vis{font-weight:700;color:var(--b)}
+.lockcard{text-align:center;align-items:center;padding-block:32px}
+.lockcard .ic{width:52px;height:52px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font-size:24px}
+.lockcard form{display:flex;gap:6px;width:100%;max-width:320px}
+.lockcard input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px}
+.cmts{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:10px}
+.cmts h4{margin:0;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.cmts h4 small{font-weight:400;color:var(--muted);font-size:12px}
+.cmt{display:flex;flex-direction:column;gap:4px;font-size:14px}
+.cmt .who{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.side-tag{font-weight:700;font-size:11.5px;padding:1px 7px;border-radius:999px;color:#fff}
+.cmt p{margin:0;line-height:1.5}
+.cmt .ops{display:flex;gap:10px;font-size:12px}
+.cmt .ops button{border:0;background:none;color:var(--muted);cursor:pointer;padding:2px 0;font-size:12px}
+.cmt .ops button[aria-pressed="true"]{color:var(--a);font-weight:700}
+.cmt.best{background:var(--bg);border-radius:10px;padding:10px 12px}
+.cform{display:flex;gap:6px}
+.cform input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px}
+.cmts .hint{margin:0}
+.cmsg{font-size:12.5px;color:var(--a);margin:0;min-height:0}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -347,8 +385,19 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
           </div>
           <button type="button" class="btn" id="addopt" hidden>+ 보기 추가</button>
         </div>
+        <div class="field"><label>공개 범위</label>
+          <div class="seg3">
+            <label><input type="radio" name="f-vis" id="f-v-pub" value="public" checked>전체 공개<small>피드·랭킹 노출</small></label>
+            <label><input type="radio" name="f-vis" id="f-v-link" value="link">링크 공유만<small>주소 아는 사람만</small></label>
+            <label><input type="radio" name="f-vis" id="f-v-pw" value="secret">비밀방<small>비밀번호 필요</small></label>
+          </div>
+          <input id="f-pw" type="password" maxlength="20" autocomplete="new-password" placeholder="비밀번호 4자 이상" hidden style="border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px">
+        </div>
+        <label class="sw" for="f-cmt"><span>한줄평 열기<small>투표한 사람이 80자 한줄평을 남길 수 있어요</small></span><input type="checkbox" id="f-cmt"></label>
         <button class="btn dark" type="submit" style="padding:12px">투표 올리기</button>
         <p class="msg" id="f-msg" role="status"></p>
+        <div class="made" id="made" hidden></div>
+        <p class="hint">예시로 둘러보기: <a href="?p=x1">링크 공유 투표</a> · <a href="?p=x2">비밀방 투표</a> (비밀번호 1234)</p>
       </form>
     </section>
 
@@ -477,8 +526,8 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
   function save(){try{localStorage.setItem(KEY,JSON.stringify(voted))}catch(e){}}
 
   var polls=[
-    {id:'p1',cat:'연예',type:'vs',q:'열애설이 터졌을 때, 소속사 대응은?',o:['바로 인정하는 게 낫다','사생활이니 노코멘트'],v:[6420,4180],h:'1시간 전'},
-    {id:'s1',cat:'사회',type:'vs',q:'식당 노키즈존, 업주가 정해도 될까?',o:['업주의 자유','차별이다'],v:[7210,5980],h:'2시간 전'},
+    {id:'p1',comments:true,cat:'연예',type:'vs',q:'열애설이 터졌을 때, 소속사 대응은?',o:['바로 인정하는 게 낫다','사생활이니 노코멘트'],v:[6420,4180],h:'1시간 전'},
+    {id:'s1',comments:true,cat:'사회',type:'vs',q:'식당 노키즈존, 업주가 정해도 될까?',o:['업주의 자유','차별이다'],v:[7210,5980],h:'2시간 전'},
     {id:'e1',cat:'경제',type:'vs',q:'지금 내 집 마련, 살 때일까 기다릴 때일까?',o:['지금 산다','더 기다린다'],v:[4870,6130],h:'2시간 전'},
     {id:'p2',cat:'드라마·예능',type:'multi',q:'요즘 가장 기다려지는 드라마 장르는?',o:['로맨스 코미디','법정·의학 전문직','스릴러·복수극','사극·판타지'],v:[3120,2050,4410,1870],h:'3시간 전'},
     {id:'n2',cat:'연예',type:'vs',q:'멤버 탈퇴 후 그룹 이름, 누가 가져야 할까?',o:['소속사','남은 멤버들'],v:[2310,7840],h:'4시간 전'},
@@ -495,6 +544,9 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
     {id:'p6',cat:'드라마·예능',type:'vs',q:'예능 속 PPL, 이 정도면 괜찮다?',o:['괜찮다','몰입 깨진다'],v:[2140,5290],h:'2일 전'},
     {id:'sp2',cat:'스포츠',type:'vs',q:'축구 국가대표 감독, 외국인 vs 국내 지도자',o:['외국인 감독','국내 지도자'],v:[4410,3020],h:'2일 전'},
     {id:'g2',cat:'정치',type:'vs',q:'선거 연령 16세로 낮추기, 찬성?',o:['찬성','반대'],v:[2870,5640],h:'3일 전'},
+    // 링크 공유·비밀방 예시 (피드·랭킹에 안 나옴)
+    {id:'x1',vis:'link',comments:true,cat:'밸런스',type:'multi',q:'우리 팀 송년회, 어떤 메뉴가 좋을까?',o:['고깃집','횟집','뷔페','방탈출 후 치킨'],v:[9,4,3,7],h:'오늘'},
+    {id:'x2',vis:'secret',pw:'hyjbbf3',comments:true,cat:'밸런스',type:'vs',q:'5학년 3반 현장체험학습, 어디로 갈까?',o:['놀이공원','과학관'],v:[14,9],h:'오늘'},
     // 마감된 지난 투표: 피드에는 안 나오고 월간·베스트 랭킹과 공유 링크로만 노출
     {id:'a1',cat:'연예',type:'vs',q:'연말 시상식 공동 수상, 어떻게 봐?',o:['상의 가치가 떨어진다','다 같이 받으면 좋다'],v:[18420,6310],h:'12일 전',t:290,closed:true},
     {id:'a2',cat:'스포츠',type:'vs',q:'프로야구 정규시즌 경기 수, 줄여야 할까?',o:['줄여야 한다','지금이 좋다'],v:[9100,7400],h:'18일 전',t:430,closed:true},
@@ -515,7 +567,16 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
   function fmt(n){return n.toLocaleString('ko-KR')}
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 
+  function isPublic(p){return !p.vis||p.vis==='public'}
+  var unlocked={}; try{unlocked=JSON.parse(sessionStorage.getItem('neaniyo-open')||'{}')||{}}catch(e){}
+  function lockCard(p){
+    return '<article class="poll lockcard" data-id="'+p.id+'"><span class="ic" aria-hidden="true">🔒</span><h3 class="q">비밀 투표입니다</h3>'+
+      '<p class="hint">만든 사람에게 받은 비밀번호를 입력하면 참여할 수 있어요.</p>'+
+      '<form data-unlock="'+p.id+'" novalidate><label class="sr" for="pw-'+p.id+'" hidden>비밀번호</label><input id="pw-'+p.id+'" type="password" placeholder="비밀번호" autocomplete="off"><button class="btn dark" type="submit">입장</button></form>'+
+      '<p class="cmsg" data-umsg></p></article>';
+  }
   function card(p){
+    if(p.vis==='secret'&&!p.own&&!unlocked[p.id]) return lockCard(p);
     var mine=voted[p.id], done=mine!==undefined||!!p.closed, ps=pct(p), body='';
     if(p.type==='vs'){
       if(!done){
@@ -532,17 +593,17 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
       }).join('')+'</div>';
     }
     return '<article class="poll'+(done?' done':'')+'" data-id="'+p.id+'">'+
-      '<div class="meta"><span class="cat">'+p.cat+'</span><span>·</span><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'</div>'+
+      '<div class="meta"><span class="cat">'+p.cat+'</span><span>·</span><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+(p.vis==='link'?'<span class="vis">· 링크 공유</span>':p.vis==='secret'?'<span class="vis">· 🔒 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'</div>'+
       '<h3 class="q">'+esc(p.q)+'</h3>'+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+body+
       (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
       '<div class="foot"><span class="n">'+fmt(sum(p.v))+'명 참여'+(p.closed?' · 마감된 투표':done?'':' · 투표하면 결과 공개')+'</span>'+
-      '<span class="acts">'+(done?'<button class="btn" data-act="stats">상세 통계</button>':'')+'<button class="btn" data-act="copy">링크 복사</button><button class="btn dark" data-act="embed">&lt;/&gt; 임베드</button></span></div>'+
-      '<div class="stats" hidden></div><div class="embed" hidden></div></article>';
+      '<span class="acts">'+(done?'<button class="btn" data-act="stats">상세 통계</button>':'')+'<button class="btn" data-act="copy">링크 복사</button>'+(p.vis==='secret'?'':'<button class="btn dark" data-act="embed">&lt;/&gt; 임베드</button>')+'</span></div>'+
+      '<div class="stats" hidden></div><div class="embed" hidden></div>'+(p.comments&&!embedded?cmtBlock(p,done):'')+'</article>';
   }
 
   function render(){
     var only=embedded?embedId:shareId;
-    var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return !p.closed&&(filter==='all'||p.cat===filter)});
+    var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return isPublic(p)&&!p.closed&&(filter==='all'||p.cat===filter)});
     feed.innerHTML=list.length?list.map(card).join(''):'<p class="tag">이 카테고리에 투표가 아직 없습니다.</p>';
     renderRank();
     resize();
@@ -566,7 +627,7 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
   function renderRank(){
     var R=RANK[period];
     document.getElementById('rankcap').textContent=R.cap;
-    var r=polls.filter(R.pick).map(function(p){return {p:p,s:R.score(p)}})
+    var r=polls.filter(function(p){return isPublic(p)&&R.pick(p)}).map(function(p){return {p:p,s:R.score(p)}})
       .sort(function(a,b){return b.s-a.s}).slice(0,R.max);
     document.getElementById('rank').innerHTML=r.length?r.map(function(x,i){
       var p=x.p,ps=pct(p),lead=ps.indexOf(Math.max.apply(null,ps));
@@ -639,7 +700,7 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
       if(!g||!yv||!r){m.textContent='성별, 출생연도, 지역을 선택해 주세요.';return}
       if(!chk('pf-c1')||!chk('pf-c2')||!chk('pf-c3')){m.textContent='필수 항목에 동의해 주세요.';return}
       user={via:auth.dataset.via||'kakao',gender:g,birth:+yv,region:r,edu:val('pf-e'),stat:chk('pf-c4'),pro:false};
-      saveUser(); authUI(); closeDialog(); toast('가입을 마쳤습니다. 투표 후 상세 통계를 열어 보세요.'); refreshOpenStats();
+      saveUser(); authUI(); closeDialog(); toast('가입을 마쳤습니다.'); reRenderKeep();
       if(auth.dataset.next==='pro'){ startTrial(); }
     });
     openDialog();
@@ -660,7 +721,7 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
     if(t.closest('[data-close]')) return closeDialog();
     var sso=t.closest('[data-sso]'); if(sso){ auth.dataset.via=sso.dataset.sso; return showProfile(); }
     var me=t.closest('[data-me]'); if(!me) return;
-    if(me.dataset.me==='logout'){ user=null; saveUser(); authUI(); closeDialog(); toast('로그아웃했습니다.'); refreshOpenStats(); }
+    if(me.dataset.me==='logout'){ user=null; saveUser(); authUI(); closeDialog(); toast('로그아웃했습니다.'); reRenderKeep(); }
     if(me.dataset.me==='pro'){ startTrial(); closeDialog(); }
     if(me.dataset.me==='unpro'){ user.pro=false; saveUser(); authUI(); closeDialog(); toast('프리미엄 체험을 종료했습니다.'); refreshOpenStats(); }
   });
@@ -729,6 +790,12 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
     el.innerHTML=head+tabs+legend+tbl+foot;
     resize();
   }
+  // 로그인 상태가 바뀌면 카드를 다시 그리되, 열려 있던 상세 통계는 유지
+  function reRenderKeep(){
+    var open=[].filter.call(document.querySelectorAll('.poll'),function(a){var el=a.querySelector('.stats');return el&&!el.hidden}).map(function(a){return a.dataset.id});
+    render();
+    open.forEach(function(id){var a=document.querySelector('.poll[data-id="'+id+'"]'); if(!a) return; var el=a.querySelector('.stats'); el.hidden=false; var b=a.querySelector('[data-act=stats]'); if(b) b.classList.add('on'); statsPanel(polls.find(function(x){return x.id===id}),el,openStats[id]||'gender');});
+  }
   function refreshOpenStats(){
     document.querySelectorAll('.poll').forEach(function(art){
       var el=art.querySelector('.stats'); if(!el||el.hidden) return;
@@ -747,6 +814,44 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
     }catch(e){ toast('이 환경에서는 다운로드가 막혀 있습니다.'); }
   }
   authUI();
+
+  // ===== 한줄평 (시안: 브라우저에만 저장) =====
+  var CKEY='neaniyo-cmt', cmts={};
+  try{cmts=JSON.parse(localStorage.getItem(CKEY)||'{}')||{}}catch(e){cmts={}}
+  function saveC(){try{localStorage.setItem(CKEY,JSON.stringify(cmts))}catch(e){}}
+  var SEEDC={
+    p1:[{o:0,text:'어차피 다 알려지는데 숨기면 더 커지더라고요',likes:412,at:'1시간 전'},{o:1,text:'연애는 개인 일인데 인정까지 해야 하나 싶어요',likes:388,at:'50분 전'},{o:0,text:'팬 입장에선 솔직한 게 제일 덜 서운함',likes:97,at:'20분 전'}],
+    s1:[{o:1,text:'아이 동반 손님 전체를 막는 건 과하다고 봐요',likes:521,at:'2시간 전'},{o:0,text:'작은 가게는 사고 나면 책임이 너무 커요',likes:604,at:'1시간 전'},{o:0,text:'노키즈 대신 시간대 운영하는 곳도 있더라고요',likes:133,at:'30분 전'}]
+  };
+  function getC(p){
+    if(!cmts[p.id]) cmts[p.id]=(SEEDC[p.id]||[]).map(function(c,i){return {id:p.id+'-s'+i,o:c.o,text:c.text,likes:c.likes,at:c.at,liked:false}});
+    return cmts[p.id];
+  }
+  var BAN=['씨발','시발','병신','개새','좆','지랄'];
+  function cmtBlock(p,done){
+    var list=getC(p).filter(function(c){return !c.hidden});
+    if(!done) return '<div class="cmts"><h4>한줄평 <small>'+list.length+'개</small></h4><p class="hint">투표하면 한줄평을 보고 남길 수 있어요.</p></div>';
+    var sorted=list.slice().sort(function(a,b){return b.likes-a.likes});
+    var bestIds={};
+    p.o.forEach(function(_,oi){var b=sorted.filter(function(c){return c.o===oi})[0]; if(b&&b.likes>0) bestIds[b.id]=1;});
+    var ordered=sorted.filter(function(c){return bestIds[c.id]}).concat(list.slice().reverse().filter(function(c){return !bestIds[c.id]}));
+    var form=user?'<form class="cform" data-cform="'+p.id+'" novalidate><label for="c-'+p.id+'" hidden>한줄평</label><input id="c-'+p.id+'" maxlength="80" placeholder="'+esc(p.o[voted[p.id]]||'내 선택')+' 쪽 한줄평 (80자)" autocomplete="off"><button class="btn dark" type="submit">등록</button></form><p class="cmsg" data-cmsg></p>'
+      :'<button class="btn" data-act="login">로그인하고 한줄평 남기기</button>';
+    return '<div class="cmts"><h4>한줄평 <small>'+list.length+'개 · 공감 많은 대표 의견 먼저</small></h4>'+
+      ordered.map(function(c){
+        return '<div class="cmt'+(bestIds[c.id]?' best':'')+'"><span class="who"><span class="side-tag" style="background:'+OPC[c.o%OPC.length]+'">'+esc(p.o[c.o]||'')+'</span>'+(bestIds[c.id]?'<b>대표 의견</b> · ':'')+esc(c.at)+(c.mine?' · 내 글':'')+'</span><p>'+esc(c.text)+'</p>'+
+          '<span class="ops"><button type="button" data-act="like" data-cid="'+c.id+'" aria-pressed="'+!!c.liked+'">공감 '+fmt(c.likes)+'</button><button type="button" data-act="report" data-cid="'+c.id+'">신고</button></span></div>';
+      }).join('')+form+'</div>';
+  }
+  function rerender(art,p){
+    var tmp=document.createElement('div'); tmp.innerHTML=card(p); var fresh=tmp.firstChild; art.replaceWith(fresh); resize(); return fresh;
+  }
+
+  // ===== 내가 만든 투표 (시안: 브라우저에만 저장) =====
+  var MKEY='neaniyo-mine';
+  try{(JSON.parse(localStorage.getItem(MKEY)||'[]')||[]).forEach(function(x){ if(!polls.some(function(p){return p.id===x.id})){ x.t=Math.max(0,(Date.now()-x.created)/36e5); x.h=ago(x.t); x.own=true; polls.push(x);} })}catch(e){}
+  function saveMine(){try{localStorage.setItem(MKEY,JSON.stringify(polls.filter(function(p){return p.own}).map(function(p){var c={};for(var k in p){if(k!=='t'&&k!=='h')c[k]=p[k]}return c})))}catch(e){}}
+  function pwHash(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return 'h'+(h>>>0).toString(36)}
 
   function shareUrl(p){return SITE+'?p='+p.id}
   function embedHeight(p){return p.type==='vs'?330:(215+p.o.length*56)}
@@ -807,6 +912,12 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
       if(act==='login'){ openAuth(); }
       if(act==='upgrade'){ location.hash='premium'; }
       if(act==='csv'){ downloadCsv(p); }
+      if(act==='like'||act==='report'){
+        var c=getC(p).filter(function(x){return x.id===actBtn.dataset.cid})[0]; if(!c) return;
+        if(act==='like'){ c.liked=!c.liked; c.likes+=c.liked?1:-1; }
+        else { c.reports=(c.reports||0)+1; c.hidden=true; toast('신고했습니다. 검토 전까지 이 한줄평은 가려집니다.'); }
+        saveC(); rerender(art,p); return;
+      }
       if(act==='copy'){ copy(shareUrl(p),'투표 링크를 복사했습니다.'); }
       if(act==='copycode'){ copy(panel.querySelector('pre').textContent,'임베드 코드를 복사했습니다.'); }
       resize();
@@ -828,6 +939,25 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
     setTimeout(resize,750);
   });
 
+  // 한줄평 등록·비밀방 입장
+  feed.addEventListener('submit',function(e){
+    var f=e.target; e.preventDefault();
+    var art=f.closest('.poll'), p=polls.find(function(x){return x.id===art.dataset.id});
+    if(f.dataset.unlock){
+      var v=f.querySelector('input').value;
+      if(pwHash(v)===p.pw){ unlocked[p.id]=1; try{sessionStorage.setItem('neaniyo-open',JSON.stringify(unlocked))}catch(err){} document.title=p.q+' | 네아니요'; rerender(art,p); }
+      else art.querySelector('[data-umsg]').textContent='비밀번호가 맞지 않습니다.';
+      return;
+    }
+    if(f.dataset.cform){
+      var inp=f.querySelector('input'), t=inp.value.trim(), m=art.querySelector('[data-cmsg]');
+      if(t.length<2){ m.textContent='두 글자 이상 써 주세요.'; return; }
+      if(BAN.some(function(w){return t.indexOf(w)>=0})){ m.textContent='욕설이나 비방이 들어간 글은 등록할 수 없습니다.'; return; }
+      getC(p).push({id:p.id+'-'+Date.now().toString(36),o:voted[p.id],text:t,likes:0,at:'방금',mine:true}); saveC();
+      rerender(art,p); toast('한줄평을 등록했습니다.');
+    }
+  });
+
   document.querySelectorAll('.chip[data-c]').forEach(function(c){
     c.onclick=function(){
       filter=c.dataset.c;
@@ -844,6 +974,9 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
     var ins=optlist.querySelectorAll('input');
     if(!multi) for(var k=ins.length-1;k>=2;k--) ins[k].remove();
   }
+  var pwIn=document.getElementById('f-pw');
+  function syncVis(){ pwIn.hidden=!document.getElementById('f-v-pw').checked; }
+  ['f-v-pub','f-v-link','f-v-pw'].forEach(function(id){document.getElementById(id).onchange=syncVis});
   document.getElementById('f-t-vs').onchange=syncType;
   document.getElementById('f-t-multi').onchange=syncType;
   add.onclick=function(){
@@ -860,9 +993,19 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
     if(o.length<2){msg.className='msg err';msg.textContent='보기를 두 개 이상 입력해 주세요.';return}
     var type=document.getElementById('f-t-multi').checked?'multi':'vs';
     if(type==='vs') o=o.slice(0,2);
-    polls.unshift({id:'u'+Date.now().toString(36),cat:document.getElementById('f-cat').value,type:type,q:q,o:o,v:o.map(function(){return 0}),h:'방금',t:0});
-    form.reset(); syncType();
-    msg.textContent='투표를 올렸습니다. 피드 맨 위에서 확인하세요.';
+    var vis=document.querySelector('input[name="f-vis"]:checked').value;
+    if(vis==='secret'&&pwIn.value.length<4){msg.className='msg err';msg.textContent='비밀번호를 4자 이상 입력해 주세요.';return}
+    var np={id:'u'+Date.now().toString(36),cat:document.getElementById('f-cat').value,type:type,q:q,o:o,v:o.map(function(){return 0}),h:'방금',t:0,
+      vis:vis,comments:document.getElementById('f-cmt').checked,own:true,created:Date.now()};
+    if(vis==='secret') np.pw=pwHash(pwIn.value);
+    polls.unshift(np); saveMine();
+    form.reset(); syncType(); syncVis();
+    msg.textContent='';
+    var made=document.getElementById('made'), url=shareUrl(np);
+    made.innerHTML='<h3>투표를 만들었습니다</h3><p class="hint">'+(vis==='public'?'피드 맨 위에도 올라갔어요.':vis==='link'?'피드와 랭킹에는 나오지 않고, 이 주소를 받은 사람만 참여할 수 있어요.':'피드와 랭킹에는 나오지 않고, 주소와 비밀번호를 모두 아는 사람만 참여할 수 있어요. 비밀번호는 따로 알려 주세요.')+(np.comments?' 한줄평이 열려 있어요.':'')+'</p>'+
+      '<div class="url">'+esc(url)+'</div><div class="row"><button class="btn dark" type="button" data-copyurl="'+esc(url)+'">주소 복사</button><a class="btn" href="?p='+np.id+'">투표 보러 가기</a></div>';
+    made.hidden=false;
+    made.querySelector('[data-copyurl]').onclick=function(){copy(url,'투표 주소를 복사했습니다.')};
     filter='all'; document.querySelectorAll('.chip[data-c]').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.c==='all')});
     render();
   });
@@ -878,7 +1021,7 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
   }else if(exists(params.get('p'))){
     shareId=params.get('p'); document.body.classList.add('shared');
     document.getElementById('sharebar').hidden=false;
-    var sp=polls.find(function(x){return x.id===shareId}); document.title=sp.q+' | 네아니요';
+    var sp=polls.find(function(x){return x.id===shareId}); document.title=(sp.vis==='secret'&&!sp.own&&!unlocked[sp.id]?'비밀 투표':sp.q)+' | 네아니요';
   }
   window.addEventListener('hashchange',route);
   route();
