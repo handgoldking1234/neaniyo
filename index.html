@@ -355,6 +355,14 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 }
 body.embedded .side-hot{display:none!important}
 @media (prefers-reduced-motion:reduce){.hotbox-hd h2::before{animation:none}}
+/* 셀렉트: 화살표 아이콘 좌우 여백 통일 */
+body select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237A8094' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 12px center!important;background-size:12px 8px!important;padding-left:12px!important;padding-right:36px!important;cursor:pointer}
+.row select{padding-right:30px!important;background-position:right 9px center!important}
+/* 동의 체크박스: 왼쪽 정렬 */
+.pf .consent label{display:flex;align-items:flex-start;gap:8px;text-align:left;justify-content:flex-start;font-weight:400}
+.pf .consent input{width:16px;height:16px;padding:0;margin:2px 0 0;border:0;flex:none;background:none}
+.pf .consent span{flex:1;min-width:0}
+.pf .consent .all{border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:3px;font-size:14px}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -763,6 +771,7 @@ body.embedded .side-hot{display:none!important}
       '<div class="field"><label for="pf-r">지역 <span class="req">*</span></label><select id="pf-r"><option value="">선택</option>'+REGIONS.map(function(r){return '<option>'+r+'</option>'}).join('')+'</select></div>'+
       '<div class="field"><label for="pf-e">학력 <small>(선택)</small></label><select id="pf-e"><option value="">응답 안 함</option>'+EDU.map(function(r){return '<option>'+r+'</option>'}).join('')+'</select></div>'+
       '<div class="consent full">'+
+      '<label class="all"><input type="checkbox" id="pf-all"><span><b>전체 동의</b> <small>(선택 항목 포함)</small></span></label>'+
       '<label><input type="checkbox" id="pf-c1"><span>[필수] 이용약관 동의</span></label>'+
       '<label><input type="checkbox" id="pf-c2"><span>[필수] 개인정보 수집·이용 동의 <small>(성별·출생연도·지역·학력)</small></span></label>'+
       '<label><input type="checkbox" id="pf-c3"><span>[필수] 만 14세 이상입니다</span></label>'+
@@ -770,6 +779,9 @@ body.embedded .side-hot{display:none!important}
       '</div>'+
       '<p class="msg err full" id="pf-msg" role="status"></p>'+
       '<button class="btn dark full" type="submit">완료</button></form>';
+    var allBox=document.getElementById('pf-all'), each=['pf-c1','pf-c2','pf-c3','pf-c4'].map(function(id){return document.getElementById(id)});
+    allBox.onchange=function(){ each.forEach(function(c){c.checked=allBox.checked}); };
+    each.forEach(function(c){ c.onchange=function(){ allBox.checked=each.every(function(x){return x.checked}); }; });
     document.getElementById('pf').addEventListener('submit',function(e){
       e.preventDefault();
       var g=val('pf-g'),yv=val('pf-y'),r=val('pf-r'),m=document.getElementById('pf-msg');
