@@ -371,6 +371,24 @@ body.embedded .side-hot{display:none!important}
 .cmt .ops .likepop .i{animation:heartpop .45s cubic-bezier(.2,.9,.3,1.4)}
 @keyframes heartpop{0%{transform:scale(1)}40%{transform:scale(1.6)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.burst{display:none}.pressed,.cmt .ops .likepop .i{animation:none}}
+/* 순위 변동 애니메이션 */
+@keyframes flashUp{0%{background:var(--a-soft)}70%{background:var(--a-soft)}100%{background:transparent}}
+@keyframes flashDn{0%{background:var(--b-soft)}70%{background:var(--b-soft)}100%{background:transparent}}
+@keyframes flashNew{0%{background:color-mix(in srgb,var(--ok) 18%,transparent)}100%{background:transparent}}
+@keyframes rkBump{0%{transform:scale(1)}35%{transform:scale(1.45)}100%{transform:scale(1)}}
+@keyframes mvIn{0%{transform:translateY(6px);opacity:0}100%{transform:none;opacity:1}}
+.flip-li{position:relative;z-index:1}
+.flip-li.lift{z-index:2}
+.mv-up > a{animation:flashUp 1.8s ease-out}
+.mv-dn > a{animation:flashDn 1.8s ease-out}
+.mv-new > a{animation:flashNew 1.8s ease-out}
+.mv-up .n,.mv-up .rk,.mv-dn .n,.mv-dn .rk{display:inline-block;animation:rkBump .6s .45s ease}
+.mv-up .mv,.mv-dn .mv,.mv-new .mv{animation:mvIn .4s .5s both}
+.rank .rmv{display:inline-flex;align-items:center;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;margin-left:2px}
+.rank .rmv .i{width:12px;height:12px;stroke-width:3}
+.rank .rmv.up{color:var(--a)}.rank .rmv.dn{color:var(--b)}.rank .rmv.new{color:var(--ok)}
+.rank .rkw{display:flex;flex-direction:column;align-items:center;gap:0}
+@media (prefers-reduced-motion:reduce){.mv-up > a,.mv-dn > a,.mv-new > a,.mv-up .n,.mv-dn .n,.mv-up .rk,.mv-dn .rk{animation:none}}
 /* Lucide 아이콘 */
 .i{width:1.1em;height:1.1em;flex:none;vertical-align:-0.18em}
 .btn,.cta,.login{display:inline-flex;align-items:center;justify-content:center;gap:5px}
@@ -735,6 +753,26 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
       pick:function(){return true},score:function(p){return sum(p.v)}}
   };
   var period='live';
+  // 순위가 바뀔 때 항목이 제자리로 미끄러져 가는 FLIP 애니메이션
+  function flipRender(list,html){
+    var before={}, oldIdx={};
+    [].forEach.call(list.querySelectorAll('li[data-id]'),function(li,i){ before[li.dataset.id]=li.getBoundingClientRect(); oldIdx[li.dataset.id]=i; });
+    var had=Object.keys(before).length>0;
+    list.innerHTML=html;
+    var reduce=false; try{reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
+    if(!had||reduce) return;
+    [].forEach.call(list.querySelectorAll('li[data-id]'),function(li,i){
+      var id=li.dataset.id, b=before[id]; li.classList.add('flip-li');
+      if(!b){ li.classList.add('mv-new'); return; }
+      if(oldIdx[id]>i) li.classList.add('mv-up','lift'); else if(oldIdx[id]<i) li.classList.add('mv-dn');
+      var a=li.getBoundingClientRect(), dx=b.left-a.left, dy=b.top-a.top;
+      if(!dx&&!dy) return;
+      li.style.transition='none'; li.style.transform='translate('+dx+'px,'+dy+'px)';
+      li.getBoundingClientRect();
+      requestAnimationFrame(function(){ li.style.transition='transform .7s cubic-bezier(.2,.8,.2,1)'; li.style.transform=''; });
+      setTimeout(function(){ li.classList.remove('lift'); },900);
+    });
+  }
   // 실시간 인기 투표 (사이드)
   var prevHot={};
   function renderHot(){
@@ -745,7 +783,7 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
     var now=new Date(), hh=('0'+now.getHours()).slice(-2), mm=('0'+now.getMinutes()).slice(-2);
     document.getElementById('hotTime').textContent=hh+':'+mm+' 기준';
     var had=Object.keys(prevHot).length>0, next={};
-    el.innerHTML=r.map(function(x,i){
+    flipRender(el,r.map(function(x,i){
       var p=x.p,ps=pct(p),lead=ps.indexOf(Math.max.apply(null,ps)); next[p.id]=i;
       var mv='<span class="mv"></span>';
       if(had){ var was=prevHot[p.id];
@@ -753,27 +791,37 @@ body select{-webkit-appearance:none;appearance:none;background-image:url("data:i
         else if(was>i) mv='<span class="mv up" aria-label="'+(was-i)+'계단 상승">'+ic('chevron-up')+(was-i)+'</span>';
         else if(was<i) mv='<span class="mv dn" aria-label="'+(i-was)+'계단 하락">'+ic('chevron-down')+(i-was)+'</span>';
       } else if(p.t<=3) mv='<span class="mv new">NEW</span>';
-      return '<li><a href="?p='+p.id+'"><span class="n">'+(i+1)+'</span><span class="t"><span class="tq">'+esc(p.q)+'</span><small>'+p.cat+' · '+esc(p.o[lead])+' '+ps[lead]+'% · +'+fmt(x.s)+'표/시간</small></span>'+mv+'</a></li>';
-    }).join('');
+      return '<li data-id="'+p.id+'"><a href="?p='+p.id+'"><span class="n">'+(i+1)+'</span><span class="t"><span class="tq">'+esc(p.q)+'</span><small>'+p.cat+' · '+esc(p.o[lead])+' '+ps[lead]+'% · +'+fmt(x.s)+'표/시간</small></span>'+mv+'</a></li>';
+    }).join(''));
     prevHot=next;
   }
-  // 시안용: 20초마다 표가 조금씩 들어오는 것처럼 보이게
+  // 시안용: 8초마다 표가 들어오는 것처럼 보이게 (개발 단계에서 실시간 구독으로 교체)
   setInterval(function(){
     if(document.hidden) return;
     polls.forEach(function(p){ if(!isPublic(p)||p.closed) return;
-      var r=Math.random(); if(r<0.35){ var add=Math.ceil(Math.random()*40/(1+p.t/6)); p.boost=(p.boost||0)+add; p.v[Math.floor(Math.random()*p.v.length)]+=add; } });
+      var r=Math.random(); if(r<0.4){ var add=Math.ceil(Math.random()*160/(1+p.t/8)); p.boost=(p.boost||0)+add; p.v[Math.floor(Math.random()*p.v.length)]+=add; } });
     renderHot();
-  },20000);
+    if(period==='live'&&!document.getElementById('v-ranking').hidden) renderRank();
+  },8000);
+  var prevRank={};
   function renderRank(){
     var R=RANK[period];
     document.getElementById('rankcap').textContent=R.cap;
     var r=polls.filter(function(p){return isPublic(p)&&R.pick(p)}).map(function(p){return {p:p,s:R.score(p)}})
       .sort(function(a,b){return b.s-a.s}).slice(0,R.max);
-    document.getElementById('rank').innerHTML=r.length?r.map(function(x,i){
-      var p=x.p,ps=pct(p),lead=ps.indexOf(Math.max.apply(null,ps));
+    var rl=document.getElementById('rank'), live=period==='live', hadR=live&&Object.keys(prevRank).length>0, nextR={};
+    if(rl.dataset.period!==period){ rl.innerHTML=''; rl.dataset.period=period; }
+    flipRender(rl,r.length?r.map(function(x,i){
+      var p=x.p,ps=pct(p),lead=ps.indexOf(Math.max.apply(null,ps)); nextR[p.id]=i;
+      var rmv='';
+      if(hadR){ var w=prevRank[p.id];
+        if(w===undefined) rmv='<span class="rmv new">NEW</span>';
+        else if(w>i) rmv='<span class="rmv up" aria-label="'+(w-i)+'계단 상승">'+ic('chevron-up')+(w-i)+'</span>';
+        else if(w<i) rmv='<span class="rmv dn" aria-label="'+(i-w)+'계단 하락">'+ic('chevron-down')+(i-w)+'</span>'; }
       var badge=p.closed?' <em class="badge">마감</em>':(p.t<=3?' <em class="badge new">NEW</em>':'');
-      return '<li><a href="?p='+p.id+'"><span class="rk">'+(i+1)+'</span><span class="t">'+esc(p.q)+badge+'<small>'+p.cat+' · '+p.h+' · 우세: '+esc(p.o[lead])+' '+ps[lead]+'%</small></span><span class="v">'+(period==='live'?'+':'')+fmt(x.s)+'<small>'+R.unit+'</small></span><span class="go" aria-hidden="true">'+ic('chevron-right')+'</span></a></li>';
-    }).join(''):'<li><p class="empty">이 기간에 집계된 투표가 아직 없습니다.</p></li>';
+      return '<li data-id="'+p.id+'"><a href="?p='+p.id+'"><span class="rkw"><span class="rk">'+(i+1)+'</span>'+rmv+'</span><span class="t">'+esc(p.q)+badge+'<small>'+p.cat+' · '+p.h+' · 우세: '+esc(p.o[lead])+' '+ps[lead]+'%</small></span><span class="v">'+(period==='live'?'+':'')+fmt(x.s)+'<small>'+R.unit+'</small></span><span class="go" aria-hidden="true">'+ic('chevron-right')+'</span></a></li>';
+    }).join(''):'<li><p class="empty">이 기간에 집계된 투표가 아직 없습니다.</p></li>');
+    if(live) prevRank=nextR;
   }
   document.querySelectorAll('.chip[data-r]').forEach(function(c){
     c.onclick=function(){
