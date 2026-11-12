@@ -304,6 +304,12 @@ body.v-create .fab-new,body.embedded .fabs,body.shared .fab-new{display:none}
 .dr-nav a .i{width:20px;height:20px;color:var(--muted)}
 .dr-nav a[aria-current="page"]{font-weight:700}
 .dr-nav a[aria-current="page"] .i{color:var(--a)}
+.dr-cats{padding:14px 0 12px;border-bottom:1px solid var(--line)}
+.dr-tt{display:block;font-size:calc(13px * var(--fs));color:var(--muted);font-weight:600;margin:0 6px 10px}
+.dr-cgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.dr-cgrid button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:10px 12px;text-align:left;font-size:calc(14px * var(--fs));cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dr-cgrid button:hover{background:var(--bg)}
+.dr-cgrid button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink);font-weight:700}
 .dr-set{display:flex;align-items:center;justify-content:space-between;padding:14px 6px;font-size:calc(15px * var(--fs))}
 .dr-set small{color:var(--muted);font-size:calc(12px * var(--fs));margin-left:4px}
 .sw{width:46px;height:28px;border-radius:999px;border:0;background:var(--line);position:relative;cursor:pointer;padding:0;flex:none;transition:background .15s}
@@ -331,7 +337,17 @@ body.v-create .fab-new,body.embedded .fabs,body.shared .fab-new{display:none}
 .sb-field .i{width:18px;height:18px;color:var(--muted);flex:none}
 .sb-field input{flex:1;min-width:0;border:0;background:none;outline:none;font-size:calc(15px * var(--fs));height:100%;padding:0}
 .sb-field input::-webkit-search-cancel-button{display:none}
-@media (min-width:721px){.srch-bar{left:auto;width:min(520px,60%)}}
+@media (min-width:721px){
+  .srch-btn,.sb-back{display:none!important}
+  .srch-bar,.srch-bar[hidden]{position:static;display:flex!important;flex:0 1 300px;width:300px;min-width:180px;background:none;gap:4px;transition:flex-basis .2s}
+  .srch-bar:focus-within{flex-basis:380px}
+  .sb-field{height:38px;background:var(--surface);border-radius:999px;padding:0 6px 0 16px}
+  .sb-field .i{order:2;width:20px;height:20px;color:var(--ink)}
+  .sb-field input{order:1;font-size:calc(14px * var(--fs))}
+  .srch-bar .sb-clear{display:none!important}
+}
+@media (min-width:721px) and (max-width:1000px){.srch-bar,.srch-bar[hidden]{flex-basis:190px;width:190px;min-width:130px}.srch-bar:focus-within{flex-basis:260px}}
+@media (min-width:721px) and (prefers-reduced-motion:reduce){.srch-bar{transition:none}}
 body.searching .side-hot,body.searching .nextup{display:none!important}
 .srch-res{margin:14px 0;font-size:calc(14px * var(--fs));color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .srch-res b{color:var(--ink)}
@@ -808,17 +824,17 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       <a href="./#premium" data-v="premium">프리미엄</a>
       <a href="./#analysis" data-v="analysis">경쟁사 분석</a>
     </nav>
+    <form class="srch-bar" id="srchBar" role="search" hidden>
+      <button class="sb-back" id="srchBack" type="button" aria-label="검색 닫기"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></button>
+      <label class="sb-field"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="srchIn" type="search" placeholder="투표 검색" aria-label="투표 검색" autocomplete="off" enterkeyhint="search"></label>
+      <button class="sb-clear" id="srchClear" type="button" aria-label="검색어 지우기" hidden><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </form>
     <button class="srch-btn" id="srchBtn" type="button" aria-label="검색" aria-expanded="false" aria-controls="srchBar"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
     <button class="snd" id="sndBtn" type="button" aria-label="효과음 끄기" aria-pressed="true"></button>
     <div class="acct" id="acct">
       <button class="login" id="loginBtn" type="button" aria-label="로그인" aria-haspopup="true" aria-expanded="false" aria-controls="acctMenu" title="로그인"><span class="lbl">로그인</span></button>
       <div class="acct-menu" id="acctMenu" hidden></div>
     </div>
-    <form class="srch-bar" id="srchBar" role="search" hidden>
-      <button class="sb-back" id="srchBack" type="button" aria-label="검색 닫기"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></button>
-      <label class="sb-field"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="srchIn" type="search" placeholder="투표 검색" aria-label="투표 검색" autocomplete="off" enterkeyhint="search"></label>
-      <button class="sb-clear" id="srchClear" type="button" aria-label="검색어 지우기" hidden><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-    </form>
     <button class="menu-btn" id="menuBtn" type="button" aria-label="전체 메뉴" aria-haspopup="dialog" aria-expanded="false" aria-controls="drawer"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></button>
   </div>
   <div class="hd-cats" id="hdCats"></div>
@@ -1048,6 +1064,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     <a href="./#premium" data-v="premium"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>프리미엄</a>
     <a href="./#analysis" data-v="analysis"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>경쟁사 분석</a>
   </nav>
+  <div class="dr-cats"><b class="dr-tt">전체 카테고리</b><div class="dr-cgrid" id="drCats"></div></div>
   <div class="dr-set"><span>효과음 <small>투표할 때만</small></span><button class="sw" id="drSnd" type="button" role="switch" aria-checked="true" aria-label="효과음"><i></i></button></div>
 </aside>
 <nav class="btabs" id="btabs" aria-label="하단 메뉴">
@@ -1679,7 +1696,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     render();
   }
   function openSearch(){ closeMenu(); srchBar.hidden=false; srchBtn.setAttribute('aria-expanded','true'); srchIn.focus(); }
-  function closeSearch(){ srchBar.hidden=true; srchBtn.setAttribute('aria-expanded','false'); if(searchQ||srchIn.value){ srchIn.value=''; applySearch(''); } srchBtn.focus(); }
+  function closeSearch(){ if(window.innerWidth>720){ srchIn.value=''; applySearch(''); srchIn.blur(); return; } srchBar.hidden=true; srchBtn.setAttribute('aria-expanded','false'); if(searchQ||srchIn.value){ srchIn.value=''; applySearch(''); } srchBtn.focus(); }
   srchBtn.onclick=openSearch;
   document.getElementById('srchBack').onclick=closeSearch;
   srchClear.onclick=function(){ srchIn.value=''; applySearch(''); srchIn.focus(); };
@@ -1694,6 +1711,8 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       ?'<span class="tx"><b>내 정보'+(user.pro?' <span class="pro" style="font-size:calc(10.5px * var(--fs));font-weight:700;color:#fff;background:var(--gold);border-radius:4px;padding:1px 5px">PRO</span>':'')+'</b><small>'+esc(user.gender)+' · '+(user.birth?ageBand(user.birth):'-')+' · '+esc(user.region)+'</small></span><button type="button" data-dr="me">내 정보 보기</button>'
       :'<span class="tx"><b>로그인이 필요해요</b><small>내 그룹별 결과와 투표 기록</small></span><button type="button" data-dr="login">로그인</button>');
     drSnd.setAttribute('aria-checked',soundOn);
+    var cur=searchQ?'':filter;
+    document.getElementById('drCats').innerHTML=[{c:'all',l:'전체'}].concat(TAX).map(function(t){return '<button type="button" data-dc="'+t.c+'" aria-pressed="'+(cur===t.c)+'">'+t.l+'</button>'}).join('');
   }
   function openDrawer(){ closeMenu(); drawMe(); drawer.hidden=false; drawerBg.hidden=false; menuBtn.setAttribute('aria-expanded','true'); document.documentElement.style.overflow='hidden'; document.getElementById('drawerX').focus(); }
   function closeDrawer(){ if(drawer.hidden) return; drawer.hidden=true; drawerBg.hidden=true; menuBtn.setAttribute('aria-expanded','false'); document.documentElement.style.overflow=''; }
@@ -1702,6 +1721,8 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   drawerBg.onclick=closeDrawer;
   drawer.addEventListener('click',function(e){
     if(e.target.closest('.dr-nav a')) return closeDrawer();
+    var dc=e.target.closest('[data-dc]');
+    if(dc){ closeDrawer(); if(searchQ){ srchIn.value=''; applySearch(''); if(window.innerWidth<=720) srchBar.hidden=true; } setFilter(dc.dataset.dc,''); if((location.hash||'#vote')!=='#vote') location.hash='#vote'; window.scrollTo(0,0); return; }
     var b=e.target.closest('[data-dr]'); if(!b) return;
     closeDrawer();
     if(b.dataset.dr==='me') showMe(); else { auth.dataset.next=''; openAuth(); }
