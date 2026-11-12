@@ -316,6 +316,26 @@ body.v-create .fab-new,body.embedded .fabs,body.shared .fab-new{display:none}
   .acct{margin-left:auto}
 }
 @media (prefers-reduced-motion:reduce){.drawer,.sw,.sw i{transition:none}}
+
+/* 검색 (유튜브처럼 우측 상단 돋보기 → 헤더 전체 검색창) */
+.srch-btn{flex:none;width:36px;height:36px;border:0;background:none;color:var(--ink);border-radius:50%;display:grid;place-items:center;cursor:pointer;padding:0}
+.srch-btn .i{width:22px;height:22px}
+.srch-btn:hover,.menu-btn:hover{background:var(--bg)}
+.hd-in{position:relative}
+.srch-bar{position:absolute;inset:0;z-index:2;background:var(--surface);display:flex;align-items:center;gap:8px;margin:0}
+.srch-bar[hidden]{display:none}
+.sb-back,.sb-clear{flex:none;width:36px;height:36px;border:0;background:none;color:var(--ink);border-radius:50%;display:grid;place-items:center;cursor:pointer;padding:0}
+.sb-back .i{width:22px;height:22px}.sb-clear .i{width:18px;height:18px}
+.sb-field{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:999px;padding:0 14px;height:40px;border:1px solid var(--line)}
+.sb-field:focus-within{border-color:var(--ink)}
+.sb-field .i{width:18px;height:18px;color:var(--muted);flex:none}
+.sb-field input{flex:1;min-width:0;border:0;background:none;outline:none;font-size:calc(15px * var(--fs));height:100%;padding:0}
+.sb-field input::-webkit-search-cancel-button{display:none}
+@media (min-width:721px){.srch-bar{left:auto;width:min(520px,60%)}}
+body.searching .side-hot,body.searching .nextup{display:none!important}
+.srch-res{margin:14px 0;font-size:calc(14px * var(--fs));color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.srch-res b{color:var(--ink)}
+.srch-res button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px;font-size:calc(12.5px * var(--fs));cursor:pointer;color:var(--ink)}
 /* 모달 */
 dialog.auth{border:0;border-radius:16px;padding:0;width:min(420px,calc(100% - 32px));background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.25)}
 dialog.auth::backdrop{background:rgba(10,12,20,.45)}
@@ -757,11 +777,17 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
       <a href="./#premium" data-v="premium">프리미엄</a>
       <a href="./#analysis" data-v="analysis">경쟁사 분석</a>
     </nav>
+    <button class="srch-btn" id="srchBtn" type="button" aria-label="검색" aria-expanded="false" aria-controls="srchBar"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
     <button class="snd" id="sndBtn" type="button" aria-label="효과음 끄기" aria-pressed="true"></button>
     <div class="acct" id="acct">
       <button class="login" id="loginBtn" type="button" aria-label="로그인" aria-haspopup="true" aria-expanded="false" aria-controls="acctMenu" title="로그인"><span class="lbl">로그인</span></button>
       <div class="acct-menu" id="acctMenu" hidden></div>
     </div>
+    <form class="srch-bar" id="srchBar" role="search" hidden>
+      <button class="sb-back" id="srchBack" type="button" aria-label="검색 닫기"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></button>
+      <label class="sb-field"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="srchIn" type="search" placeholder="투표 검색" aria-label="투표 검색" autocomplete="off" enterkeyhint="search"></label>
+      <button class="sb-clear" id="srchClear" type="button" aria-label="검색어 지우기" hidden><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </form>
     <button class="menu-btn" id="menuBtn" type="button" aria-label="전체 메뉴" aria-haspopup="dialog" aria-expanded="false" aria-controls="drawer"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></button>
   </div>
 </header>
@@ -776,6 +802,7 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
       <div class="chips subchips" id="subchips" role="group" aria-label="소분류" hidden></div>
       <div class="sharebar" id="sharebar" hidden><span>공유받은 투표</span><a href="./">전체 투표 보기 <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="m12 5 7 7-7 7" /></svg></a></div>
       <p class="nextup" id="nextup" hidden></p>
+      <p class="srch-res" id="srchRes" role="status" hidden></p>
       <div class="feed" id="feed"></div>
       <button type="button" class="btn morebtn" id="feedMore" hidden></button>
       <p class="more" id="more"></p>
@@ -1164,7 +1191,9 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
   polls.forEach(normCat);
   var HRS={'방금':0,'1시간 전':1,'2시간 전':2,'3시간 전':3,'4시간 전':4,'5시간 전':5,'오늘':8,'어제':26,'2일 전':50,'3일 전':74};
   polls.forEach(function(p){ if(p.t===undefined) p.t=HRS[p.h]!==undefined?HRS[p.h]:0; });
-  var filter='all';
+  var filter='all', searchQ='';
+  function norm(t){return String(t||'').toLowerCase().replace(/\s+/g,'')}
+  function matchQ(p){ var q=norm(searchQ); if(!q) return true; return norm([p.q,p.desc,p.cat,p.sub,(p.o||[]).join(' ')].join(' ')).indexOf(q)>=0; }
   var feed=document.getElementById('feed');
   var SITE='https://neaniyo.iux.kr/';
   var params=new URLSearchParams(location.search);
@@ -1336,9 +1365,10 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
   }
   function render(){
     var only=embedded?embedId:shareId;
-    var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return isPublic(p)&&!p.closed&&(filter==='all'||p.cat===filter)&&(!subFilter||p.sub===subFilter)});
+    var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return isPublic(p)&&!p.closed&&(searchQ?matchQ(p):(filter==='all'||p.cat===filter)&&(!subFilter||p.sub===subFilter))});
+    var sr=document.getElementById('srchRes'); if(sr){ sr.hidden=!searchQ||!!only; if(searchQ&&!only) sr.innerHTML='<span><b>\''+esc(searchQ)+'\'</b> 검색 결과 '+list.length+'개</span><button type="button" data-srch-clear>검색 지우기</button>'; }
     feedList=list;
-    feed.innerHTML=list.length?list.slice(0,feedShown).map(card).join(''):'<p class="tag">이 카테고리에 투표가 아직 없습니다.</p>';
+    feed.innerHTML=list.length?list.slice(0,feedShown).map(card).join(''):(searchQ?'<p class="tag">검색 결과가 없습니다. 다른 단어로 찾아보세요.</p>':'<p class="tag">이 카테고리에 투표가 아직 없습니다.</p>');
     moreLabel(feedMore,feedShown,only?1:list.length,'feed');
     renderRank();
     renderHot();
@@ -1582,6 +1612,23 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
   document.addEventListener('click',function(e){ if(!e.target.closest('#acct')) closeMenu(); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!acctMenu.hidden){ closeMenu(); loginBtn.focus(); } });
   window.addEventListener('hashchange',closeMenu);
+  // ===== 검색 =====
+  var srchBtn=document.getElementById('srchBtn'), srchBar=document.getElementById('srchBar'), srchIn=document.getElementById('srchIn'), srchClear=document.getElementById('srchClear'), srchT=null;
+  function applySearch(q){
+    searchQ=q.trim(); feedShown=PAGE; srchClear.hidden=!q; document.body.classList.toggle('searching',!!searchQ);
+    document.getElementById('catchips').hidden=!!searchQ; var sc=document.getElementById('subchips'); sc.hidden=searchQ?true:sc.innerHTML==='';
+    if(searchQ&&(location.hash||'#vote')!=='#vote'){ location.hash='#vote'; return; }
+    render();
+  }
+  function openSearch(){ closeMenu(); srchBar.hidden=false; srchBtn.setAttribute('aria-expanded','true'); srchIn.focus(); }
+  function closeSearch(){ srchBar.hidden=true; srchBtn.setAttribute('aria-expanded','false'); if(searchQ||srchIn.value){ srchIn.value=''; applySearch(''); } srchBtn.focus(); }
+  srchBtn.onclick=openSearch;
+  document.getElementById('srchBack').onclick=closeSearch;
+  srchClear.onclick=function(){ srchIn.value=''; applySearch(''); srchIn.focus(); };
+  srchIn.addEventListener('input',function(){ clearTimeout(srchT); srchT=setTimeout(function(){ applySearch(srchIn.value); },200); });
+  srchBar.addEventListener('submit',function(e){ e.preventDefault(); clearTimeout(srchT); applySearch(srchIn.value); srchIn.blur(); window.scrollTo(0,0); });
+  srchIn.addEventListener('keydown',function(e){ if(e.key==='Escape') closeSearch(); });
+  document.addEventListener('click',function(e){ if(e.target.closest('[data-srch-clear]')){ srchIn.value=''; applySearch(''); if(!srchBar.hidden) srchIn.focus(); } });
   // ===== 삼선 메뉴(모바일 전체 메뉴) =====
   var drawer=document.getElementById('drawer'), drawerBg=document.getElementById('drawerBg'), menuBtn=document.getElementById('menuBtn'), drMe=document.getElementById('drMe'), drSnd=document.getElementById('drSnd');
   function drawMe(){
