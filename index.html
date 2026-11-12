@@ -1157,12 +1157,8 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
   function nextCombo(){ var now=Date.now(); combo=(now-lastVote<7000)?combo+1:1; lastVote=now; return combo; }
   var sndBtn=document.getElementById('sndBtn');
   function sndUI(){ sndBtn.innerHTML=ic(soundOn?'volume-2':'volume-x'); sndBtn.setAttribute('aria-pressed',soundOn); sndBtn.setAttribute('aria-label',soundOn?'효과음 끄기':'효과음 켜기'); }
-  sndBtn.onclick=function(){ soundOn=!soundOn; try{localStorage.setItem(SKEY,soundOn?'on':'off')}catch(e){} sndUI(); if(soundOn) SFX.open(); toast(soundOn?'효과음을 켰습니다.':'효과음을 껐습니다.'); };
-  // 가벼운 클릭음: 탭·칩·일반 버튼
-  document.addEventListener('click',function(e){
-    var t=e.target.closest('.chip,.tabs a,.dims button,.btn,.cta,.login,.seg label,.seg3 label');
-    if(t&&!t.closest('[data-i]')) SFX.tick();
-  });
+  sndBtn.onclick=function(){ soundOn=!soundOn; try{localStorage.setItem(SKEY,soundOn?'on':'off')}catch(e){} sndUI(); toast(soundOn?'효과음을 켰습니다.':'효과음을 껐습니다.'); };
+  // 효과음은 투표(설문)할 때만 냅니다. 탭·칩·일반 버튼은 소리 없음.
 
   // 카톡 리액션처럼 누른 자리에서 따봉이 튀어오르는 효과
   function burst(x,y,color,opts){
@@ -1401,7 +1397,7 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
       polls.sort(function(a,b){return a.t-b.t});
       if(typeof route==='function'&&!document.getElementById('v-vote').hidden&&!embedded&&!shareId){ render(); }
       else renderHot();
-      if(!embedded){ toast('새 투표가 올라왔어요: '+out[out.length-1].q); try{SFX.open()}catch(e){} }
+      if(!embedded){ toast('새 투표가 올라왔어요: '+out[out.length-1].q); }
     }
     nextUp();
   }
@@ -1825,13 +1821,13 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
         inn.style.maxHeight=open?inn.scrollHeight+'px':'';
         actBtn.setAttribute('aria-expanded',open); actBtn.querySelector('span').textContent=open?'접기':'더보기';
         if(open) setTimeout(function(){ if(st.classList.contains('open')) inn.style.maxHeight='none'; },500);
-        try{SFX.tick()}catch(err){} setTimeout(resize,520); return;
+        setTimeout(resize,520); return;
       }
       if(act==='pickgo'){ submitPicks(art,p,actBtn,e); return; }
       if(act==='like'||act==='report'){
         var c=getC(p).filter(function(x){return x.id===actBtn.dataset.cid})[0]; if(!c) return;
         if(act==='like'){ c.liked=!c.liked; c.likes+=c.liked?1:-1;
-          if(c.liked){ var rb=actBtn.getBoundingClientRect(); burst(rb.left+12,rb.top+rb.height/2,'var(--a)',{small:true}); SFX.like(); } else SFX.unlike();
+          if(c.liked){ var rb=actBtn.getBoundingClientRect(); burst(rb.left+12,rb.top+rb.height/2,'var(--a)',{small:true}); }
           saveC(); var fr=rerender(art,p); var nb=fr.querySelector('[data-cid="'+c.id+'"][data-act=like]'); if(nb&&c.liked) nb.classList.add('likepop'); return; }
         else { c.reports=(c.reports||0)+1; c.hidden=true; toast('신고했습니다. 검토 전까지 이 한줄평은 가려집니다.'); }
         saveC(); rerender(art,p); return;
@@ -1908,8 +1904,8 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
     var art=f.closest('.poll'), p=polls.find(function(x){return x.id===art.dataset.id});
     if(f.dataset.unlock){
       var v=f.querySelector('input').value;
-      if(pwHash(v)===p.pw){ SFX.open(); unlocked[p.id]=1; try{sessionStorage.setItem('neaniyo-open',JSON.stringify(unlocked))}catch(err){} document.title=p.q+' | 네아니요'; rerender(art,p); }
-      else { SFX.fail(); art.querySelector('[data-umsg]').textContent='비밀번호가 맞지 않습니다.'; }
+      if(pwHash(v)===p.pw){ unlocked[p.id]=1; try{sessionStorage.setItem('neaniyo-open',JSON.stringify(unlocked))}catch(err){} document.title=p.q+' | 네아니요'; rerender(art,p); }
+      else { art.querySelector('[data-umsg]').textContent='비밀번호가 맞지 않습니다.'; }
       return;
     }
     if(f.dataset.cform){
@@ -1979,7 +1975,7 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
     if(room<=0){ toast('사진은 최대 4장까지예요.'); return; }
     if(files.length>room) toast('최대 4장이라 '+room+'장만 넣었어요.');
     files=files.slice(0,room); var left=files.length;
-    files.forEach(function(f){ shrink(f,function(d){ if(d) upImgs.push(d); else toast('읽을 수 없는 이미지가 있어요.'); if(--left===0){ photoIn.value=''; drawThumbs(); try{SFX.like()}catch(e){} } }); });
+    files.forEach(function(f){ shrink(f,function(d){ if(d) upImgs.push(d); else toast('읽을 수 없는 이미지가 있어요.'); if(--left===0){ photoIn.value=''; drawThumbs(); } }); });
   }
   photoIn.addEventListener('change',function(){ addFiles(photoIn.files); });
   drop.addEventListener('click',function(){ photoIn.click(); });
@@ -2005,7 +2001,7 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
   }
   add.onclick=function(){ var n=optInputs().length; if(n>=6) return; setOptCount(n+1); var last=optInputs()[n]; last.placeholder='보기 '+(n+1); last.focus(); sync(); };
   document.getElementById('quick').addEventListener('click',function(e){
-    var b=e.target.closest('[data-q]'); if(!b) return; var v=b.dataset.q.split('|'); setOptCount(2); var ins=optInputs(); ins[0].value=v[0]; ins[1].value=v[1]; try{SFX.tick()}catch(err){} sync();
+    var b=e.target.closest('[data-q]'); if(!b) return; var v=b.dataset.q.split('|'); setOptCount(2); var ins=optInputs(); ins[0].value=v[0]; ins[1].value=v[1]; sync();
   });
   optlist.addEventListener('input',sync);
   qIn.addEventListener('input',sync);
