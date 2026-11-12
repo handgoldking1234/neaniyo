@@ -1497,9 +1497,38 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     btn.hidden=shown>=total;
     btn.innerHTML=ic('chevron-down')+(unit==='rank'?(shown+1)+'~'+Math.min(shown+PAGE,total)+'위 더보기':'투표 더보기')+' <small>'+Math.min(shown,total)+' / '+total+'</small>';
   }
+  // 추천 순서: 첫 화면은 최신순이 아니라 '인기 + 새로움 + 무작위'를 섞고, 같은 카테고리가 몰리지 않게 섞는다.
+  // 방문할 때마다 순서가 바뀌고(추천 칩을 다시 누르면 새로 섞음), 보는 동안에는 순서가 그대로 유지된다.
+  // 이미 투표한 것은 뒤로, 사진·영상 있는 투표는 조금 앞으로. (개발 단계에서 서버의 개인화 추천으로 교체)
+  var recSeed=String(Math.random()), recOrder=null, recKey='';
+  function buildRec(list){
+    var r=rnd(recSeed+recKey), hot=list.map(function(p){return RANK.live.score(p)}), mx=Math.max.apply(null,hot.concat([1]));
+    var sc=list.map(function(p,i){
+      var media=!!(p.img||p.imgs||(p.link&&p.link.yt));
+      return {p:p,s:0.45*Math.sqrt(hot[i]/mx)+0.3/(1+p.t/12)+0.4*r()+(media?0.1:0)-(voted[p.id]!=null?0.6:0)-(p.ex?0.08:0)};
+    }).sort(function(a,b){return b.s-a.s}).map(function(x){return x.p});
+    var out=[];
+    while(sc.length){
+      var last=out.slice(-4), k=0;
+      for(var i=0;i<sc.length&&i<12;i++){
+        var c=sc[i].cat, same=last.filter(function(q){return q.cat===c}).length;
+        if((!out.length||out[out.length-1].cat!==c)&&same<2){ k=i; break; }
+      }
+      out.push(sc.splice(k,1)[0]);
+    }
+    return out.map(function(p){return p.id});
+  }
+  function recommend(list){
+    var key=filter+'|'+subFilter;
+    if(!recOrder||recKey!==key){ recKey=key; recOrder=buildRec(list); }
+    var pos={}; recOrder.forEach(function(id,i){pos[id]=i});
+    var fresh=list.filter(function(p){return pos[p.id]==null}), known=list.filter(function(p){return pos[p.id]!=null}).sort(function(a,b){return pos[a.id]-pos[b.id]});
+    return fresh.concat(known);
+  }
   function render(){
     var only=embedded?embedId:shareId;
-    var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return isPublic(p)&&!p.closed&&(searchQ?matchQ(p):(filter==='all'||p.cat===filter)&&(!subFilter||p.sub===subFilter))});
+    var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return isPublic(p)&&!p.closed&&(searchQ?matchQ(p):(filter==='all'||filter==='new'||p.cat===filter)&&(!subFilter||p.sub===subFilter))});
+    if(!only&&!searchQ&&filter!=='new') list=recommend(list);
     var sr=document.getElementById('srchRes'); if(sr){ sr.hidden=!searchQ||!!only; if(searchQ&&!only) sr.innerHTML='<span><b>\''+esc(searchQ)+'\'</b> 검색 결과 '+list.length+'개</span><button type="button" data-srch-clear>검색 지우기</button>'; }
     feedList=list;
     feed.innerHTML=list.length?list.slice(0,feedShown).map(card).join(''):(searchQ?'<p class="tag">검색 결과가 없습니다. 다른 단어로 찾아보세요.</p>':'<p class="tag">이 카테고리에 투표가 아직 없습니다.</p>');
@@ -2229,7 +2258,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   });
 
   var subFilter='', catChips=document.getElementById('catchips'), subChips=document.getElementById('subchips');
-  catChips.innerHTML='<button class="chip" data-c="all" aria-pressed="true">전체</button>'+TAX.map(function(t){return '<button class="chip" data-c="'+t.c+'" aria-pressed="false">'+t.l+'</button>'}).join('');
+  catChips.innerHTML='<button class="chip" data-c="all" aria-pressed="true">추천</button><button class="chip" data-c="new" aria-pressed="false">최신</button>'+TAX.map(function(t){return '<button class="chip" data-c="'+t.c+'" aria-pressed="false">'+t.l+'</button>'}).join('');
   function drawSubs(){
     var t=TAX.filter(function(x){return x.c===filter})[0];
     if(!t){ subChips.hidden=true; subChips.innerHTML=''; return; }
@@ -2247,7 +2276,11 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     [].forEach.call(catChips.querySelectorAll('.chip'),function(x){x.setAttribute('aria-pressed',x.dataset.c===c)});
     drawSubs(); render();
   }
-  catChips.addEventListener('click',function(e){ var c=e.target.closest('[data-c]'); if(c) setFilter(c.dataset.c,''); });
+  catChips.addEventListener('click',function(e){
+    var c=e.target.closest('[data-c]'); if(!c) return;
+    if(c.dataset.c==='all'&&filter==='all'){ recSeed=String(Math.random()); recOrder=null; window.scrollTo({top:0,behavior:'smooth'}); toast('추천을 새로 섞었어요'); }
+    setFilter(c.dataset.c,'');
+  });
   subChips.addEventListener('click',function(e){ var c=e.target.closest('[data-s]'); if(c) setFilter(filter,c.dataset.s); });
 
   // 만들기 — 형식은 고르지 않고, 쓴 내용으로 자동 결정
