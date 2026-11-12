@@ -470,15 +470,28 @@ body.embedded .side-hot{display:none!important}
 .pimg.fit img{object-fit:contain;max-height:420px;background:#fff}
 .credit{margin:-10px 0 0;font-size:11.5px;color:var(--muted)}
 .pimg.yt{position:relative;aspect-ratio:16/9;background:#000}
-.pimg.yt button{all:unset;cursor:pointer;display:block;position:absolute;inset:0}
+.pimg.yt button[data-act]{all:unset;cursor:pointer;display:block;position:absolute;inset:0}
 .pimg.yt img{min-height:0;max-height:none;height:100%;object-fit:cover;object-position:center}
 .pimg.yt .play{position:absolute;left:50%;top:50%;width:68px;height:48px;margin:-24px 0 0 -34px;border-radius:14px;background:#ff0033;color:#fff;display:grid;place-items:center;box-shadow:0 6px 20px rgba(0,0,0,.35);transition:transform .15s}
 .pimg.yt .play svg{width:26px;height:26px;fill:#fff}
-.pimg.yt button:hover .play,.pimg.yt button:focus-visible .play{transform:scale(1.08)}
+.pimg.yt button[data-act]:hover .play,.pimg.yt button[data-act]:focus-visible .play{transform:scale(1.08)}
 .pimg.yt .ytlab{position:absolute;left:12px;bottom:12px;padding:5px 10px;border-radius:999px;background:rgba(0,0,0,.65);color:#fff;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:5px}
 .pimg.yt .ytlab svg{width:14px;height:14px}
 .pimg.yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.pimg.yt .mutehint{position:absolute;right:10px;top:10px;padding:4px 9px;border-radius:999px;background:rgba(0,0,0,.65);color:#fff;font-size:11.5px;font-weight:600;pointer-events:none;transition:opacity .3s}
+.pimg.yt .ytov{position:absolute;inset:0;cursor:pointer;background:transparent;border:0;padding:0}
+.pimg.yt .ytb{position:absolute;left:auto;right:12px;width:44px;height:44px;border-radius:50%;border:0;padding:0;background:rgba(15,15,15,.72);color:#fff;display:grid;place-items:center;cursor:pointer;text-decoration:none;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:transform .15s,background .15s}
+.pimg.yt .ytb:hover,.pimg.yt .ytb:focus-visible{background:rgba(15,15,15,.9);transform:scale(1.06)}
+.pimg.yt .ytb svg{width:22px;height:22px}
+.pimg.yt .ytb.mute{top:12px}
+.pimg.yt .ytb.cc{top:64px}
+.pimg.yt .ytb.cc[aria-pressed="true"]{background:#fff;color:#0f0f0f}
+.pimg.yt .ytb.go{bottom:16px;width:40px;height:40px}
+.pimg.yt .ytb.go svg{width:20px;height:20px}
+.pimg.yt .ytbar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.25);pointer-events:none}
+.pimg.yt .ytbar i{display:block;height:100%;width:0;background:#ff0033;transition:width .5s linear}
+.pimg.yt .ytsnd{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.8);width:64px;height:64px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+.pimg.yt .ytsnd svg{width:30px;height:30px}
+.pimg.yt .ytsnd.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .pimg .capb{position:absolute;left:10px;top:10px;padding:4px 9px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:11.5px;font-weight:600}
 .pimg.cap{position:relative}
 .plink{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);text-decoration:none;font-size:13.5px;min-width:0}
@@ -972,24 +985,45 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
   // 예시 사진: Pexels 무료 사진(px:사진번호|대체그림). 사진을 못 불러오면 대체 그림으로 바꿈
   var FALLBACK={};
   function fbOf(key){ if(key==='@drawing'||key==='@drawing2') return drawing(key==='@drawing2'); var a=JK[key.replace('@','')]||JK.black; return jacket(a[0],a[1],a[2]); }
-  // 유튜브: 화면에 60% 이상 보이면 소리 끈 채 자동재생, 벗어나면 일시정지. 한 번에 하나만 재생
+  // 유튜브: 유튜브 홈 피드처럼 화면에 60% 이상 보이면 소리 끈 채 자동재생, 벗어나면 일시정지, 한 번에 하나만.
+  // 카드 위 버튼: 소리 켜기/끄기, 자막, 유튜브에서 보기. 한 번 소리를 켜면 다음 영상도 소리 켠 채로 재생
   var YT=(function(){
-    var times={}, auto=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)&&!(navigator.connection&&navigator.connection.saveData);
-    function send(el,func){ var f=el.querySelector('iframe'); if(f&&f.contentWindow) f.contentWindow.postMessage(JSON.stringify({event:'command',func:func,args:[]}),'*'); }
-    function load(el,muted){
+    var times={}, durs={}, soundOn=false, ccOn=false, auto=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)&&!(navigator.connection&&navigator.connection.saveData);
+    function send(el,func,args){ var f=el.querySelector('iframe'); if(f&&f.contentWindow) f.contentWindow.postMessage(JSON.stringify({event:'command',func:func,args:args||[]}),'*'); }
+    function setMuteBtn(el){ var mb=el.querySelector('.ytb.mute'); if(!mb) return; var on=el.dataset.snd==='1'; mb.innerHTML=ic(on?'volume-2':'volume-x'); mb.setAttribute('aria-label',on?'소리 끄기':'소리 켜기'); }
+    function flash(el){ var f=el.querySelector('.ytsnd'); if(!f) return; f.innerHTML=ic(el.dataset.snd==='1'?'volume-2':'volume-x'); f.classList.add('on'); clearTimeout(f._t); f._t=setTimeout(function(){f.classList.remove('on')},700); }
+    function sound(el,on){ el.dataset.snd=on?'1':''; soundOn=on; send(el,on?'unMute':'mute'); if(on) send(el,'setVolume',[100]); setMuteBtn(el); flash(el); }
+    function cc(el,on){ ccOn=on; send(el,on?'loadModule':'unloadModule',['captions']); var b=el.querySelector('.ytb.cc'); if(b) b.setAttribute('aria-pressed',on?'true':'false'); }
+    function load(el,manual){
       if(el.querySelector('iframe')) return;
-      var id=el.dataset.yt, pid=el.dataset.pid, st=Math.floor(times[pid]||0);
-      el.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&mute='+(muted?1:0)+'&playsinline=1&rel=0&enablejsapi=1&start='+st+'&origin='+encodeURIComponent(location.origin)+'" title="영상" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>'+(muted?'<span class="mutehint">소리 꺼짐 · 영상 눌러 켜기</span>':'');
-      var f=el.querySelector('iframe'); f.addEventListener('load',function(){ try{ f.contentWindow.postMessage(JSON.stringify({event:'listening',id:pid}),'*'); }catch(e){} });
-      var h=el.querySelector('.mutehint'); if(h) setTimeout(function(){ h.style.opacity=0; },4000);
-      el.dataset.manual=muted?'':'1'; el.dataset.playing='1';
+      var id=el.dataset.yt, pid=el.dataset.pid, st=Math.floor(times[pid]||0), snd=manual||soundOn;
+      el.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&iv_load_policy=3&disablekb=1&loop=1&playlist='+id+'&enablejsapi=1&cc_load_policy='+(ccOn?1:0)+'&start='+st+'&origin='+encodeURIComponent(location.origin)+'" title="영상" tabindex="-1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>'+
+        '<button type="button" class="ytov" aria-label="소리 켜기/끄기"></button>'+
+        '<span class="ytsnd" aria-hidden="true"></span>'+
+        '<button type="button" class="ytb mute"></button>'+
+        '<button type="button" class="ytb cc" aria-label="자막" aria-pressed="'+(ccOn?'true':'false')+'">'+ic('captions')+'</button>'+
+        '<a class="ytb go" href="https://www.youtube.com/watch?v='+id+'" target="_blank" rel="noopener" aria-label="유튜브에서 보기">'+ic('arrow-up-right')+'</a>'+
+        '<div class="ytbar"><i></i></div>';
+      el.dataset.snd=''; setMuteBtn(el);
+      var f=el.querySelector('iframe');
+      f.addEventListener('load',function(){
+        try{ f.contentWindow.postMessage(JSON.stringify({event:'listening',id:pid}),'*'); }catch(e){}
+        // 소리는 재생이 시작된 뒤 켠다(소리 켠 자동재생은 브라우저가 막음)
+        if(snd) setTimeout(function(){ el.dataset.snd='1'; send(el,'unMute'); send(el,'setVolume',[100]); setMuteBtn(el); },600);
+      });
+      var stop=function(e){ e.stopPropagation(); };
+      el.querySelector('.ytov').addEventListener('click',function(e){ stop(e); sound(el,el.dataset.snd!=='1'); });
+      el.querySelector('.ytb.mute').addEventListener('click',function(e){ stop(e); sound(el,el.dataset.snd!=='1'); });
+      el.querySelector('.ytb.cc').addEventListener('click',function(e){ stop(e); cc(el,!ccOn); });
+      el.querySelector('.ytb.go').addEventListener('click',function(e){ stop(e); send(el,'pauseVideo'); el.dataset.playing=''; this.href='https://www.youtube.com/watch?v='+id+(times[pid]?'&t='+Math.floor(times[pid])+'s':''); });
+      el.dataset.playing='1';
     }
     var io='IntersectionObserver' in window?new IntersectionObserver(function(es){
       es.forEach(function(e){ e.target._vis=e.isIntersecting?e.intersectionRatio:0; });
       var els=[].slice.call(document.querySelectorAll('.pimg.yt')), best=null;
       els.forEach(function(el){ if((el._vis||0)>=.6&&(!best||el._vis>best._vis)) best=el; });
       els.forEach(function(el){
-        if(el===best){ if(!el.querySelector('iframe')){ if(auto) load(el,true); } else if(el.dataset.playing!=='1'){ send(el,'playVideo'); el.dataset.playing='1'; } }
+        if(el===best){ if(!el.querySelector('iframe')){ if(auto) load(el,false); } else if(el.dataset.playing!=='1'){ send(el,'playVideo'); el.dataset.playing='1'; } }
         else if(el.querySelector('iframe')&&el.dataset.playing==='1'&&(el._vis||0)<.6){ send(el,'pauseVideo'); el.dataset.playing=''; }
       });
     },{threshold:[0,.3,.6,.9]}):null;
@@ -997,7 +1031,11 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
     new MutationObserver(scan).observe(document.documentElement,{childList:true,subtree:true});
     window.addEventListener('message',function(e){
       if(!/youtube(-nocookie)?\.com$/.test((e.origin||'').replace(/^https?:\/\//,''))) return;
-      try{ var d=JSON.parse(e.data); if(d&&d.info&&typeof d.info.currentTime==='number'&&d.id) times[d.id]=d.info.currentTime; }catch(err){}
+      var d; try{ d=JSON.parse(e.data); }catch(err){ return; }
+      if(!d||!d.info||!d.id) return;
+      if(typeof d.info.currentTime==='number') times[d.id]=d.info.currentTime;
+      if(typeof d.info.duration==='number'&&d.info.duration>0) durs[d.id]=d.info.duration;
+      if(durs[d.id]&&times[d.id]!=null){ var bar=document.querySelector('.pimg.yt[data-pid="'+d.id+'"] .ytbar i'); if(bar) bar.style.width=Math.min(100,times[d.id]/durs[d.id]*100)+'%'; }
     });
     document.addEventListener('visibilitychange',function(){ if(document.hidden) document.querySelectorAll('.pimg.yt[data-playing="1"]').forEach(function(el){ send(el,'pauseVideo'); el.dataset.playing=''; }); });
     return {load:load,scan:scan};
@@ -1074,7 +1112,7 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
     return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sv);
   }
   // Lucide 아이콘 (lucide-static 0.460, ISC)
-  var ICONS={"sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />", "route": "<circle cx=\"6\" cy=\"19\" r=\"3\" /> <path d=\"M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15\" /> <circle cx=\"18\" cy=\"5\" r=\"3\" />", "settings-2": "<path d=\"M20 7h-9\" /> <path d=\"M14 17H5\" /> <circle cx=\"17\" cy=\"17\" r=\"3\" /> <circle cx=\"7\" cy=\"7\" r=\"3\" />", "image-plus": "<path d=\"M16 5h6\" /> <path d=\"M19 2v6\" /> <path d=\"M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5\" /> <path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\" /> <circle cx=\"9\" cy=\"9\" r=\"2\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" /> <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />", "play": "<polygon points=\"6 3 20 12 6 21 6 3\" />", "newspaper": "<path d=\"M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2\" />\n  <path d=\"M18 14h-8\" />\n  <path d=\"M15 18h-5\" />\n  <path d=\"M10 6h8v4h-8V6Z\" />", "clapperboard": "<path d=\"M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z\" />\n  <path d=\"m6.2 5.3 3.1 3.9\" />\n  <path d=\"m12.4 3.4 3.1 4\" />\n  <path d=\"M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z\" />"};
+  var ICONS={"sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />", "route": "<circle cx=\"6\" cy=\"19\" r=\"3\" /> <path d=\"M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15\" /> <circle cx=\"18\" cy=\"5\" r=\"3\" />", "settings-2": "<path d=\"M20 7h-9\" /> <path d=\"M14 17H5\" /> <circle cx=\"17\" cy=\"17\" r=\"3\" /> <circle cx=\"7\" cy=\"7\" r=\"3\" />", "image-plus": "<path d=\"M16 5h6\" /> <path d=\"M19 2v6\" /> <path d=\"M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5\" /> <path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\" /> <circle cx=\"9\" cy=\"9\" r=\"2\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" />\n  <path d=\"M16 9a5 5 0 0 1 0 6\" />\n  <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" />\n  <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" />\n  <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />", "play": "<polygon points=\"6 3 20 12 6 21 6 3\" />", "newspaper": "<path d=\"M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2\" />\n  <path d=\"M18 14h-8\" />\n  <path d=\"M15 18h-5\" />\n  <path d=\"M10 6h8v4h-8V6Z\" />", "clapperboard": "<path d=\"M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z\" />\n  <path d=\"m6.2 5.3 3.1 3.9\" />\n  <path d=\"m12.4 3.4 3.1 4\" />\n  <path d=\"M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z\" />", "captions": "<rect width=\"18\" height=\"14\" x=\"3\" y=\"5\" rx=\"2\" ry=\"2\" />\n  <path d=\"M7 15h4M15 15h2M7 11h2M13 11h4\" />", "arrow-up-right": "<path d=\"M7 7h10v10\" />\n  <path d=\"M7 17 17 7\" />"};
   function ic(n){return '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[n]||'')+'</svg>'}
   // ===== 효과음 (Web Audio로 합성, 파일 없음) =====
   var SKEY='neaniyo-sound', soundOn=true, actx=null;
@@ -1750,7 +1788,7 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
       if(act==='login'){ openAuth(); }
       if(act==='upgrade'){ location.hash='premium'; }
       if(act==='csv'){ downloadCsv(p); }
-      if(act==='ytplay'&&p.link&&p.link.yt){ YT.load(actBtn.closest('.pimg'),false); return; }
+      if(act==='ytplay'&&p.link&&p.link.yt){ YT.load(actBtn.closest('.pimg'),true); return; }
       if(act==='more'){
         var st=actBtn.closest('.story'), inn=st.querySelector('.story-in'), open=!st.classList.contains('open');
         inn.style.maxHeight=inn.getBoundingClientRect().height+'px'; inn.getBoundingClientRect();
