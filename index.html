@@ -10,7 +10,6 @@
 <style>
 :root{--fs:1}
 @media (max-width:720px){:root{--fs:1.1}.logo,.cta,.login{--fs:1}}
-@media (max-width:360px){.logo .word{display:none}}
 body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 
@@ -843,6 +842,17 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   .fabs{transition:bottom .25s ease}
   body.hd-hide .fabs{bottom:calc(20px + env(safe-area-inset-bottom,0px))}
   .hd-cats .chips{padding:2px 2px 10px;margin:0}
+  /* 우측 아이콘 간격 좁게, 테두리 없이 */
+  .hd-in{gap:0 2px}
+  .hd .srch-btn,.hd .menu-btn,.hd .login{width:38px;height:38px}
+  .hd .login{border:0;background:none}
+  .hd .login .i{width:22px;height:22px}
+  /* 카테고리: 유튜브처럼 밑줄 탭 */
+  .hd-cats #catchips{gap:0;padding:0;margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)))}
+  .hd-cats #catchips .chip{padding:11px 14px 10px;border-radius:0;background:none;box-shadow:none;color:var(--muted);font-weight:500;position:relative}
+  .hd-cats #catchips .chip:first-child{margin-left:max(6px,env(safe-area-inset-left,0px))}
+  .hd-cats #catchips .chip[aria-pressed="true"]{background:none;color:var(--ink);font-weight:700}
+  .hd-cats #catchips .chip[aria-pressed="true"]::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--ink)}
 }
 </style>
 </head>
