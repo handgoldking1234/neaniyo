@@ -355,6 +355,32 @@ body.searching .side-hot,body.searching .nextup{display:none!important}
 .srch-res{margin:14px 0;font-size:calc(14px * var(--fs));color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .srch-res b{color:var(--ink)}
 .srch-res button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px;font-size:calc(12.5px * var(--fs));cursor:pointer;color:var(--ink)}
+
+/* 하단 푸터: 카피라이트·사업자 정보 */
+.sitefoot{border-top:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:calc(12.5px * var(--fs));line-height:1.6;margin-top:24px}
+.sf-in{max-width:1140px;margin:0 auto;padding:28px 0 36px;display:flex;flex-direction:column;gap:12px}
+.sf-top{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap}
+.sf-brand{font-family:var(--display);font-size:calc(18px * var(--fs));color:var(--ink);text-decoration:none}
+.sf-links{display:flex;flex-wrap:wrap;gap:4px 16px}
+.sf-links a,.sf-legal a{color:var(--muted);text-decoration:none}
+.sf-links a:hover,.sf-legal a:hover{color:var(--ink);text-decoration:underline}
+.sf-legal{display:flex;flex-wrap:wrap;gap:4px 14px}
+.sf-legal:empty{display:none}
+.sf-legal a.strong{color:var(--ink);font-weight:700}
+.sf-biz{display:flex;flex-wrap:wrap;gap:2px 14px;margin:0}
+.sf-biz div{display:flex;gap:6px}
+.sf-biz dt{color:var(--muted)}
+.sf-biz dd{margin:0;color:var(--ink)}
+.sf-biz a{color:var(--muted);margin-left:4px}
+.sf-note{margin:0;max-width:760px}
+.sf-copy{margin:0;color:var(--ink);font-weight:500}
+body.embedded .sitefoot{display:none}
+@media (max-width:720px){.sitefoot{display:none}}
+/* 유튜브처럼 모바일에선 삼선 메뉴 맨 아래에 회사 정보 */
+.dr-foot{margin-top:auto;padding:18px 6px 4px;color:var(--muted);font-size:calc(11.5px * var(--fs));line-height:1.6;display:flex;flex-direction:column;gap:8px}
+.dr-foot .sf-legal,.dr-foot .sf-biz{gap:2px 10px}
+.dr-foot .sf-biz{flex-direction:column}
+.dr-foot .sf-note{font-size:calc(11px * var(--fs))}
 /* 모달 */
 dialog.auth{border:0;border-radius:16px;padding:0;width:min(420px,calc(100% - 32px));background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.25)}
 dialog.auth::backdrop{background:rgba(10,12,20,.45)}
@@ -1055,6 +1081,20 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     </div>
   </aside>
 </div>
+<footer class="sitefoot gut" id="sitefoot">
+  <div class="sf-in">
+    <div class="sf-top">
+      <a class="sf-brand" href="./">네아니요</a>
+      <nav class="sf-links" aria-label="하단 링크">
+        <a href="./#vote">투표</a><a href="./#ranking">랭킹</a><a href="./#create">투표 만들기</a><a href="./#premium">프리미엄</a><a href="./#analysis">경쟁사 분석</a>
+      </nav>
+    </div>
+    <div class="sf-legal" id="sfLegal"></div>
+    <dl class="sf-biz" id="sfBiz" hidden></dl>
+    <p class="sf-note">투표 결과는 참여한 사람들의 의견을 모은 것으로, 통계적 대표성이 있는 여론조사가 아닙니다. 투표 배경 설명은 언론 보도를 참고해 직접 작성했으며, 원문은 각 투표의 참고 링크에서 볼 수 있습니다.</p>
+    <p class="sf-copy">© <span id="sfYear">2026</span> 네아니요. All rights reserved.</p>
+  </div>
+</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="drawer-bg" id="drawerBg" hidden></div>
 <aside class="drawer" id="drawer" aria-label="전체 메뉴" hidden>
@@ -1069,6 +1109,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   </nav>
   <div class="dr-cats"><b class="dr-tt">전체 카테고리</b><div class="dr-cgrid" id="drCats"></div></div>
   <div class="dr-set"><span>효과음 <small>투표할 때만</small></span><button class="sw" id="drSnd" type="button" role="switch" aria-checked="true" aria-label="효과음"><i></i></button></div>
+  <div class="dr-foot" id="drFoot"></div>
 </aside>
 <nav class="btabs" id="btabs" aria-label="하단 메뉴">
   <a href="./#vote" data-v="vote"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="3"/><path d="m9 12 2 2 4-4"/></svg><span>투표</span></a>
@@ -1691,6 +1732,33 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   document.addEventListener('click',function(e){ if(!e.target.closest('#acct')) closeMenu(); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!acctMenu.hidden){ closeMenu(); loginBtn.focus(); } });
   window.addEventListener('hashchange',closeMenu);
+
+  // ===== 하단 푸터 =====
+  // 회사 정보가 정해지면 아래 값을 채우세요. 빈 칸은 화면에 나오지 않습니다.
+  var COMPANY={
+    name:'',        // 상호
+    ceo:'',         // 대표자
+    bizNo:'',       // 사업자등록번호 (예: 123-45-67890)
+    ecomNo:'',      // 통신판매업 신고번호
+    address:'',     // 사업장 주소
+    tel:'',         // 고객센터 전화
+    email:'',       // 이메일
+    privacyOfficer:'', // 개인정보 보호책임자
+    hosting:'',     // 호스팅 제공자
+    termsUrl:'',    // 이용약관 주소
+    privacyUrl:''   // 개인정보처리방침 주소
+  };
+  (function(){
+    var y=document.getElementById('sfYear'); if(y) y.textContent=new Date().getFullYear();
+    var lg=document.getElementById('sfLegal'), bz=document.getElementById('sfBiz');
+    var links=[]; if(COMPANY.termsUrl) links.push('<a href="'+esc(COMPANY.termsUrl)+'">이용약관</a>'); if(COMPANY.privacyUrl) links.push('<a class="strong" href="'+esc(COMPANY.privacyUrl)+'">개인정보처리방침</a>');
+    if(COMPANY.email) links.push('<a href="mailto:'+esc(COMPANY.email)+'">문의하기</a>');
+    if(lg) lg.innerHTML=links.join('');
+    var rows=[['상호',COMPANY.name],['대표',COMPANY.ceo],['사업자등록번호',COMPANY.bizNo&&(esc(COMPANY.bizNo)+' <a href="https://www.ftc.go.kr/bizCommPop.do?wrkr_no='+encodeURIComponent(COMPANY.bizNo.replace(/\D/g,''))+'" target="_blank" rel="noopener">사업자정보 확인</a>'),true],['통신판매업 신고',COMPANY.ecomNo],['주소',COMPANY.address],['고객센터',COMPANY.tel],['이메일',COMPANY.email],['개인정보 보호책임자',COMPANY.privacyOfficer],['호스팅',COMPANY.hosting]].filter(function(r){return r[1]});
+    if(bz&&rows.length){ bz.innerHTML=rows.map(function(r){return '<div><dt>'+r[0]+'</dt><dd>'+(r[2]?r[1]:esc(r[1]))+'</dd></div>'}).join(''); bz.hidden=false; }
+    var df=document.getElementById('drFoot');
+    if(df) df.innerHTML=(lg&&lg.innerHTML?'<div class="sf-legal">'+lg.innerHTML+'</div>':'')+(bz&&!bz.hidden?'<dl class="sf-biz">'+bz.innerHTML+'</dl>':'')+'<p class="sf-note">투표 결과는 참여자 의견을 모은 것으로, 통계적 대표성이 있는 여론조사가 아닙니다.</p><p class="sf-copy">© '+new Date().getFullYear()+' 네아니요. All rights reserved.</p>';
+  })();
   // ===== 검색 =====
   var srchBtn=document.getElementById('srchBtn'), srchBar=document.getElementById('srchBar'), srchIn=document.getElementById('srchIn'), srchClear=document.getElementById('srchClear'), srchT=null;
   function applySearch(q){
