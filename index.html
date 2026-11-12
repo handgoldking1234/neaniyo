@@ -232,7 +232,7 @@ body.embedded .wrap{padding-block:4px;padding-inline:0;max-width:none}
 /* 로그인 버튼 */
 .login{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:calc(14px * var(--fs));font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
 .login .pro{font-size:calc(10.5px * var(--fs));font-weight:700;color:#fff;background:var(--gold);border-radius:4px;padding:1px 5px}
-@media (max-width:720px){.login{padding:6px 11px;font-size:calc(13px * var(--fs))}}
+@media (max-width:720px){.login{padding:0;width:32px;height:32px;gap:0;font-size:calc(13px * var(--fs))}.login .lbl{display:none}.login .pro{display:none}}
 
 /* 모달 */
 dialog.auth{border:0;border-radius:16px;padding:0;width:min(420px,calc(100% - 32px));background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.25)}
@@ -676,7 +676,7 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
       <a href="./#analysis" data-v="analysis">경쟁사 분석</a>
     </nav>
     <button class="snd" id="sndBtn" type="button" aria-label="효과음 끄기" aria-pressed="true"></button>
-    <button class="login" id="loginBtn" type="button">로그인</button>
+    <button class="login" id="loginBtn" type="button" aria-label="로그인" title="로그인"><span class="lbl">로그인</span></button>
     <a class="cta" href="./#create" data-v="create"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg>투표 만들기</a>
   </div>
 </header>
@@ -1382,7 +1382,7 @@ body.report > *:not(#rpt):not(#toast){display:none!important}
   try{user=JSON.parse(localStorage.getItem(UKEY)||'null')}catch(e){user=null}
   function saveUser(){try{user?localStorage.setItem(UKEY,JSON.stringify(user)):localStorage.removeItem(UKEY)}catch(e){}}
   var loginBtn=document.getElementById('loginBtn'), auth=document.getElementById('auth'), authBody=document.getElementById('authBody');
-  function authUI(){ loginBtn.innerHTML=user?(ic('user-round')+'내 정보'+(user.pro?' <span class="pro">PRO</span>':'')):(ic('log-in')+'로그인'); }
+  function authUI(){ var lb=user?'내 정보':'로그인'; loginBtn.innerHTML=user?(ic('user-round')+'<span class="lbl">내 정보</span>'+(user.pro?' <span class="pro">PRO</span>':'')):(ic('log-in')+'<span class="lbl">로그인</span>'); loginBtn.setAttribute('aria-label',lb); loginBtn.title=lb; }
   var REGIONS=['서울','경기·인천','부산·울산·경남','대구·경북','광주·전라','대전·세종·충청','강원','제주'];
   var EDU=['고졸 이하','대학 재학','대졸','대학원 이상'];
   function openDialog(){ try{auth.showModal()}catch(e){auth.setAttribute('open','')} }
