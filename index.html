@@ -979,6 +979,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
 .attach button .cl{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .attach button.unset .cl{color:var(--ink)}
 .attach button:not(.unset) .cl{color:var(--b)}
+@media (max-width:380px){.attach button .ai{display:none}}
 @media (max-width:440px){.attach{gap:5px}.attach button{padding:9px 6px;gap:3px;font-size:calc(13px * var(--fs))}.attach button .ai svg{width:15px;height:15px}.attach button em{font-size:calc(11.5px * var(--fs))}}
 .fold:not(.open){display:none!important}
 .phow button[disabled]{opacity:.45;cursor:not-allowed}
@@ -1050,7 +1051,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
           <p class="hint" id="f-story-hint" hidden><span id="f-story-n">0</span> / 1000자 · 한줄평이 자동으로 열려요</p></div>
         <div class="attach" id="attach" role="group" aria-label="더 넣기">
           <button type="button" data-fold="f-photo-wrap" aria-expanded="false"><span class="ai" data-i="image-plus"></span>사진<em id="sumPhoto"></em></button>
-          <button type="button" data-fold="f-link-wrap" aria-expanded="false"><span class="ai" data-i="link"></span>링크<em id="sumLink"></em></button>
+          <button type="button" data-fold="f-link-wrap" aria-expanded="false"><span class="ai" data-i="link"></span><span class="cl" id="sumLink">링크·유튜브</span></button>
           <button type="button" data-fold="f-cat-wrap" aria-expanded="false"><span class="ai" data-i="tag"></span><span class="cl" id="sumCat">카테고리</span></button>
         </div>
         <div class="field fold" id="f-photo-wrap"><label>사진 <small>(선택, 최대 10장 · 고르기 투표는 6장까지)</small></label>
@@ -2656,7 +2657,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     var pk=phow.querySelector('[data-ph="pick"]'); pk.disabled=upImgs.length>MAXPICK; pk.querySelector('small').textContent=upImgs.length>MAXPICK?MAXPICK+'장까지만 가능':'A·B·C 사진에 투표';
     document.getElementById('attach').querySelectorAll('[data-fold="f-photo-wrap"],[data-fold="f-link-wrap"]').forEach(function(b){ b.hidden=relayMode; });
     document.getElementById('sumPhoto').textContent=upImgs.length?upImgs.length+'장':'';
-    document.getElementById('sumLink').textContent=linkIn.value.trim()?(parseLink(linkIn.value)?(parseLink(linkIn.value).yt?'유튜브':'기사'):'확인 필요'):'';
+    var lkS=linkIn.value.trim()?parseLink(linkIn.value):null; document.getElementById('sumLink').textContent=linkIn.value.trim()?(lkS?(lkS.yt?'유튜브 ✓':'링크 ✓'):'주소 확인'):'링크·유튜브';
     phow.hidden=relayMode||upImgs.length<2;
     [].forEach.call(phow.querySelectorAll('button'),function(b){ b.setAttribute('aria-pressed',String((b.dataset.ph==='ask')===photoAsk)); });
     if(sync.pm!==undefined&&sync.pm!==photoMode&&!sync.filling){ optInputs().forEach(function(inp){inp.value=''}); setOptCount(photoMode?upImgs.length:2); }
