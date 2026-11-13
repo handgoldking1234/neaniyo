@@ -486,6 +486,7 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .cmt .who{display:flex;align-items:center;gap:6px;font-size:calc(12px * var(--fs));color:var(--muted);flex-wrap:wrap}
 .side-tag{font-weight:700;font-size:calc(11.5px * var(--fs));padding:1px 7px;border-radius:999px;color:#fff}
 .cmt p{margin:0;line-height:1.5}
+.cmt .who .meta{margin-left:auto;text-align:right}
 .aibox{border:1px dashed color-mix(in srgb,var(--b) 45%,var(--line));background:color-mix(in srgb,var(--b) 5%,var(--card));border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:9px}
 .aibox h4{margin:0;display:flex;align-items:center;gap:6px;font-size:calc(13.5px * var(--fs));flex-wrap:wrap}
 .aibox h4 .i{width:16px;height:16px;color:var(--b)}
@@ -2179,7 +2180,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       :'<button class="btn" data-act="login">'+ic('log-in')+'로그인하고 한줄평 남기기</button>';
     return '<div class="cmts"><h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개 · 공감 많은 대표 의견 먼저</small></h4>'+
       ordered.map(function(c){
-        return '<div class="cmt'+(bestIds[c.id]?' best':'')+'"><span class="who"><span class="side-tag" style="background:'+OPC[c.o%OPC.length]+'">'+esc(p.o[c.o]||'')+'</span>'+(bestIds[c.id]?'<b>대표 의견</b> · ':'')+esc(c.at)+(c.mine?' · 내 글':'')+'</span><p>'+esc(c.text)+'</p>'+
+        return '<div class="cmt'+(bestIds[c.id]?' best':'')+'"><span class="who"><span class="side-tag" style="background:'+OPC[c.o%OPC.length]+'">'+esc(p.o[c.o]||'')+'</span><span class="meta">'+(bestIds[c.id]?'<b>대표 의견</b> · ':'')+esc(c.at)+(c.mine?' · 내 글':'')+'</span></span><p>'+esc(c.text)+'</p>'+
           '<span class="ops"><button type="button" data-act="like" data-cid="'+c.id+'" aria-pressed="'+!!c.liked+'">'+ic('heart')+'공감 '+fmt(c.likes)+'</button><button type="button" data-act="report" data-cid="'+c.id+'">'+ic('flag')+'신고</button></span></div>';
       }).join('')+moreBtn+form+'</div>';
   }
