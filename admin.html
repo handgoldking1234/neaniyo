@@ -134,6 +134,8 @@ dialog{border:0;border-radius:14px;padding:0;width:min(640px,calc(100vw - 32px))
 dialog::backdrop{background:rgba(10,12,20,.45)}
 .dlg-h{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}
 .dlg-h h3{margin:0;font-size:16px}
+.xbtn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;margin:-6px -8px -6px 0;border:0;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer}
+.xbtn:hover{background:var(--soft);color:var(--ink)}
 .dlg-b{padding:16px 18px;display:grid;gap:12px;max-height:68vh;overflow:auto}
 .dlg-f{display:flex;justify-content:space-between;gap:8px;padding:12px 18px;border-top:1px solid var(--line)}
 .field{display:grid;gap:4px}
@@ -184,7 +186,7 @@ dialog::backdrop{background:rgba(10,12,20,.45)}
 
 <dialog id="dlg" aria-labelledby="dlgTitle">
   <form method="dialog" id="dlgForm">
-    <div class="dlg-h"><h3 id="dlgTitle">투표 편집</h3><button class="btn" value="cancel" type="submit" aria-label="닫기">닫기</button></div>
+    <div class="dlg-h"><h3 id="dlgTitle">투표 편집</h3><button class="xbtn" value="cancel" type="submit" aria-label="닫기" title="닫기"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
     <div class="dlg-b" id="dlgBody"></div>
     <div class="dlg-f"><button class="btn dng" type="button" id="dlgDel">삭제</button><div style="display:flex;gap:8px"><button class="btn" value="cancel" type="submit">취소</button><button class="btn pri" type="button" id="dlgOk">적용</button></div></div>
   </form>
