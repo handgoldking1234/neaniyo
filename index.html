@@ -2474,7 +2474,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   });
 
   var subFilter='', catChips=document.getElementById('catchips'), subChips=document.getElementById('subchips');
-  catChips.innerHTML='<button class="chip" style="--cc:#F59E0B" data-c="all" aria-pressed="true">'+catIc('all')+'추천</button><button class="chip" style="--cc:#06B6D4" data-c="new" aria-pressed="false">'+catIc('new')+'최신</button>'+TAX.map(function(t){return '<button class="chip" style="--cc:'+(CATCOL[t.c]||'')+'" data-c="'+t.c+'" aria-pressed="false">'+catIc(t.c)+t.l+'</button>'}).join('')+'<button class="chip intset" type="button" data-int-open aria-label="관심사 설정">'+ic('settings-2')+'관심사</button>';
+  catChips.innerHTML='<button class="chip" style="--cc:#F59E0B" data-c="all" aria-pressed="true">추천</button><button class="chip" style="--cc:#06B6D4" data-c="new" aria-pressed="false">최신</button>'+TAX.map(function(t){return '<button class="chip" style="--cc:'+(CATCOL[t.c]||'')+'" data-c="'+t.c+'" aria-pressed="false">'+t.l+'</button>'}).join('')+'<button class="chip intset" type="button" data-int-open aria-label="관심사 설정">'+ic('settings-2')+'관심사</button>';
   function intChipUI(){ var b=catChips.querySelector('[data-int-open]'); if(b) b.classList.toggle('on',!!intr.cats.length); }
   intChipUI();
   function drawSubs(){
