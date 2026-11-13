@@ -658,6 +658,8 @@ body.embedded .side-hot{display:none!important}
 .pimg.yt .ytbar i{display:block;height:100%;width:0;background:#ff0033;transition:width .5s linear}
 .pimg.yt .ytsnd{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.8);width:64px;height:64px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
 .pimg.yt .ytsnd svg{width:30px;height:30px}
+.pimg.yt .ytcover{position:absolute;inset:0;width:100%;height:100%;min-height:0;max-height:none;object-fit:cover;pointer-events:none;transition:opacity .6s ease;background:#000}
+.pimg.yt .ytcover.off{opacity:0}
 .pimg.yt .ytsnd.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .pimg .capb{position:absolute;left:10px;top:10px;padding:4px 9px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:calc(11.5px * var(--fs));font-weight:600}
 .pimg.cap{position:relative}
@@ -1291,17 +1293,21 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     function flash(el){ var f=el.querySelector('.ytsnd'); if(!f) return; f.innerHTML=ic(el.dataset.snd==='1'?'volume-2':'volume-x'); f.classList.add('on'); clearTimeout(f._t); f._t=setTimeout(function(){f.classList.remove('on')},700); }
     function sound(el,on){ el.dataset.snd=on?'1':''; soundOn=on; send(el,on?'unMute':'mute'); if(on) send(el,'setVolume',[100]); setMuteBtn(el); flash(el); }
     function cc(el,on){ ccOn=on; send(el,on?'loadModule':'unloadModule',['captions']); var b=el.querySelector('.ytb.cc'); if(b) b.setAttribute('aria-pressed',on?'true':'false'); }
+    function uncover(el){ var c=el.querySelector('.ytcover'); if(c&&!c.classList.contains('off')){ c.classList.add('off'); setTimeout(function(){ if(c.parentNode) c.remove(); },700); } }
     function load(el,manual){
       if(el.querySelector('iframe')) return;
       var id=el.dataset.yt, pid=el.dataset.pid, st=Math.floor(times[pid]||0), snd=manual||soundOn;
       el.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&iv_load_policy=3&disablekb=1&loop=1&playlist='+id+'&enablejsapi=1&cc_load_policy='+(ccOn?1:0)+'&start='+st+'&origin='+encodeURIComponent(location.origin)+'" title="영상" tabindex="-1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>'+
+        // 시작할 때 유튜브가 띄우는 제목·채널 정보가 사라질 때까지(재생 3초) 썸네일로 가림
+        '<img class="ytcover" src="https://i.ytimg.com/vi/'+id+'/hqdefault.jpg" alt="" referrerpolicy="no-referrer">'+
         '<button type="button" class="ytov" aria-label="소리 켜기/끄기"></button>'+
         '<span class="ytsnd" aria-hidden="true"></span>'+
         '<button type="button" class="ytb mute"></button>'+
         '<button type="button" class="ytb cc" aria-label="자막" aria-pressed="'+(ccOn?'true':'false')+'">'+ic('captions')+'</button>'+
         '<a class="ytb go" href="https://www.youtube.com/watch?v='+id+'" target="_blank" rel="noopener" aria-label="유튜브에서 보기">'+ic('arrow-up-right')+'</a>'+
         '<div class="ytbar"><i></i></div>';
-      el.dataset.snd=''; setMuteBtn(el);
+      el.dataset.snd=''; setMuteBtn(el); el.dataset.st=st;
+      setTimeout(function(){ uncover(el); },8000);
       var f=el.querySelector('iframe');
       f.addEventListener('load',function(){
         try{ f.contentWindow.postMessage(JSON.stringify({event:'listening',id:pid}),'*'); }catch(e){}
@@ -1374,7 +1380,8 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       if(!/youtube(-nocookie)?\.com$/.test((e.origin||'').replace(/^https?:\/\//,''))) return;
       var d; try{ d=JSON.parse(e.data); }catch(err){ return; }
       if(!d||!d.info||!d.id) return;
-      if(typeof d.info.currentTime==='number') times[d.id]=d.info.currentTime;
+      if(typeof d.info.currentTime==='number'){ times[d.id]=d.info.currentTime;
+        var ye=document.querySelector('.pimg.yt[data-pid="'+d.id+'"]'); if(ye&&d.info.currentTime>=(+ye.dataset.st||0)+3) uncover(ye); }
       if(typeof d.info.duration==='number'&&d.info.duration>0) durs[d.id]=d.info.duration;
       if(durs[d.id]&&times[d.id]!=null){ var bar=document.querySelector('.pimg.yt[data-pid="'+d.id+'"] .ytbar i'); if(bar) bar.style.width=Math.min(100,times[d.id]/durs[d.id]*100)+'%'; }
     });
