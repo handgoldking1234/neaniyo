@@ -210,10 +210,12 @@ var VIEWS=[
   {id:'traffic',name:'유입 경로',grp:'분석',tag:'연결 필요'},
   {id:'device',name:'기기·환경',grp:'분석',tag:'연결 필요'},
   {id:'members',name:'회원 관리',grp:'커뮤니티',tag:'연결 필요'},
+  {id:'rules',name:'운영 규칙',grp:'커뮤니티'},
   {id:'reports',name:'신고·댓글',grp:'커뮤니티',tag:'연결 필요'},
   {id:'settings',name:'설정',grp:'시스템'}
 ];
-var S={main:[],feed:[],sha:null,loaded:0,err:'',dirty:{},deleted:{},sample:{}};
+var S={main:[],feed:[],sha:null,loaded:0,err:'',dirty:{},deleted:{},sample:{},mod:null,modSrc:'',modEdit:null,modTest:''};
+var MOD_PATH='data/moderation.json', RAW_MOD='https://raw.githubusercontent.com/'+REPO+'/'+FEED_BRANCH+'/'+MOD_PATH;
 var $=function(s,r){return (r||document).querySelector(s)};
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function token(){try{return localStorage.getItem(TKEY)||''}catch(e){return ''}}
@@ -266,14 +268,41 @@ function loadMain(){
 function load(){
   $('#stamp').textContent='불러오는 중…';
   S.err='';
-  return Promise.all([loadMain(),loadFeed().catch(function(e){S.err='피드를 불러오지 못했습니다: '+e.message;return S.feed})]).then(function(r){
-    S.main=Array.isArray(r[0])?r[0]:[]; S.feed=Array.isArray(r[1])?r[1]:[]; S.loaded=Date.now();
+  return Promise.all([loadMain(),loadMod(),loadFeed().catch(function(e){S.err='피드를 불러오지 못했습니다: '+e.message;return S.feed})]).then(function(r){
+    S.main=Array.isArray(r[0])?r[0]:[]; S.feed=Array.isArray(r[2])?r[2]:[]; S.loaded=Date.now();
     stamp(); render();
   });
 }
 function stamp(){
   $('#stamp').textContent=(S.err?S.err+' · ':'')+'기본 '+S.main.length+'개 · 피드 '+S.feed.length+'개 · '+hm(S.loaded)+' 기준';
   var c=$('#tokChip'); if(token()){c.className='chip live';c.textContent='GitHub 연결됨'}else{c.className='chip mute';c.textContent='읽기 전용'}
+}
+
+  // 한줄평 판정 (data/moderation.json 규칙) — 사이트와 관리자 화면이 같은 코드를 쓴다
+  function modNorm(s){return String(s).toLowerCase().replace(/[\s​.,·_\-~!@#$%^&*()+=\[\]{}|\\\/:;"'<>?`0-9]/g,'')}
+  function modJudge(text,mod,recent){
+    var t=String(text||'').trim(), L=(mod&&mod.limits)||{}, n=modNorm(t), hit=null, rv=null;
+    var mk=function(a,id,name,msg){return {action:a,rule:id,name:name,message:msg}};
+    if([...t].length<(L.minLength||2)) return mk('block','length','길이','두 글자 이상 써 주세요.');
+    if(L.maxLength&&[...t].length>L.maxLength) return mk('block','length','길이',L.maxLength+'자까지 쓸 수 있어요.');
+    ((mod&&mod.rules)||[]).some(function(r){
+      var m=(r.words||[]).some(function(w){var x=modNorm(w);return x&&n.indexOf(x)>=0})||
+            (r.patterns||[]).some(function(p){try{return new RegExp(p,'iu').test(t)}catch(e){return false}});
+      if(!m) return false;
+      var v=mk(r.action||'block',r.id,r.name,r.message||'등록할 수 없는 내용이 있어요.');
+      if(v.action==='block'){hit=v;return true} if(!rv) rv=v; return false;
+    });
+    if(hit) return hit;
+    recent=recent||[]; var now=Date.now();
+    if(L.sameTextBlock&&recent.some(function(c){return modNorm(c.text)===n})) return mk('block','same','같은 글 반복',L.sameTextMessage||'방금 쓴 것과 같은 글이에요.');
+    if(L.maxPerMinute&&recent.filter(function(c){return now-c.ts<60000}).length>=L.maxPerMinute) return mk('block','rate','짧은 시간 연속 작성',L.rateMessage||'잠시 후 다시 써 주세요.');
+    return rv||mk('allow','','','');
+  }
+
+function loadMod(){
+  return fetch(RAW_MOD+'?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){S.mod=j;S.modSrc='feed'})
+    .catch(function(){return fetch('/data/moderation.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){S.mod=j;S.modSrc='main'})})
+    .catch(function(){S.mod=null;S.modSrc=''});
 }
 
 // ===== 규칙 검사 (data/README.md 기준) =====
@@ -354,7 +383,7 @@ function navs(){
 function render(){
   navs(); var c=cur(), v=VIEWS.filter(function(x){return x.id===c})[0];
   $('#title').textContent=v.name; document.title=v.name+' · 네아니요 관리자';
-  var fn={dash:vDash,content:vContent,sched:vSched,stats:vStats,traffic:vTraffic,device:vDevice,members:vMembers,reports:vReports,settings:vSettings}[c];
+  var fn={dash:vDash,content:vContent,sched:vSched,stats:vStats,traffic:vTraffic,device:vDevice,members:vMembers,reports:vReports,rules:vRules,settings:vSettings}[c];
   $('#view').innerHTML=fn()+saveBar(); bind(c);
 }
 window.addEventListener('hashchange',function(){render();window.scrollTo(0,0)});
@@ -515,6 +544,51 @@ function vSettings(){
     [['1','방문 분석','Vercel 프로젝트에서 Web Analytics를 켜고 사이트에 스크립트 한 줄 추가 → 방문자·유입 경로·기기'],['2','투표 저장','투표 결과를 DB(예: Supabase)에 저장 → 실제 득표 수, 참여율, 인기 투표 순위'],['3','회원','카카오·네이버·구글 로그인을 DB 인증에 연결 → 회원 목록, 정지·탈퇴 처리'],['4','신고·댓글','댓글과 사용자 투표를 DB로 옮기고 신고 버튼 연결 → 신고 처리 대기열'],['5','관리자 잠금','관리자 계정으로 로그인한 사람만 이 화면을 열도록 제한']].map(function(x){return '<div class="it" style="cursor:default"><span class="chip wait">'+x[0]+'단계</span><span><span class="q">'+x[1]+'</span><br><span class="dim" style="font-size:12.5px">'+x[2]+'</span></span><span></span></div>'}).join('')+'</div></section>';
 }
 
+
+var ACT={block:['bad','등록 막음'],review:['warn','검토 대기'],allow:['live','통과']};
+function vRules(){
+  var m=S.mod;
+  if(!m) return '<div class="empty"><b>규칙 파일을 불러오지 못했습니다</b>data/moderation.json을 확인하세요.</div>';
+  if(S.modEdit!=null) return '<div class="note" style="margin-bottom:12px">JSON을 직접 고칩니다. 저장하면 feed 브랜치의 '+MOD_PATH+'에 커밋되고, 사이트는 10분 안에 새 규칙을 씁니다(배포 없음).</div>'+
+    '<textarea id="modJson" class="mono" spellcheck="false" style="width:100%;min-height:60vh;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--surface)">'+esc(S.modEdit)+'</textarea>'+
+    '<div class="issues" id="modErr" style="margin:8px 0"></div><div class="filters"><button class="btn" type="button" data-act="modcancel">취소</button><button class="btn pri" type="button" data-act="modsave">검사하고 feed에 저장</button></div>';
+  var L=m.limits||{}, ai=m.ai||{};
+  var jd=S.modTest?modJudge(S.modTest,m,[]):null;
+  return '<div class="filters"><span class="chip mute">출처: '+(S.modSrc==='feed'?'feed 브랜치 (배포 없이 수정됨)':'사이트 기본 파일')+'</span><span class="dim" style="font-size:12.5px">버전 '+esc(m.version)+' · '+esc(m.updated||'')+'</span><span style="flex:1"></span><button class="btn" type="button" data-act="modedit">규칙 편집</button></div>'+
+  '<div class="grid two">'+
+   '<section class="card"><h2>판정 테스트</h2><p class="desc">한줄평을 넣어 보면 사이트와 같은 규칙으로 판정합니다. AI 판정은 연결 후 이어서 붙습니다.</p>'+
+    '<div class="field"><input id="modTest" maxlength="120" placeholder="예: 010-1234-5678로 연락 주세요" value="'+esc(S.modTest)+'"></div>'+
+    (jd?'<div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip '+ACT[jd.action][0]+'">'+ACT[jd.action][1]+'</span>'+(jd.name?'<b>'+esc(jd.name)+'</b>':'')+(jd.message?'<span class="dim">'+esc(jd.message)+'</span>':'<span class="dim">자동 필터 통과 → (연결 후) AI 판정</span>')+'</div>':'')+
+   '</section>'+
+   '<section class="card"><h2>운영 원칙</h2><div class="list">'+(m.principles||[]).map(function(t,i){return '<div class="it" style="cursor:default;grid-template-columns:28px minmax(0,1fr)"><span class="chip wait">'+(i+1)+'</span><span>'+esc(t)+'</span></div>'}).join('')+'</div></section>'+
+  '</div>'+
+  '<section class="card" style="margin-top:14px"><h2>1단계 · 자동 필터</h2><p class="desc">위에서부터 검사하고, 등록을 막는 규칙이 먼저 걸리면 거기서 멈춥니다.</p><div class="tbl-wrap"><table><thead><tr><th>규칙</th><th>처리</th><th>검사 대상</th><th>작성자에게 보이는 말</th></tr></thead><tbody>'+
+   (m.rules||[]).map(function(r){var a=ACT[r.action]||ACT.block;var tgt=[];if(r.words&&r.words.length)tgt.push('단어 '+r.words.length+'개');if(r.patterns&&r.patterns.length)tgt.push('패턴 '+r.patterns.length+'개');
+     return '<tr style="cursor:default"><td class="q">'+esc(r.name)+'<div class="dim mono">'+esc(r.id)+'</div></td><td><span class="chip '+a[0]+'">'+a[1]+'</span></td><td title="'+esc((r.words||[]).concat(r.patterns||[]).join('\n'))+'">'+tgt.join(' · ')+'</td><td>'+esc(r.message||'')+'</td></tr>'}).join('')+
+   '<tr style="cursor:default"><td class="q">길이</td><td><span class="chip bad">등록 막음</span></td><td>'+(L.minLength||2)+'~'+(L.maxLength||80)+'자</td><td>두 글자 이상 / 최대 길이 안내</td></tr>'+
+   '<tr style="cursor:default"><td class="q">같은 글 반복</td><td><span class="chip bad">등록 막음</span></td><td>최근 10분 내 내 한줄평</td><td>'+esc(L.sameTextMessage||'')+'</td></tr>'+
+   '<tr style="cursor:default"><td class="q">연속 작성</td><td><span class="chip bad">등록 막음</span></td><td>1분에 '+(L.maxPerMinute||'-')+'개 초과</td><td>'+esc(L.rateMessage||'')+'</td></tr>'+
+   '<tr style="cursor:default"><td class="q">신고 누적</td><td><span class="chip warn">숨김 · 검토</span></td><td>신고 '+(L.reportsToHide||3)+'회</td><td>DB 연결 후 적용 (지금은 신고한 사람 화면에서만 가려짐)</td></tr>'+
+  '</tbody></table></div></section>'+
+  '<section class="card" style="margin-top:14px"><h2>2단계 · AI 판정 <span class="chip mute" style="vertical-align:2px">연결 예정</span></h2><p class="desc">'+esc(ai.when||'')+' 확신도가 '+(ai.reviewBelowConfidence||0.7)+'보다 낮으면 검토 대기로 보냅니다.</p>'+
+   '<div class="grid half"><div class="tbl-wrap"><table style="min-width:0"><thead><tr><th>AI 라벨</th><th>처리</th></tr></thead><tbody>'+Object.keys(ai.labels||{}).map(function(k){var a=ACT[ai.labels[k]]||ACT.review;return '<tr style="cursor:default"><td class="mono">'+esc(k)+'</td><td><span class="chip '+a[0]+'">'+a[1]+'</span></td></tr>'}).join('')+'</tbody></table></div>'+
+   '<div><div class="field"><label>AI에 보낼 지시문</label><textarea readonly rows="12" style="border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--soft);font-size:12.5px">'+esc(ai.prompt||'')+'</textarea></div></div></div></section>'+
+  '<section class="card" style="margin-top:14px"><h2>3단계 · 사람 검토</h2><p class="desc">검토 대기 글과 신고 누적 글은 신고·댓글 메뉴에서 공개/숨김/작성자 정지로 처리합니다. 한줄평이 서버에 저장되면(Supabase 연결 후) 동작합니다.</p></section>';
+}
+function saveMod(){
+  var txt=$('#modJson').value, j; var err=$('#modErr');
+  try{j=JSON.parse(txt)}catch(e){err.innerHTML='<div class="e">JSON 형식 오류: '+esc(e.message)+'</div>';return}
+  var probs=[];if(!Array.isArray(j.rules))probs.push('rules 배열이 없습니다');
+  (j.rules||[]).forEach(function(r){if(!r.id||!r.name)probs.push('id·name이 없는 규칙이 있습니다');if(['block','review','allow'].indexOf(r.action)<0)probs.push(r.id+': action은 block·review·allow 중 하나');(r.patterns||[]).forEach(function(p){try{new RegExp(p,'iu')}catch(e){probs.push(r.id+': 잘못된 패턴 '+p)}})});
+  if(probs.length){err.innerHTML=probs.map(function(x){return '<div class="e">'+esc(x)+'</div>'}).join('');return}
+  if(!token()){toast('설정에서 GitHub 토큰을 먼저 저장하세요.');return}
+  var body=JSON.stringify(j,null,2)+'\n';
+  gh('/repos/'+REPO+'/contents/'+MOD_PATH+'?ref='+FEED_BRANCH+'&t='+Date.now()).then(function(x){return x.sha},function(e){if(e.status===404)return null;throw e})
+   .then(function(sha){var b={message:'관리자: 운영 규칙 수정',content:b64enc(body),branch:FEED_BRANCH};if(sha)b.sha=sha;return gh('/repos/'+REPO+'/contents/'+MOD_PATH,{method:'PUT',body:JSON.stringify(b)})})
+   .then(function(){S.mod=j;S.modSrc='feed';S.modEdit=null;toast('규칙을 저장했습니다. 사이트에는 10분 안에 반영됩니다.');render()})
+   .catch(function(e){err.innerHTML='<div class="e">저장 실패: '+esc(e.message)+'</div>'});
+}
+
 // ===== 편집 대화상자 =====
 var dlg=$('#dlg'),editing=null;
 function find(id){var L=all();for(var i=0;i<L.length;i++)if(L[i].p.id===id)return L[i];return null}
@@ -610,12 +684,16 @@ function bind(view){
     else if(a==='dprev'){SD.days--;render()} else if(a==='dnext'){SD.days++;render()} else if(a==='dnow'){SD.days=0;render()}
     else if(a==='discard'){if(confirm('저장하지 않은 변경을 모두 버릴까요?')){S.dirty={};S.deleted={};render()}}
     else if(a==='commit') commit();
+    else if(a==='modedit'){S.modEdit=JSON.stringify(S.mod,null,2);render()}
+    else if(a==='modcancel'){S.modEdit=null;render()}
+    else if(a==='modsave') saveMod();
     else if(a==='tsave'){var val=$('#tok').value.trim();if(!val||/^•+$/.test(val)){toast('토큰을 붙여 넣으세요.');return}
       try{localStorage.setItem(TKEY,val)}catch(e){}
       gh('/repos/'+REPO).then(function(j){if(!j.permissions||!j.permissions.push)throw new Error('이 토큰에는 쓰기 권한이 없습니다');toast('연결했습니다. 쓰기 권한 확인 완료.');return load()})
         .catch(function(e){toast('확인 실패: '+e.message);try{localStorage.removeItem(TKEY)}catch(x){}stamp();render()})}
     else if(a==='tdel'){try{localStorage.removeItem(TKEY)}catch(e){}toast('토큰을 지웠습니다.');load()}
   };
+  if(view==='rules'&&$('#modTest')){var dt;$('#modTest').oninput=function(e){clearTimeout(dt);dt=setTimeout(function(){S.modTest=e.target.value;render();var q=$('#modTest');q.focus();q.setSelectionRange(q.value.length,q.value.length)},250)}}
   if(view==='content'){
     var deb;$('#fq').oninput=function(e){clearTimeout(deb);deb=setTimeout(function(){F.q=e.target.value;F.lim=100;render();var q=$('#fq');q.focus();q.setSelectionRange(q.value.length,q.value.length)},250)};
     $('#fsrc').onchange=function(e){F.src=e.target.value;F.lim=100;render()};

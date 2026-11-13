@@ -2305,6 +2305,32 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     return cmts[p.id];
   }
   var BAN=['씨발','시발','병신','개새','좆','지랄'];
+  // 운영 규칙: feed 브랜치(배포 없이 수정) → 사이트에 포함된 파일 → 최소 금칙어 순서로 사용
+  var MOD={rules:[{id:'profanity',name:'욕설',action:'block',message:'욕설이나 비방이 들어간 글은 등록할 수 없습니다.',words:BAN}],limits:{minLength:2,maxLength:80}};
+  (function loadMod(){
+    var urls=['https://raw.githubusercontent.com/handgoldking1234/neaniyo/feed/data/moderation.json?t='+Math.floor(Date.now()/600000),'data/moderation.json'];
+    (function next(i){ if(i>=urls.length) return; try{ fetch(urls[i],{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){ if(j&&Array.isArray(j.rules)) MOD=j; else next(i+1); }).catch(function(){next(i+1)}); }catch(e){} })(0);
+  })();
+  // 한줄평 판정 (data/moderation.json 규칙) — 사이트와 관리자 화면이 같은 코드를 쓴다
+  function modNorm(s){return String(s).toLowerCase().replace(/[\s​.,·_\-~!@#$%^&*()+=\[\]{}|\\\/:;"'<>?`0-9]/g,'')}
+  function modJudge(text,mod,recent){
+    var t=String(text||'').trim(), L=(mod&&mod.limits)||{}, n=modNorm(t), hit=null, rv=null;
+    var mk=function(a,id,name,msg){return {action:a,rule:id,name:name,message:msg}};
+    if([...t].length<(L.minLength||2)) return mk('block','length','길이','두 글자 이상 써 주세요.');
+    if(L.maxLength&&[...t].length>L.maxLength) return mk('block','length','길이',L.maxLength+'자까지 쓸 수 있어요.');
+    ((mod&&mod.rules)||[]).some(function(r){
+      var m=(r.words||[]).some(function(w){var x=modNorm(w);return x&&n.indexOf(x)>=0})||
+            (r.patterns||[]).some(function(p){try{return new RegExp(p,'iu').test(t)}catch(e){return false}});
+      if(!m) return false;
+      var v=mk(r.action||'block',r.id,r.name,r.message||'등록할 수 없는 내용이 있어요.');
+      if(v.action==='block'){hit=v;return true} if(!rv) rv=v; return false;
+    });
+    if(hit) return hit;
+    recent=recent||[]; var now=Date.now();
+    if(L.sameTextBlock&&recent.some(function(c){return modNorm(c.text)===n})) return mk('block','same','같은 글 반복',L.sameTextMessage||'방금 쓴 것과 같은 글이에요.');
+    if(L.maxPerMinute&&recent.filter(function(c){return now-c.ts<60000}).length>=L.maxPerMinute) return mk('block','rate','짧은 시간 연속 작성',L.rateMessage||'잠시 후 다시 써 주세요.');
+    return rv||mk('allow','','','');
+  }
   // AI 쟁점 정리: 사람 한줄평이 5개 미만일 때만, 투표한 뒤에 보임 (투표 전에 보여 주면 선택에 영향을 줄 수 있음)
   function aiBlock(p,done){
     if(!done||!Array.isArray(p.ai)||!p.ai.length) return '';
@@ -2315,7 +2341,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       '</ul>'+(p.comments&&!embedded?'<p class="aifoot">AI가 쓴 요약이에요. 내 생각은 아래 한줄평으로 남겨 주세요.</p>':'<p class="aifoot">AI가 쓴 요약이에요. 실제 참여자 의견이 아닙니다.</p>')+'</div>';
   }
   function cmtBlock(p,done){
-    var list=getC(p).filter(function(c){return !c.hidden});
+    var list=getC(p).filter(function(c){return !c.hidden&&(!c.review||c.mine)});
     if(!done) return '<div class="cmts"><h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개</small></h4><p class="hint">투표하면 한줄평을 보고 남길 수 있어요.</p></div>';
     var sorted=list.slice().sort(function(a,b){return b.likes-a.likes});
     var bestIds={};
@@ -2335,7 +2361,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       :'<button class="btn" data-act="login">'+ic('log-in')+'로그인하고 한줄평 남기기</button>';
     return '<div class="cmts"><h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개 · 공감 많은 대표 의견 먼저</small></h4>'+
       ordered.map(function(c){
-        return '<div class="cmt'+(bestIds[c.id]?' best':'')+'"><span class="who"><span class="side-tag" style="background:'+OPC[c.o%OPC.length]+'">'+esc(p.o[c.o]||'')+'</span><span class="meta">'+(bestIds[c.id]?'<b>대표 의견</b> · ':'')+esc(c.at)+(c.mine?' · 내 글':'')+'</span></span><p>'+esc(c.text)+'</p>'+
+        return '<div class="cmt'+(bestIds[c.id]?' best':'')+'"><span class="who"><span class="side-tag" style="background:'+OPC[c.o%OPC.length]+'">'+esc(p.o[c.o]||'')+'</span><span class="meta">'+(bestIds[c.id]?'<b>대표 의견</b> · ':'')+esc(c.at)+(c.mine?' · 내 글':'')+(c.review?' · <b>검토 중</b>':'')+'</span></span><p>'+esc(c.text)+'</p>'+
           '<span class="ops"><button type="button" data-act="like" data-cid="'+c.id+'" aria-pressed="'+!!c.liked+'">'+ic('heart')+'공감 '+fmt(c.likes)+'</button><button type="button" data-act="report" data-cid="'+c.id+'">'+ic('flag')+'신고</button></span></div>';
       }).join('')+moreBtn+form+'</div>';
   }
@@ -2521,10 +2547,13 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     }
     if(f.dataset.cform){
       var inp=f.querySelector('input'), t=inp.value.trim(), m=art.querySelector('[data-cmsg]');
-      if(t.length<2){ m.textContent='두 글자 이상 써 주세요.'; return; }
-      if(BAN.some(function(w){return t.indexOf(w)>=0})){ m.textContent='욕설이나 비방이 들어간 글은 등록할 수 없습니다.'; return; }
-      getC(p).push({id:p.id+'-'+Date.now().toString(36),o:myIdx(p),text:t,likes:0,at:'방금',mine:true}); saveC();
-      rerender(art,p); toast('한줄평을 등록했습니다.');
+      var recent=[]; Object.keys(cmts).forEach(function(k){ (cmts[k]||[]).forEach(function(c){ if(c.mine&&c.ts&&Date.now()-c.ts<600000) recent.push(c); }); });
+      var jd=modJudge(t,MOD,recent);
+      if(jd.action==='block'){ m.textContent=jd.message; return; }
+      var nc={id:p.id+'-'+Date.now().toString(36),o:myIdx(p),text:t,likes:0,at:'방금',mine:true,ts:Date.now()};
+      if(jd.action==='review') nc.review={rule:jd.rule,name:jd.name};
+      getC(p).push(nc); saveC();
+      rerender(art,p); toast(jd.action==='review'?jd.message:'한줄평을 등록했습니다.');
     }
   });
 
