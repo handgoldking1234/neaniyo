@@ -262,6 +262,15 @@ body.embedded .wrap{padding-block:4px;padding-inline:0;max-width:none}
 body.v-create .fab-new,body.embedded .fabs,body.shared .fab-new{display:none}
 @media (min-width:1100px){.fabs{right:max(24px,env(safe-area-inset-right,0px));bottom:calc(28px + env(safe-area-inset-bottom,0px))}}
 
+/* 모바일 '투표 만들기' 화면: 상단을 뒤로 버튼 + 제목으로 */
+.pg-hd{display:none}
+@media (max-width:720px){
+  body.v-create .pg-hd{display:flex;align-items:center;gap:2px;flex:1;min-width:0;margin-left:-8px}
+  body.v-create .hd-in > :not(.pg-hd){display:none!important}
+  .pg-back{width:40px;height:40px;border:0;background:none;color:var(--ink);display:grid;place-items:center;cursor:pointer;border-radius:50%;padding:0}
+  .pg-back .i{width:24px;height:24px}
+  .pg-ttl{margin:0;font-size:calc(17px * var(--fs));font-weight:700}
+}
 /* 모바일 앱형 레이아웃: 상단은 로고+아이콘, 메뉴는 하단 탭바 */
 .btabs{display:none}
 @media (max-width:720px){
@@ -999,6 +1008,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
 
 <header class="hd gut">
   <div class="hd-in">
+    <div class="pg-hd"><button class="pg-back" id="pgBack" type="button" aria-label="뒤로"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><h1 class="pg-ttl">투표 만들기</h1></div>
     <a class="logo" href="./" aria-label="네아니요 홈"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><clipPath id="lg"><rect width="32" height="32" rx="9"/></clipPath></defs><g clip-path="url(#lg)"><rect width="16" height="32" fill="var(--a)"/><rect x="16" width="16" height="32" fill="var(--b)"/></g><circle cx="9" cy="16" r="4.2" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M20 12l7 8M27 12l-7 8" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg><span class="word">네아니요</span></a>
     <nav class="tabs" aria-label="메뉴">
       <a href="./#vote" data-v="vote">투표</a>
@@ -2835,6 +2845,9 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
 
   // 라우팅
   var views=['vote','ranking','create','premium','analysis'];
+  // 뒤로: 사이트 안에서 넘어왔으면 이전 화면으로, 바로 들어왔으면 투표 피드로
+  var inNav=0; window.addEventListener('hashchange',function(){ inNav++; });
+  document.getElementById('pgBack').addEventListener('click',function(){ if(inNav>0) history.back(); else location.hash='vote'; });
   function exists(id){return !!id&&polls.some(function(p){return p.id===id})}
   // ?embed=ID (iframe용), ?p=ID (공유 링크), &theme=light|dark
   // ===== 관심사 =====
