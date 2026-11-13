@@ -894,6 +894,24 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   .hd-cats #catchips .chip[aria-pressed="true"]{background:none;color:var(--ink);font-weight:700}
   .hd-cats #catchips .chip[aria-pressed="true"]::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--ink)}
 }
+
+/* 피드 정리: 영상 버튼은 소리만 작게, 자막·유튜브 버튼은 탭했을 때만 / 모바일 카드 하단은 아이콘 버튼 / 떠 있는 효과음 버튼은 모바일에서 숨김(메뉴에 스위치 있음) */
+.pimg.yt .ytb{width:36px;height:36px;background:rgba(0,0,0,.42);right:10px}
+.pimg.yt .ytb svg{width:18px;height:18px}
+.pimg.yt .ytb.mute{top:10px}
+.pimg.yt .ytb.cc{top:52px}
+.pimg.yt .ytb.go{bottom:12px;width:36px;height:36px}
+.pimg.yt .ytb.go svg{width:18px;height:18px}
+.pimg.yt .ytb.cc,.pimg.yt .ytb.go{opacity:0;pointer-events:none;transition:opacity .2s}
+.pimg.yt.ui .ytb.cc,.pimg.yt.ui .ytb.go{opacity:1;pointer-events:auto}
+@media (max-width:720px){
+  .foot{flex-wrap:nowrap;padding-top:14px}
+  .foot .n{flex:1;min-width:0}
+  .foot .acts{width:auto;flex:none;gap:6px;flex-wrap:nowrap}
+  .foot .acts .btn,.foot .acts .btn.dark{flex:none;width:40px;height:40px;padding:0;border-radius:50%;font-size:0;gap:0;display:grid;place-items:center;background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .foot .acts .btn svg{width:18px;height:18px;margin:0}
+  .fabs .fab-snd{display:none}
+}
 </style>
 </head>
 <body>
@@ -1293,7 +1311,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
         if(snd) setTimeout(function(){ el.dataset.snd='1'; send(el,'unMute'); send(el,'setVolume',[100]); setMuteBtn(el); },600);
       });
       var stop=function(e){ e.stopPropagation(); };
-      el.querySelector('.ytov').addEventListener('click',function(e){ stop(e); sound(el,el.dataset.snd!=='1'); });
+      el.querySelector('.ytov').addEventListener('click',function(e){ stop(e); sound(el,el.dataset.snd!=='1'); el.classList.add('ui'); clearTimeout(el._ui); el._ui=setTimeout(function(){el.classList.remove('ui')},3000); });
       el.querySelector('.ytb.mute').addEventListener('click',function(e){ stop(e); sound(el,el.dataset.snd!=='1'); });
       el.querySelector('.ytb.cc').addEventListener('click',function(e){ stop(e); cc(el,!ccOn); });
       el.querySelector('.ytb.go').addEventListener('click',function(e){ stop(e); send(el,'pauseVideo'); el.dataset.playing=''; this.href='https://www.youtube.com/watch?v='+id+(times[pid]?'&t='+Math.floor(times[pid])+'s':''); });
