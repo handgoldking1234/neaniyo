@@ -681,12 +681,17 @@ body.embedded .side-hot{display:none!important}
 .parr.prev{left:-6px}.parr.next{right:-6px}
 .parr[disabled]{opacity:0;pointer-events:none}
 .pdots{display:none;justify-content:center;gap:6px}
+.pgrid.nx{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:3px 0;overscroll-behavior-x:contain}
+.pgrid.nx::-webkit-scrollbar{display:none}
+.pgrid.nx .ptile{flex:0 0 calc((100% - 20px) / 3);scroll-snap-align:start}
+.pwrap.ovf .pdots{display:flex}
+@media (hover:hover){.pwrap.ovf .parr{display:grid}}
 .pdots i{width:6px;height:6px;border-radius:50%;background:var(--line);transition:background .2s,width .2s}
 .pdots i.on{background:var(--ink);width:16px;border-radius:3px}
 @media (max-width:720px){
-  .pgrid.n3,.pgrid.n4{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin:0 -16px;padding:3px 16px;scroll-padding:0 16px;overscroll-behavior-x:contain}
+  .pgrid.n3,.pgrid.n4,.pgrid.nx{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin:0 -16px;padding:3px 16px;scroll-padding:0 16px;overscroll-behavior-x:contain}
   .pgrid.n3::-webkit-scrollbar,.pgrid.n4::-webkit-scrollbar{display:none}
-  .pgrid.n3 .ptile,.pgrid.n4 .ptile{flex:0 0 44%;scroll-snap-align:start}
+  .pgrid.n3 .ptile,.pgrid.n4 .ptile,.pgrid.nx .ptile{flex:0 0 44%;scroll-snap-align:start}
   .pwrap.ovf .pdots{display:flex}
 }
 @media (max-width:720px) and (hover:hover){.pwrap.ovf .parr{display:grid}}
@@ -1216,7 +1221,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     // 패션·쇼핑 사진 투표 예시
     {id:'mv1',ai:['예고편 분위기와 영상미만으로도 극장에서 볼 이유는 충분하다는 쪽', '예고편에 하이라이트를 다 보여 준 것 같아 OTT를 기다리겠다는 쪽'],ex:true,comments:true,cat:'연예',sub:'영화',type:'vs',q:'메인 예고편 떴다, 이 영화 봐 안 봐?',o:['본다','안 본다'],v:[2840,1310],h:'40분 전',img:'assets/sample/trailer-capture.svg',capLabel:'예고편 캡처',desc:'예고편이나 뉴스 화면을 캡처해 올리고 의견을 물어보는 투표예요. 캡처를 올릴 때 원본 영상·기사 주소를 함께 넣으면 카드 아래에 붙어요.'},
     {id:'ph1',ex:true,comments:true,cat:'패션·쇼핑',sub:'패션',type:'vs',q:'올겨울 롱패딩, 이거 산다 vs 안 산다',o:['산다','안 산다'],v:[1840,2260],h:'1시간 전',img:'assets/sample/long-padding.jpg',imgFit:'contain'},
-    {id:'ph2',ex:true,cat:'패션·쇼핑',type:'photo',q:'올겨울 패딩 코디, 어떤 스타일이 제일 나아요?',o:['모노톤 패딩','시티 나이트룩','스카프 데일리룩'],v:[1420,2380,960],h:'3시간 전',imgs:['px:15639609|black','px:19426409|charcoal','px:14469824|beige'],credit:'Farshad Sheikhzadeh · Caner Kokcu · Jean-Daniel'},
+    {id:'ph2',ex:true,cat:'패션·쇼핑',type:'photo',q:'올겨울 패딩 코디, 어떤 스타일이 제일 나아요?',o:['모노톤 패딩','시티 나이트룩','스카프 데일리룩','퍼 후드 패딩','볼캡 캐주얼룩'],v:[1420,2380,960,1110,740],h:'3시간 전',imgs:['px:15639609|black','px:19426409|charcoal','px:14469824|beige','px:11274805|black','px:19714681|navy'],credit:'Farshad Sheikhzadeh · Caner Kokcu · Jean-Daniel 외'},
     {id:'ph3',ex:true,cat:'패션·쇼핑',type:'photo',multiSel:true,n:1650,q:'출근길 패딩 코디, 괜찮은 거 다 골라 주세요',o:['퍼 후드 패딩','블랙 숏패딩','볼캡 매치','스카프 코디'],v:[1120,890,640,380],h:'오늘',imgs:['px:11274805|black','px:15639609|charcoal','px:19714681|navy','px:14469824|ivory'],credit:'Pexels 무료 사진'},
     // 그림·재능 예시
     {id:'dr1',ex:true,comments:true,cat:'그림·재능',type:'vs',q:'일곱 살 아이 그림, 미술학원 보낼까요?',o:['보낸다','안 보낸다'],v:[2210,1360],h:'2시간 전',img:'px:33590129|@drawing',credit:'Çiğdem Bilgin',
@@ -1260,7 +1265,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   // 유튜브: 유튜브 홈 피드처럼 화면에 60% 이상 보이면 소리 끈 채 자동재생, 벗어나면 일시정지, 한 번에 하나만.
   // 카드 위 버튼: 소리 켜기/끄기, 자막, 유튜브에서 보기. 한 번 소리를 켜면 다음 영상도 소리 켠 채로 재생
   var YT=(function(){
-    var times={}, durs={}, soundOn=false, ccOn=false, auto=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)&&!(navigator.connection&&navigator.connection.saveData);
+    var times={}, durs={}, soundOn=false, ccOn=false, auto=!(navigator.connection&&navigator.connection.saveData);
     function send(el,func,args){ var f=el.querySelector('iframe'); if(f&&f.contentWindow) f.contentWindow.postMessage(JSON.stringify({event:'command',func:func,args:args||[]}),'*'); }
     function setMuteBtn(el){ var mb=el.querySelector('.ytb.mute'); if(!mb) return; var on=el.dataset.snd==='1'; mb.innerHTML=ic(on?'volume-2':'volume-x'); mb.setAttribute('aria-label',on?'소리 끄기':'소리 켜기'); }
     function flash(el){ var f=el.querySelector('.ytsnd'); if(!f) return; f.innerHTML=ic(el.dataset.snd==='1'?'volume-2':'volume-x'); f.classList.add('on'); clearTimeout(f._t); f._t=setTimeout(function(){f.classList.remove('on')},700); }
@@ -1280,6 +1285,8 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       var f=el.querySelector('iframe');
       f.addEventListener('load',function(){
         try{ f.contentWindow.postMessage(JSON.stringify({event:'listening',id:pid}),'*'); }catch(e){}
+        // autoplay 파라미터가 무시되는 경우가 있어, 소리 끈 상태로 재생 명령을 한 번 더 보냄
+        setTimeout(function(){ if(el.dataset.playing==='1'){ if(el.dataset.snd!=='1') send(el,'mute'); send(el,'playVideo'); } },400);
         // 소리는 재생이 시작된 뒤 켠다(소리 켠 자동재생은 브라우저가 막음)
         if(snd) setTimeout(function(){ el.dataset.snd='1'; send(el,'unMute'); send(el,'setVolume',[100]); setMuteBtn(el); },600);
       });
@@ -1301,8 +1308,8 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     },{threshold:[0,.3,.6,.9]}):null;
     function scan(){ if(!io) return; document.querySelectorAll('.pimg.yt:not([data-io])').forEach(function(el){ el.dataset.io='1'; io.observe(el); }); }
     new MutationObserver(scan).observe(document.documentElement,{childList:true,subtree:true});
-    // 사진 넘기기: 자동 슬라이드는 하지 않음(투표 보기가 움직이면 잘못 누르기 쉬움).
-    // 넘칠 때만 점·좌우 버튼을 보이고, 처음 화면에 들어올 때 한 번 살짝 움직여 '옆에 더 있음'을 알려 줌.
+    // 사진 넘기기: 한 화면에 다 안 들어가면 화면에 보이는 동안 2.8초마다 자동으로 다음 사진.
+    // 마우스를 올리면 잠시 멈추고, 직접 넘기거나 누르면 그 투표는 자동 넘김을 끔. 투표를 마친 결과 화면은 자동으로 넘기지 않음.
     function pstate(w){
       var g=w.querySelector('.pgrid'); if(!g) return;
       var ovf=g.scrollWidth>g.clientWidth+4; w.classList.toggle('ovf',ovf);
@@ -1313,23 +1320,33 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       if(g.scrollLeft+g.clientWidth>=g.scrollWidth-8) k=tiles.length-1;
       [].forEach.call(dots,function(d,i){ d.classList.toggle('on',i===k); });
     }
-    var pReduce=false; try{pReduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
+    function pnext(w){
+      var g=w.querySelector('.pgrid'), t=g&&g.children[0]; if(!t) return;
+      if(g.scrollLeft+g.clientWidth>=g.scrollWidth-8) g.scrollTo({left:0,behavior:'smooth'});
+      else g.scrollBy({left:t.getBoundingClientRect().width+10,behavior:'smooth'});
+    }
+    function pstop(w){ clearInterval(w._pt); w._pt=null; }
+    function pstart(w){
+      if(w._pt||w.dataset.pstop||!w.classList.contains('ovf')||w.closest('.poll.done')) return;
+      w._pt=setInterval(function(){ if(!w.isConnected) return pstop(w); if(document.hidden||w._hover) return; pnext(w); },2800);
+    }
+    function pkill(w){ w.dataset.pstop='1'; pstop(w); }
     var pio='IntersectionObserver' in window?new IntersectionObserver(function(es){
-      es.forEach(function(e){
-        var w=e.target; pstate(w);
-        if(!e.isIntersecting||e.intersectionRatio<.7||w.dataset.nudged||pReduce||!w.classList.contains('ovf')) return;
-        var g=w.querySelector('.pgrid'); if(g.scrollLeft>0) return;
-        w.dataset.nudged='1';
-        setTimeout(function(){ if(g.scrollLeft>0) return; g.style.scrollSnapType='none'; g.scrollTo({left:60,behavior:'smooth'});
-          setTimeout(function(){ g.scrollTo({left:0,behavior:'smooth'}); setTimeout(function(){ g.style.scrollSnapType=''; },500); },550); },350);
-      });
-    },{threshold:[0,.7]}):null;
-    function pscan(){ document.querySelectorAll('.pwrap:not([data-pio])').forEach(function(w){ w.dataset.pio='1'; if(pio) pio.observe(w); pstate(w); }); }
+      es.forEach(function(e){ var w=e.target; pstate(w); if(e.isIntersecting&&e.intersectionRatio>=.6) pstart(w); else pstop(w); });
+    },{threshold:[0,.6]}):null;
+    function pbind(w){
+      w.addEventListener('pointerenter',function(e){ if(e.pointerType==='mouse') w._hover=true; });
+      w.addEventListener('pointerleave',function(e){ if(e.pointerType==='mouse') w._hover=false; });
+      var g=w.querySelector('.pgrid');
+      ['pointerdown','touchstart','wheel'].forEach(function(ev){ g.addEventListener(ev,function(e){ if(ev==='wheel'&&Math.abs(e.deltaX)<=Math.abs(e.deltaY)) return; pkill(w); },{passive:true}); });
+      w.addEventListener('focusin',function(){ pkill(w); });
+    }
+    function pscan(){ document.querySelectorAll('.pwrap:not([data-pio])').forEach(function(w){ w.dataset.pio='1'; pbind(w); if(pio) pio.observe(w); pstate(w); }); }
     new MutationObserver(pscan).observe(document.documentElement,{childList:true,subtree:true});
     document.addEventListener('scroll',function(e){ var g=e.target; if(g&&g.classList&&g.classList.contains('pgrid')&&g.parentNode.classList.contains('pwrap')) pstate(g.parentNode); },true);
     window.addEventListener('resize',function(){ document.querySelectorAll('.pwrap').forEach(pstate); });
     document.addEventListener('click',function(e){
-      var b=e.target.closest('[data-pnav]'); if(!b) return; e.stopPropagation();
+      var b=e.target.closest('[data-pnav]'); if(!b) return; e.stopPropagation(); pkill(b.parentNode);
       var g=b.parentNode.querySelector('.pgrid'), t=g.children[0];
       g.scrollBy({left:(+b.dataset.pnav)*((t?t.getBoundingClientRect().width:g.clientWidth*.44)+10),behavior:'smooth'});
     },true);
@@ -1531,7 +1548,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       }
     }else if(p.type==='photo'){
       var mx=Math.max.apply(null,p.v), pk=p.multiSel?'data-pick':'data-i';
-      body='<div class="pgrid n'+p.imgs.length+'">'+p.imgs.map(function(src,i){
+      body='<div class="pgrid n'+p.imgs.length+(p.imgs.length>4?' nx':'')+'">'+p.imgs.map(function(src,i){
         var cls='ptile'+(done&&p.v[i]===mx&&mx>0?' top':'')+(isMine(p,i)?' mine':'');
         return '<button class="'+cls+'" '+(done?'tabindex="-1"':pk+'="'+i+'"')+' aria-label="'+esc(p.o[i])+'"><img src="'+src+'" alt="'+esc(p.o[i])+'" loading="lazy" referrerpolicy="no-referrer">'+
           '<span class="pcap"><b>'+esc(p.o[i])+(isMine(p,i)?' '+ic('check'):'')+'</b>'+(done?'<em>'+ps[i]+'%</em>':'')+'</span>'+(done?'<span class="pfill" style="--w:'+ps[i]+'%"></span>':'')+'</button>';
