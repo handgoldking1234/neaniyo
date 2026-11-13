@@ -1724,6 +1724,15 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   // 방문할 때마다 순서가 바뀌고(추천 칩을 다시 누르면 새로 섞음), 보는 동안에는 순서가 그대로 유지된다.
   // 이미 투표한 것은 뒤로, 사진·영상 있는 투표는 조금 앞으로. (개발 단계에서 서버의 개인화 추천으로 교체)
   var recSeed=String(Math.random()), recOrder=null, recKey='';
+  // 보기 쉬운 형식 판별: OX(짧은 양자택일) > 유튜브 > 사진 > 그 외(긴 사연·릴레이·보기 많은 객관식)
+  function kindOf(p){
+    if(p.link&&p.link.yt) return 'yt';
+    if(p.type==='photo'||p.img||(p.gal&&p.gal.length)) return 'photo';
+    if(p.type==='vs'&&!p.story&&(p.q||'').length<=34) return 'ox';
+    return 'long';
+  }
+  var EASE={ox:0.22,yt:0.18,photo:0.14,long:-0.12};
+  var RHYTHM=['ox','ox','yt','ox','photo','ox','yt','photo','ox','ox'];
   function buildRec(list){
     var r=rnd(recSeed+recKey), hot=list.map(function(p){return RANK.live.score(p)}), mx=Math.max.apply(null,hot.concat([1]));
     // 관심사 가중치: 고른 대분류는 올리고 나머지는 살짝 내림. 가장 뜨거운 투표는 관심사와 상관없이 앞쪽에 남김.
@@ -1732,16 +1741,17 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     var sc=list.map(function(p,i){
       var media=!!(p.img||p.imgs||(p.link&&p.link.yt)), hr=hot[i]/mx;
       var pref=(ic2.length?(ic2.indexOf(p.cat)>=0?0.22:(hr>0.6?0:-0.08)):0)+(vn>=5?0.25*(vc[p.cat]||0)/vn:0);
-      return {p:p,s:0.45*Math.sqrt(hr)+0.3/(1+p.t/12)+0.4*r()+(media?0.1:0)-(voted[p.id]!=null?0.6:0)-(p.ex?0.08:0)+pref};
+      var k=kindOf(p), longPen=k==='long'?Math.min(0.15,((p.story||'').length/600)+(p.type==='relay'?0.08:0)+(p.o&&p.o.length>3?0.04:0)):0;
+      return {p:p,s:0.45*Math.sqrt(hr)+0.3/(1+p.t/12)+0.35*r()+EASE[k]-longPen-(voted[p.id]!=null?0.6:0)-(p.ex?0.08:0)+pref};
     }).sort(function(a,b){return b.s-a.s}).map(function(x){return x.p});
     var out=[];
     while(sc.length){
-      var last=out.slice(-4), k=0;
-      for(var i=0;i<sc.length&&i<12;i++){
-        var c=sc[i].cat, same=last.filter(function(q){return q.cat===c}).length;
-        if((!out.length||out[out.length-1].cat!==c)&&same<2){ k=i; break; }
-      }
-      out.push(sc.splice(k,1)[0]);
+      var last=out.slice(-4), k=-1, want=RHYTHM[out.length];
+      var okCat=function(c){ return (!out.length||out[out.length-1].cat!==c)&&last.filter(function(q){return q.cat===c}).length<2; };
+      // 첫 화면 10장은 OX·유튜브·사진 리듬으로 (해당 형식이 없으면 점수 순)
+      if(want) for(var i=0;i<sc.length;i++){ if(kindOf(sc[i])===want&&okCat(sc[i].cat)){ k=i; break; } }
+      if(k<0) for(var j=0;j<sc.length&&j<12;j++){ if(okCat(sc[j].cat)){ k=j; break; } }
+      out.push(sc.splice(Math.max(0,k),1)[0]);
     }
     return out.map(function(p){return p.id});
   }
