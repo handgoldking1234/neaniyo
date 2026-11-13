@@ -502,6 +502,8 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .cform{display:flex;gap:6px}
 .cform input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px}
 .cmts .hint{margin:0}
+.cmts .cmore{border:0;background:none;color:var(--muted);padding:2px 0;cursor:pointer;font-size:calc(13.5px * var(--fs));font-weight:600;text-align:left;align-self:flex-start}
+.cmts .cmore:hover{color:var(--ink)}
 .cmsg{font-size:calc(12.5px * var(--fs));color:var(--a);margin:0;min-height:0}
 
 /* 실시간 인기 투표 */
@@ -2146,14 +2148,25 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     var bestIds={};
     p.o.forEach(function(_,oi){var b=sorted.filter(function(c){return c.o===oi})[0]; if(b&&b.likes>0) bestIds[b.id]=1;});
     var ordered=sorted.filter(function(c){return bestIds[c.id]}).concat(list.slice().reverse().filter(function(c){return !bestIds[c.id]}));
+    // 피드에서는 페이스북·인스타처럼 미리보기만: 대표 의견(최대 2개) + 내가 방금 쓴 글, 나머지는 '모두 보기'로 펼침. 공유 링크로 들어오면 전부 보임.
+    var total=ordered.length, open=!!shareId||!!embedded||cmtOpen[p.id];
+    if(!open&&total>2){
+      var pv=ordered.filter(function(c){return bestIds[c.id]}).slice(0,2);
+      if(!pv.length) pv=ordered.slice(0,2);
+      var myLast=list.filter(function(c){return c.mine}).slice(-1)[0];
+      if(myLast&&pv.indexOf(myLast)<0) pv.push(myLast);
+      ordered=pv;
+    }
+    var moreBtn=total>2&&!shareId&&!embedded?'<button type="button" class="cmore" data-act="cmore" aria-expanded="'+!!open+'">'+(open?'한줄평 접기':'한줄평 '+total+'개 모두 보기')+'</button>':'';
     var form=user?'<form class="cform" data-cform="'+p.id+'" novalidate><label for="c-'+p.id+'" hidden>한줄평</label><input id="c-'+p.id+'" maxlength="80" placeholder="'+esc(p.o[myIdx(p)]||'내 선택')+' 쪽 한줄평 (80자)" autocomplete="off"><button class="btn dark" type="submit">등록</button></form><p class="cmsg" data-cmsg></p>'
       :'<button class="btn" data-act="login">'+ic('log-in')+'로그인하고 한줄평 남기기</button>';
     return '<div class="cmts"><h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개 · 공감 많은 대표 의견 먼저</small></h4>'+
       ordered.map(function(c){
         return '<div class="cmt'+(bestIds[c.id]?' best':'')+'"><span class="who"><span class="side-tag" style="background:'+OPC[c.o%OPC.length]+'">'+esc(p.o[c.o]||'')+'</span>'+(bestIds[c.id]?'<b>대표 의견</b> · ':'')+esc(c.at)+(c.mine?' · 내 글':'')+'</span><p>'+esc(c.text)+'</p>'+
           '<span class="ops"><button type="button" data-act="like" data-cid="'+c.id+'" aria-pressed="'+!!c.liked+'">'+ic('heart')+'공감 '+fmt(c.likes)+'</button><button type="button" data-act="report" data-cid="'+c.id+'">'+ic('flag')+'신고</button></span></div>';
-      }).join('')+form+'</div>';
+      }).join('')+moreBtn+form+'</div>';
   }
+  var cmtOpen={};
   function rerender(art,p){
     var tmp=document.createElement('div'); tmp.innerHTML=card(p); var fresh=tmp.firstChild; art.replaceWith(fresh); resize(); return fresh;
   }
@@ -2240,6 +2253,9 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
         setTimeout(resize,520); return;
       }
       if(act==='pickgo'){ submitPicks(art,p,actBtn,e); return; }
+      if(act==='cmore'){ cmtOpen[p.id]=!cmtOpen[p.id]; var top0=art.getBoundingClientRect().top; var fr0=rerender(art,p);
+        if(!cmtOpen[p.id]){ var d0=fr0.getBoundingClientRect().top-top0; if(d0) window.scrollBy(0,d0); var cm=fr0.querySelector('.cmts'); if(cm&&cm.getBoundingClientRect().top<0) cm.scrollIntoView({block:'start'}); }
+        return; }
       if(act==='like'||act==='report'){
         var c=getC(p).filter(function(x){return x.id===actBtn.dataset.cid})[0]; if(!c) return;
         if(act==='like'){ c.liked=!c.liked; c.likes+=c.liked?1:-1;
