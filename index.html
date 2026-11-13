@@ -1223,6 +1223,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     {id:'mv1',ai:['예고편 분위기와 영상미만으로도 극장에서 볼 이유는 충분하다는 쪽', '예고편에 하이라이트를 다 보여 준 것 같아 OTT를 기다리겠다는 쪽'],ex:true,comments:true,cat:'연예',sub:'영화',type:'vs',q:'메인 예고편 떴다, 이 영화 봐 안 봐?',o:['본다','안 본다'],v:[2840,1310],h:'40분 전',img:'assets/sample/trailer-capture.svg',capLabel:'예고편 캡처',desc:'예고편이나 뉴스 화면을 캡처해 올리고 의견을 물어보는 투표예요. 캡처를 올릴 때 원본 영상·기사 주소를 함께 넣으면 카드 아래에 붙어요.'},
     {id:'ph1',ex:true,comments:true,cat:'패션·쇼핑',sub:'패션',type:'vs',q:'올겨울 롱패딩, 이거 산다 vs 안 산다',o:['산다','안 산다'],v:[1840,2260],h:'1시간 전',img:'assets/sample/long-padding.jpg',imgFit:'contain'},
     {id:'ph2',ex:true,cat:'패션·쇼핑',type:'photo',q:'올겨울 패딩 코디, 어떤 스타일이 제일 나아요?',o:['모노톤 패딩','시티 나이트룩','스카프 데일리룩','퍼 후드 패딩','볼캡 캐주얼룩'],v:[1420,2380,960,1110,740],h:'3시간 전',imgs:['px:15639609|black','px:19426409|charcoal','px:14469824|beige','px:11274805|black','px:19714681|navy'],credit:'Farshad Sheikhzadeh · Caner Kokcu · Jean-Daniel 외'},
+    {id:'yt1',ex:true,cat:'연예',type:'vs',q:'이 영상, 끝까지 보게 되나요?',o:['끝까지 본다','중간에 넘긴다'],v:[1240,860],h:'방금',boost:400,link:'https://youtu.be/iEmGtIh60DE'},
     {id:'ph3',ex:true,cat:'패션·쇼핑',type:'photo',multiSel:true,n:1650,q:'출근길 패딩 코디, 괜찮은 거 다 골라 주세요',o:['퍼 후드 패딩','블랙 숏패딩','볼캡 매치','스카프 코디'],v:[1120,890,640,380],h:'오늘',imgs:['px:11274805|black','px:15639609|charcoal','px:19714681|navy','px:14469824|ivory'],credit:'Pexels 무료 사진'},
     // 그림·재능 예시
     {id:'dr1',ex:true,comments:true,cat:'그림·재능',type:'vs',q:'일곱 살 아이 그림, 미술학원 보낼까요?',o:['보낸다','안 보낸다'],v:[2210,1360],h:'2시간 전',img:'px:33590129|@drawing',credit:'Çiğdem Bilgin',
@@ -1398,7 +1399,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     {c:'밸런스',l:'밸런스',s:['밸런스게임','취향']}
   ];
   function catLabel(c){var t=TAX.filter(function(x){return x.c===c})[0];return t?t.l:c}
-  var SUBMAP={p1:'아이돌·K팝',s1:'생활·소비',e1:'부동산',p2:'배우·드라마',n2:'아이돌·K팝',p3:'아이돌·K팝',sp1:'야구',e2:'주식',n3:'예능·방송',s2:'직장·노동',g1:'제도',p4:'아이돌·K팝',p7:'생활·소비',e3:'부동산',p5:'밸런스게임',p6:'예능·방송',sp2:'축구',g2:'제도',
+  var SUBMAP={yt1:'유튜버·인플루언서',p1:'아이돌·K팝',s1:'생활·소비',e1:'부동산',p2:'배우·드라마',n2:'아이돌·K팝',p3:'아이돌·K팝',sp1:'야구',e2:'주식',n3:'예능·방송',s2:'직장·노동',g1:'제도',p4:'아이돌·K팝',p7:'생활·소비',e3:'부동산',p5:'밸런스게임',p6:'예능·방송',sp2:'축구',g2:'제도',
     x1:'음식·맛집',x2:'육아·가족',a1:'예능·방송',a2:'야구',a3:'생활·소비',a4:'부동산',a5:'밸런스게임',rl1:'취향',rl2:'재테크·소비',ph1:'패션',ph2:'패션',ph3:'패션',dr1:'아이 그림',dr2:'아이 그림',
     st1:'친구·인간관계',st2:'직장',st3:'가족',st4:'돈',st5:'가족',st6:'연애'};
   var CATMOVE={p3:'연예',x1:'라이프',x2:'라이프'};
