@@ -628,7 +628,9 @@ body.embedded .side-hot{display:none!important}
 .rblock{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
 .rblock .rh{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:calc(13px * var(--fs));color:var(--e)}
 .rblock input{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 11px}
-.rblock .ro{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.rblock .ro{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.rbuild,.rblock{min-width:0}
+.rblock input{min-width:0;width:100%;box-sizing:border-box}
 .rblock .rx{border:0;background:none;color:var(--muted);cursor:pointer;font-size:calc(12px * var(--fs))}
 /* 사진 투표 */
 .pimg{border-radius:14px;overflow:hidden;background:var(--bg);margin-top:-4px}
@@ -742,7 +744,15 @@ body.embedded .side-hot{display:none!important}
 .cat.story-cat{color:var(--e)}
 #f-story{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:12px;resize:vertical;line-height:1.6;font:inherit;width:100%}
 /* 만들기: 자동 형식 */
-.quick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px}
+.quick{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 0 2px;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+.quick::-webkit-scrollbar{display:none}
+.quick button{flex:none;white-space:nowrap;position:relative}
+.quick button[aria-pressed="true"],.quick button[aria-pressed="true"]:hover{border-color:var(--ink);background:var(--ink);color:var(--surface)}
+.quick button.rec:not([aria-pressed="true"]){border-color:var(--b);color:var(--b)}
+.quick button.rec::after{content:"추천";margin-left:5px;font-size:10.5px;font-weight:700;padding:1px 5px;border-radius:999px;background:color-mix(in srgb,var(--b) 14%,transparent)}
+.quick button[aria-pressed="true"].rec::after{background:color-mix(in srgb,var(--surface) 25%,transparent)}
+.rblock .quick{margin:0}
+.rblock .quick button{padding:4px 10px;font-size:calc(12px * var(--fs))}
 .quick button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:calc(12.5px * var(--fs));cursor:pointer;color:var(--muted)}
 .quick button:hover{border-color:var(--ink);color:var(--ink)}
 .relay-toggle{align-self:flex-start;border:0;background:none;color:var(--e);font-weight:700;font-size:calc(13.5px * var(--fs));cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:2px 0}
@@ -1076,9 +1086,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
           <div class="field"><label for="f-sub">세부</label><select id="f-sub"></select></div>
         </div>
         <div class="field" id="f-opt-wrap"><label id="f-opt-label">보기</label>
-          <div class="quick" id="quick" role="group" aria-label="보기 빠른 입력">
-            <button type="button" data-q="찬성|반대">찬성 / 반대</button><button type="button" data-q="O|X">O / X</button><button type="button" data-q="산다|안 산다">산다 / 안 산다</button><button type="button" data-q="한다|안 한다">한다 / 안 한다</button><button type="button" data-q="사귄다|안 사귄다">사귄다 / 안 사귄다</button><button type="button" data-q="본다|안 본다">본다 / 안 본다</button><button type="button" data-q="공감|비공감">공감 / 비공감</button>
-          </div>
+          <div class="quick" id="quick" role="group" aria-label="보기 빠른 입력"></div>
           <div class="optlist" id="optlist">
             <input id="f-o1" placeholder="보기 1 · 비워 두면 찬성" maxlength="30">
             <input id="f-o2" placeholder="보기 2 · 비워 두면 반대" maxlength="30">
@@ -2526,6 +2534,34 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   });
   subChips.addEventListener('click',function(e){ var c=e.target.closest('[data-s]'); if(c) setFilter(filter,c.dataset.s); });
 
+  // 답 형식: 제목 말투를 보고 어울리는 보기를 추천. 보기를 비워 두면 추천 보기로 올라감
+  var ANS=[['찬성','반대'],['O','X'],['좋다','별로다'],['한다','안 한다'],['산다','안 산다'],['본다','안 본다'],['간다','안 간다'],['사귄다','안 사귄다'],['공감','비공감']];
+  function suggestAns(t){
+    t=(t||'').replace(/\s+/g,' ');
+    if(/사귈|사귀어|사귀는|고백/.test(t)) return ANS[7];
+    if(/살까|살래|사야|사도 될|사\?|구매|지를까|질러/.test(t)) return ANS[4];
+    if(/볼까|볼래|봐\?|봐 안|보러|시청|예고편/.test(t)) return ANS[5];
+    if(/갈까|갈래|가야|가\?|가도 될|등반|여행|나들이/.test(t)) return ANS[6];
+    if(/어때|어떤가|어떰|괜찮|어울/.test(t)) return ANS[2];
+    if(/할까|할래|해야|해\?|하나요|해도 될|할 거|하는 게/.test(t)) return ANS[3];
+    if(/공감/.test(t)) return ANS[8];
+    if(/맞(아|나|을까|다고)|될까|되나|가능|있을까|인가|일까|진짜/.test(t)) return ANS[1];
+    return ANS[0];
+  }
+  function quickHTML(){ return ANS.map(function(a){return '<button type="button" data-q="'+a.join('|')+'">'+a.join(' / ')+'</button>'}).join('')+'<button type="button" data-q="">직접 쓰기</button>'; }
+  function markQuick(box,vals,rec){
+    if(!box) return;
+    var f=vals.filter(Boolean), key=f.join('|'), hit=f.length===2&&ANS.some(function(a){return a.join('|')===key});
+    [].forEach.call(box.querySelectorAll('[data-q]'),function(b){
+      var q=b.dataset.q;
+      b.setAttribute('aria-pressed',String(q?hit&&q===key:f.length>0&&!hit));
+      b.classList.toggle('rec',!!q&&!f.length&&q===rec.join('|'));
+    });
+    var rb=box.querySelector('.rec'), rk=rec.join('|');
+    if(rb&&box.dataset.rec!==rk){ box.dataset.rec=rk; box.scrollTo({left:Math.max(0,rb.offsetLeft-box.offsetLeft-8),behavior:'smooth'}); }
+  }
+
+
   // 만들기 — 형식은 고르지 않고, 쓴 내용으로 자동 결정
   //   내용을 쓰면 사연 판정 · 사진 2장 이상이면 사진 픽 · 보기 3개 이상이면 객관식 · 그 외 OX · 질문을 이어 붙이면 릴레이
   var form=document.getElementById('make'), optlist=document.getElementById('optlist'), add=document.getElementById('addopt'), msg=document.getElementById('f-msg');
@@ -2587,8 +2623,11 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     ins=optInputs(); for(var j=ins.length-1;j>=n;j--) ins[j].remove();
   }
   add.onclick=function(){ var n=optInputs().length; if(n>=6) return; setOptCount(n+1); var last=optInputs()[n]; last.placeholder='보기 '+(n+1); last.focus(); sync(); };
+  document.getElementById('quick').innerHTML=quickHTML();
   document.getElementById('quick').addEventListener('click',function(e){
-    var b=e.target.closest('[data-q]'); if(!b) return; var v=b.dataset.q.split('|'); setOptCount(2); var ins=optInputs(); ins[0].value=v[0]; ins[1].value=v[1]; sync();
+    var b=e.target.closest('[data-q]'); if(!b) return;
+    if(!b.dataset.q){ var ins0=optInputs(); ins0.forEach(function(x){x.value=''}); ins0[0].placeholder='보기 1 직접 쓰기'; ins0[0].focus(); sync(); return; }
+    var v=b.dataset.q.split('|'); setOptCount(2); var ins=optInputs(); ins[0].value=v[0]; ins[1].value=v[1]; sync();
   });
   optlist.addEventListener('input',sync);
   qIn.addEventListener('input',sync);
@@ -2598,12 +2637,17 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   // 릴레이
   function rblock(k){
     var d=document.createElement('div'); d.className='rblock';
-    d.innerHTML='<div class="rh"><span>Q'+(k+1)+'</span><button type="button" class="rx" data-rx>삭제</button></div><label hidden for="rq'+k+'">질문 '+(k+1)+'</label><input class="rqi" id="rq'+k+'" maxlength="40" placeholder="질문 '+(k+1)+'">'+
+    d.innerHTML='<div class="rh"><span>Q'+(k+1)+'</span><button type="button" class="rx" data-rx>삭제</button></div><label hidden for="rq'+k+'">질문 '+(k+1)+'</label><input class="rqi" id="rq'+k+'" maxlength="40" placeholder="질문 '+(k+1)+'">'+'<div class="quick" role="group" aria-label="Q'+(k+1)+' 답 형식">'+quickHTML()+'</div>'+
       '<div class="ro"><input class="roi" maxlength="20" placeholder="보기 1"><input class="roi" maxlength="20" placeholder="보기 2"><input class="roi" maxlength="20" placeholder="보기 3 (선택)"><input class="roi" maxlength="20" placeholder="보기 4 (선택)"></div>';
     return d;
   }
   function renumber(){ [].forEach.call(rbuild.children,function(b,k){ b.querySelector('.rh span').textContent='Q'+(k+1); b.querySelector('.rqi').placeholder='질문 '+(k+1); }); raddq.hidden=rbuild.children.length>=5; sync(); }
   raddq.onclick=function(){ if(rbuild.children.length<5){ rbuild.appendChild(rblock(rbuild.children.length)); renumber(); } };
+  rbuild.addEventListener('input',sync);
+  rbuild.addEventListener('click',function(e){
+    var qb=e.target.closest('[data-q]');
+    if(qb){ var ro=qb.closest('.rblock').querySelectorAll('.roi'); [].forEach.call(ro,function(x){x.value=''}); if(qb.dataset.q){ var v=qb.dataset.q.split('|'); ro[0].value=v[0]; ro[1].value=v[1]; } else ro[0].focus(); sync(); return; }
+  });
   rbuild.addEventListener('click',function(e){ var x=e.target.closest('[data-rx]'); if(!x||rbuild.children.length<=2) return; x.closest('.rblock').remove(); renumber(); });
   function resetRelay(){ rbuild.innerHTML=''; rbuild.appendChild(rblock(0)); rbuild.appendChild(rblock(1)); renumber(); }
   phow.querySelectorAll('.phi').forEach(function(x){ x.innerHTML=ic(x.dataset.i); });
@@ -2667,8 +2711,9 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     document.getElementById('f-opt-label').innerHTML=photoMode?'사진 이름 <small>(비워 두면 A, B…)</small>':'보기';
     if(photoMode){ setOptCount(upImgs.length); optInputs().forEach(function(inp,i){ inp.placeholder=String.fromCharCode(65+i)+' 사진 이름'; }); }
     else if(optInputs().length<2) setOptCount(2);
-    var labels=['찬성','반대'];
-    if(!photoMode) optInputs().forEach(function(inp,i){ if(i<2) inp.placeholder='보기 '+(i+1)+' · 비워 두면 '+labels[i]; });
+    var labels=suggestAns(qIn.value+' '+storyIn.value);
+    if(!photoMode){ optInputs().forEach(function(inp,i){ if(i<2) inp.placeholder='보기 '+(i+1)+' · 비워 두면 '+labels[i]; }); markQuick(document.getElementById('quick'),optInputs().map(function(x){return x.value.trim()}),labels); }
+    [].forEach.call(rbuild.children,function(bk){ var rec=suggestAns(bk.querySelector('.rqi').value), ro=bk.querySelectorAll('.roi'); ro[0].placeholder='비우면 '+rec[0]; ro[1].placeholder='비우면 '+rec[1]; markQuick(bk.querySelector('.quick'),[].map.call(ro,function(x){return x.value.trim()}),rec); });
     mselWrap.hidden=!(d.kind==='multi'||d.kind==='photo');
     // 카테고리 자동 제안
     var autoC=autoCat(d), lk=linkOf(), raw=linkIn.value.trim();
@@ -2696,9 +2741,9 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     if(vis==='secret'&&pwIn.value.length<4&&!(old&&old.pw&&!pwIn.value)){ fail('비밀번호를 4자 이상 입력해 주세요.'); document.getElementById('moreSet').open=true; return; }
     var np={id:'u'+Date.now().toString(36),cat:catSel.value,sub:subSel.value,q:q,h:'방금',t:0,vis:vis,comments:document.getElementById('f-cmt').checked,own:true,created:Date.now()};
     if(d.kind==='relay'){
-      var qs=[].map.call(rbuild.children,function(b){ return {q:b.querySelector('.rqi').value.trim(),o:[].map.call(b.querySelectorAll('.roi'),function(x){return x.value.trim()}).filter(Boolean)}; });
+      var qs=[].map.call(rbuild.children,function(b){ var qq=b.querySelector('.rqi').value.trim(), oo=[].map.call(b.querySelectorAll('.roi'),function(x){return x.value.trim()}).filter(Boolean); if(!oo.length) oo=suggestAns(qq).slice(); return {q:qq,o:oo}; });
       var bad=qs.findIndex(function(x){return !x.q||x.o.length<2});
-      if(bad>=0){ fail('Q'+(bad+1)+'에 질문과 보기 두 개 이상을 입력해 주세요.'); return; }
+      if(bad>=0){ fail(qs[bad].q?'Q'+(bad+1)+'의 보기를 하나 더 입력하거나 모두 비워 두세요.':'Q'+(bad+1)+' 질문을 입력해 주세요.'); return; }
       qs.forEach(function(x){x.v=x.o.map(function(){return 0})});
       np.type='relay'; np.qs=qs; np.o=qs[0].o; np.v=qs[0].v; np.n=0;
       if(np.cat==='사연'){ np.cat='밸런스'; np.sub='취향'; }
@@ -2708,7 +2753,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       if(d.kind==='photo'){ o=upImgs.map(function(_,i){ return vals[i]||String.fromCharCode(65+i); }); np.type='photo'; np.imgs=upImgs.slice(); }
       else{
         o=vals.filter(Boolean);
-        if(o.length===0) o=['찬성','반대'];
+        if(o.length===0) o=suggestAns(q+' '+storyIn.value).slice();
         else if(o.length===1){ fail('보기를 하나 더 입력하거나 둘 다 비워 두세요.'); return; }
         np.type=o.length>2?'multi':'vs';
         if(upImgs.length===1) np.img=upImgs[0];
