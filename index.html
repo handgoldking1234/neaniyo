@@ -2559,6 +2559,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     });
     var rb=box.querySelector('.rec'), rk=rec.join('|');
     if(rb&&box.dataset.rec!==rk){ box.dataset.rec=rk; box.scrollTo({left:Math.max(0,rb.offsetLeft-box.offsetLeft-8),behavior:'smooth'}); }
+    return hit;
   }
 
 
@@ -2627,7 +2628,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   document.getElementById('quick').addEventListener('click',function(e){
     var b=e.target.closest('[data-q]'); if(!b) return;
     if(!b.dataset.q){ var ins0=optInputs(); ins0.forEach(function(x){x.value=''}); ins0[0].placeholder='보기 1 직접 쓰기'; ins0[0].focus(); sync(); return; }
-    var v=b.dataset.q.split('|'); setOptCount(2); var ins=optInputs(); ins[0].value=v[0]; ins[1].value=v[1]; sync();
+    var on=b.getAttribute('aria-pressed')==='true', v=b.dataset.q.split('|'); setOptCount(2); var ins=optInputs(); ins[0].value=on?'':v[0]; ins[1].value=on?'':v[1]; sync();
   });
   optlist.addEventListener('input',sync);
   qIn.addEventListener('input',sync);
@@ -2646,7 +2647,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   rbuild.addEventListener('input',sync);
   rbuild.addEventListener('click',function(e){
     var qb=e.target.closest('[data-q]');
-    if(qb){ var ro=qb.closest('.rblock').querySelectorAll('.roi'); [].forEach.call(ro,function(x){x.value=''}); if(qb.dataset.q){ var v=qb.dataset.q.split('|'); ro[0].value=v[0]; ro[1].value=v[1]; } else ro[0].focus(); sync(); return; }
+    if(qb){ var on=qb.getAttribute('aria-pressed')==='true', ro=qb.closest('.rblock').querySelectorAll('.roi'); [].forEach.call(ro,function(x){x.value=''}); if(qb.dataset.q&&!on){ var v=qb.dataset.q.split('|'); ro[0].value=v[0]; ro[1].value=v[1]; } else if(!qb.dataset.q) ro[0].focus(); sync(); return; }
   });
   rbuild.addEventListener('click',function(e){ var x=e.target.closest('[data-rx]'); if(!x||rbuild.children.length<=2) return; x.closest('.rblock').remove(); renumber(); });
   function resetRelay(){ rbuild.innerHTML=''; rbuild.appendChild(rblock(0)); rbuild.appendChild(rblock(1)); renumber(); }
@@ -2713,7 +2714,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     else if(optInputs().length<2) setOptCount(2);
     var labels=suggestAns(qIn.value+' '+storyIn.value);
     if(!photoMode){ optInputs().forEach(function(inp,i){ if(i<2) inp.placeholder='보기 '+(i+1)+' · 비워 두면 '+labels[i]; }); markQuick(document.getElementById('quick'),optInputs().map(function(x){return x.value.trim()}),labels); }
-    [].forEach.call(rbuild.children,function(bk){ var rec=suggestAns(bk.querySelector('.rqi').value), ro=bk.querySelectorAll('.roi'); ro[0].placeholder='비우면 '+rec[0]; ro[1].placeholder='비우면 '+rec[1]; markQuick(bk.querySelector('.quick'),[].map.call(ro,function(x){return x.value.trim()}),rec); });
+    [].forEach.call(rbuild.children,function(bk){ var rec=suggestAns(bk.querySelector('.rqi').value), ro=bk.querySelectorAll('.roi'); ro[0].placeholder='비우면 '+rec[0]; ro[1].placeholder='비우면 '+rec[1]; var hit=markQuick(bk.querySelector('.quick'),[].map.call(ro,function(x){return x.value.trim()}),rec); ro[2].hidden=ro[3].hidden=hit; });
     mselWrap.hidden=!(d.kind==='multi'||d.kind==='photo');
     // 카테고리 자동 제안
     var autoC=autoCat(d), lk=linkOf(), raw=linkIn.value.trim();
