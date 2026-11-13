@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>네아니요 관리자</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2216%22%20height%3D%2232%22%20fill%3D%22%23E8336D%22/%3E%3Crect%20x%3D%2216%22%20width%3D%2216%22%20height%3D%2232%22%20fill%3D%22%232F5BEA%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#F3F4F8; --surface:#FFFFFF; --ink:#14161F; --muted:#5E6378; --line:#E2E4EC; --soft:#F7F8FB;
+  --a:#E8336D; --a-soft:#FCE3EB; --b:#2F5BEA; --b-soft:#E2E9FD; --ok:#1F9D6B; --ok-soft:#DDF3EA; --warn:#B7791F; --warn-soft:#FBF0DC; --bad:#D1344B; --bad-soft:#FBE3E7;
+  --bar:#2F5BEA; --bar2:#B9C7F5;
+  --font:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1118; --surface:#181B25; --ink:#ECEEF5; --muted:#9AA0B5; --line:#2A2E3C; --soft:#1D2130;
+  --a:#FF5A8A; --a-soft:#3A1A27; --b:#6C8CFF; --b-soft:#1C2445; --ok:#3CC48C; --ok-soft:#14302A; --warn:#E2B04A; --warn-soft:#352A14; --bad:#FF6B81; --bad-soft:#3A1A22;
+  --bar:#6C8CFF; --bar2:#34406B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1118; --surface:#181B25; --ink:#ECEEF5; --muted:#9AA0B5; --line:#2A2E3C; --soft:#1D2130;
+  --a:#FF5A8A; --a-soft:#3A1A27; --b:#6C8CFF; --b-soft:#1C2445; --ok:#3CC48C; --ok-soft:#14302A; --warn:#E2B04A; --warn-soft:#352A14; --bad:#FF6B81; --bad-soft:#3A1A22;
+  --bar:#6C8CFF; --bar2:#34406B; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;word-break:keep-all;overflow-wrap:break-word}
+button,input,select,textarea{font:inherit;color:inherit}
+[hidden]{display:none!important}
+a{color:var(--b)}
+.app{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}
+.side{background:var(--surface);border-right:1px solid var(--line);padding:18px 12px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:16px;padding:0 8px 16px}
+.brand i{display:inline-block;width:18px;height:18px;border-radius:5px;background:linear-gradient(90deg,var(--a) 50%,var(--b) 50%)}
+.brand small{font-weight:600;color:var(--muted);font-size:12px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav .grp{font-size:11px;font-weight:700;color:var(--muted);padding:14px 10px 4px;letter-spacing:.02em}
+.nav a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:8px;color:var(--ink);text-decoration:none;font-weight:600}
+.nav a:hover{background:var(--soft)}
+.nav a[aria-current]{background:var(--b-soft);color:var(--b)}
+.nav .tag{font-size:10.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:0 6px}
+.main{min-width:0;padding:20px 28px 60px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.top h1{font-size:22px;margin:0;font-weight:800}
+.top .sub{color:var(--muted);font-size:13px}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--soft)}
+.btn.pri{background:var(--b);border-color:var(--b);color:#fff}
+.btn.pri:hover{filter:brightness(1.05)}
+.btn.dng{color:var(--bad)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;border-radius:99px;padding:1px 8px;white-space:nowrap}
+.chip.live{background:var(--ok-soft);color:var(--ok)}
+.chip.wait{background:var(--b-soft);color:var(--b)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.mute{background:var(--soft);color:var(--muted);border:1px solid var(--line)}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.card h2{font-size:15px;margin:0 0 4px;font-weight:700}
+.card .desc{color:var(--muted);font-size:12.5px;margin:0 0 12px}
+.kpi .l{color:var(--muted);font-size:12.5px;font-weight:600}
+.kpi .v{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .s{color:var(--muted);font-size:12px;margin-top:2px}
+.two{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+.half{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:1100px){.two,.half{grid-template-columns:minmax(0,1fr)}}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--muted);background:var(--soft)}
+.empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+.note{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--muted)}
+.note b{color:var(--ink)}
+.ribbon{display:flex;align-items:center;gap:8px;background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:10px 14px;font-weight:700;margin-bottom:14px}
+/* table */
+.tbl-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:720px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13px}
+th{font-size:12px;color:var(--muted);font-weight:700;background:var(--soft);position:sticky;top:0}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--soft)}
+tbody tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.mono{font-family:var(--mono);font-size:12px}
+.q{font-weight:600}
+.dim{color:var(--muted)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.filters input,.filters select,.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 10px}
+.filters input[type=search]{min-width:220px;flex:1}
+/* bars */
+.hbars{display:flex;flex-direction:column;gap:8px}
+.hbar{display:grid;grid-template-columns:84px minmax(0,1fr) 92px;gap:10px;align-items:center;font-size:13px}
+.hbar .trk{position:relative;height:14px;background:var(--soft);border-radius:4px}
+.hbar .fill{position:absolute;inset:0 auto 0 0;background:var(--bar);border-radius:0 4px 4px 0}
+.hbar .tgt{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);border-radius:1px}
+.hbar .val{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted)}
+.hbar .val b{color:var(--ink)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--bar)}
+.sw.tg{width:2px;height:12px;background:var(--ink);border-radius:1px}
+.sw.b2{background:var(--bar2)}
+svg.chart{display:block;width:100%;height:auto;overflow:visible}
+svg.chart text{fill:var(--muted);font-size:11px;font-family:var(--font)}
+svg.chart .grid{stroke:var(--line);stroke-width:1}
+svg.chart .b{fill:var(--bar)}
+svg.chart .b.f{fill:var(--bar2)}
+svg.chart .hit{fill:transparent}
+svg.chart .hit:hover + .b, svg.chart g:hover .b{opacity:.8}
+svg.chart .now{stroke:var(--a);stroke-width:2;stroke-dasharray:3 3}
+svg.chart .ln{fill:none;stroke:var(--bar);stroke-width:2}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;padding:6px 9px;border-radius:6px;z-index:50;white-space:nowrap;transform:translate(-50%,-110%)}
+/* list */
+.list{display:flex;flex-direction:column}
+.list .it{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);align-items:center;cursor:pointer}
+.list .it:last-child{border-bottom:0}
+.list .t{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+/* schedule */
+.sched{display:flex;flex-direction:column;gap:6px}
+.srow{display:grid;grid-template-columns:52px repeat(12,minmax(0,1fr));gap:4px;align-items:stretch}
+.srow .h{font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;align-items:center}
+.slot{min-height:44px;border-radius:6px;border:1px solid var(--line);background:var(--surface);padding:4px 5px;font-size:11px;line-height:1.25;cursor:pointer;overflow:hidden;text-align:left}
+.slot .m{font-family:var(--mono);color:var(--muted);font-size:10.5px}
+.slot.full{background:var(--b-soft);border-color:transparent}
+.slot.full.past{background:var(--soft)}
+.slot.gap{border-style:dashed;color:var(--muted)}
+.slot.gap.soon{border-color:var(--warn);background:var(--warn-soft);color:var(--warn)}
+.slot.past.gap{opacity:.45}
+.slot .c{font-weight:700;color:var(--ink);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:720px){.srow{grid-template-columns:40px repeat(6,minmax(0,1fr))}.srow .h2{display:none}}
+/* dialog */
+dialog{border:0;border-radius:14px;padding:0;width:min(640px,calc(100vw - 32px));background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(10,12,20,.45)}
+.dlg-h{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}
+.dlg-h h3{margin:0;font-size:16px}
+.dlg-b{padding:16px 18px;display:grid;gap:12px;max-height:68vh;overflow:auto}
+.dlg-f{display:flex;justify-content:space-between;gap:8px;padding:12px 18px;border-top:1px solid var(--line)}
+.field{display:grid;gap:4px}
+.field label{font-size:12px;font-weight:700;color:var(--muted)}
+.field .cnt{font-size:11.5px;color:var(--muted);text-align:right}
+.field .cnt.over{color:var(--bad);font-weight:700}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.row2,.row3{grid-template-columns:minmax(0,1fr)}}
+.issues{display:flex;flex-direction:column;gap:4px;font-size:12.5px}
+.issues .e{color:var(--bad)} .issues .w{color:var(--warn)}
+.savebar{position:sticky;bottom:12px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--ink);color:var(--surface);padding:10px 12px 10px 16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.2);flex-wrap:wrap}
+.savebar .btn{background:var(--surface);color:var(--ink);border-color:transparent}
+.toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;font-weight:600;z-index:60;max-width:calc(100vw - 32px)}
+/* mobile */
+.mtabs{display:none}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{display:none}
+  .main{padding:12px 16px 60px}
+  .mtabs{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;scrollbar-width:none}
+  .mtabs a{flex:none;padding:6px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;color:var(--ink);font-weight:600;font-size:13px}
+  .mtabs a[aria-current]{background:var(--b);color:#fff;border-color:var(--b)}
+  .kpi .v{font-size:24px}
+  .hbar{grid-template-columns:64px minmax(0,1fr) auto;font-size:12.5px}
+}
+</style>
+</head>
+<body>
+<nav class="mtabs" id="mtabs" aria-label="관리 메뉴"></nav>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><i aria-hidden="true"></i>네아니요 <small>관리자</small></div>
+    <nav class="nav" id="nav" aria-label="관리 메뉴"></nav>
+  </aside>
+  <main class="main">
+    <div class="top">
+      <div><h1 id="title">대시보드</h1><div class="sub" id="stamp">불러오는 중…</div></div>
+      <div class="tools">
+        <span class="chip mute" id="tokChip">읽기 전용</span>
+        <button class="btn" id="reload" type="button">새로 고침</button>
+        <a class="btn" href="./" style="text-decoration:none;color:inherit">사이트 보기</a>
+      </div>
+    </div>
+    <div id="view"></div>
+  </main>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <form method="dialog" id="dlgForm">
+    <div class="dlg-h"><h3 id="dlgTitle">투표 편집</h3><button class="btn" value="cancel" type="submit" aria-label="닫기">닫기</button></div>
+    <div class="dlg-b" id="dlgBody"></div>
+    <div class="dlg-f"><button class="btn dng" type="button" id="dlgDel">삭제</button><div style="display:flex;gap:8px"><button class="btn" value="cancel" type="submit">취소</button><button class="btn pri" type="button" id="dlgOk">적용</button></div></div>
+  </form>
+</dialog>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+(function(){
+'use strict';
+var REPO='handgoldking1234/neaniyo', FEED_BRANCH='feed', PATH='data/polls.json';
+var RAW_FEED='https://raw.githubusercontent.com/'+REPO+'/'+FEED_BRANCH+'/'+PATH;
+var RAW_MAIN='https://raw.githubusercontent.com/'+REPO+'/main/'+PATH;
+var TKEY='neaniyo-admin-token';
+var CATS={"연예":["아이돌·K팝","배우·드라마","예능·방송","영화","유튜버·인플루언서"],"사회":["직장·노동","교육·입시","생활·소비","교통·안전","환경·날씨"],"경제":["주식","부동산","금리·환율","코인","재테크·소비"],"라이프":["연애·결혼","육아·가족","음식·맛집","여행·여가","건강·운동"],"스포츠":["야구","축구","농구·배구","골프·기타","e스포츠"],"IT·게임":["AI·테크","스마트폰","게임"],"패션·쇼핑":["패션","뷰티","물건·가전"],"밸런스":["밸런스게임","취향"],"정치":["제도","예산·세금","외교·국제"],"사연":["연애","가족","직장","친구·인간관계","돈"],"그림·재능":["아이 그림","작품·사진"]};
+var TARGET={"연예":28,"사회":20,"경제":16,"라이프":12,"스포츠":8,"IT·게임":6,"패션·쇼핑":4,"밸런스":4,"정치":2};
+var VIEWS=[
+  {id:'dash',name:'대시보드',grp:'운영'},
+  {id:'content',name:'콘텐츠 관리',grp:'운영'},
+  {id:'sched',name:'예약 편성표',grp:'운영'},
+  {id:'stats',name:'방문·참여 통계',grp:'분석',tag:'연결 필요'},
+  {id:'traffic',name:'유입 경로',grp:'분석',tag:'연결 필요'},
+  {id:'device',name:'기기·환경',grp:'분석',tag:'연결 필요'},
+  {id:'members',name:'회원 관리',grp:'커뮤니티',tag:'연결 필요'},
+  {id:'reports',name:'신고·댓글',grp:'커뮤니티',tag:'연결 필요'},
+  {id:'settings',name:'설정',grp:'시스템'}
+];
+var S={main:[],feed:[],sha:null,loaded:0,err:'',dirty:{},deleted:{},sample:{}};
+var $=function(s,r){return (r||document).querySelector(s)};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function token(){try{return localStorage.getItem(TKEY)||''}catch(e){return ''}}
+function toast(m){var t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove()},3200)}
+
+// ===== 시간 (한국 시간) =====
+var H9=9*3600e3;
+function kst(ms){var d=new Date(ms+H9);return {Y:d.getUTCFullYear(),M:d.getUTCMonth()+1,D:d.getUTCDate(),h:d.getUTCHours(),m:d.getUTCMinutes()}}
+function p2(n){return (n<10?'0':'')+n}
+function atStr(ms){var k=kst(ms);return k.Y+'-'+p2(k.M)+'-'+p2(k.D)+'T'+p2(k.h)+':'+p2(k.m)+':00+09:00'}
+function idFor(ms){var k=kst(ms);return 'f'+String(k.Y).slice(2)+p2(k.M)+p2(k.D)+p2(k.h)+p2(k.m)}
+function hm(ms){var k=kst(ms);return p2(k.h)+':'+p2(k.m)}
+function md(ms){var k=kst(ms);return k.M+'/'+k.D}
+function when(ms){var k=kst(ms),t=kst(Date.now());return (k.D===t.D&&k.M===t.M?'오늘 ':k.M+'/'+k.D+' ')+p2(k.h)+':'+p2(k.m)}
+function tms(p){var t=Date.parse(p.at);return isNaN(t)?0:t}
+var SLOT=300e3;
+function nextSlot(ms){return Math.ceil((ms+1)/SLOT)*SLOT}
+
+// ===== 데이터 =====
+function all(){
+  // 사이트처럼 같은 id는 한 번만 센다 (자동 수집이 main 투표를 feed에도 복사해 둔 경우가 있음)
+  var out=[],inFeed={};
+  S.feed.forEach(function(p){inFeed[p.id]=1});
+  S.main.forEach(function(p){ if(!inFeed[p.id]) out.push({p:p,src:'main'}) });
+  S.feed.forEach(function(p){ if(!S.deleted[p.id]) out.push({p:S.dirty[p.id]||p,src:'feed'}) });
+  Object.keys(S.dirty).forEach(function(id){ if(!S.feed.some(function(p){return p.id===id})) out.push({p:S.dirty[id],src:'feed',isNew:true}) });
+  return out;
+}
+function b64dec(s){var bin=atob(s.replace(/\s/g,''));var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return new TextDecoder().decode(bytes)}
+function b64enc(str){var bytes=new TextEncoder().encode(str),bin='';for(var i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(bin)}
+function gh(path,opt){
+  opt=opt||{};opt.headers=Object.assign({'Accept':'application/vnd.github+json','Authorization':'Bearer '+token(),'X-GitHub-Api-Version':'2022-11-28'},opt.headers||{});
+  return fetch('https://api.github.com'+path,opt).then(function(r){return r.json().catch(function(){return {}}).then(function(j){if(!r.ok){var e=new Error(j.message||('HTTP '+r.status));e.status=r.status;throw e}return j})});
+}
+function loadFeed(){
+  if(token()){
+    return gh('/repos/'+REPO+'/contents/'+PATH+'?ref='+FEED_BRANCH+'&t='+Date.now()).then(function(j){
+      S.sha=j.sha;
+      if(j.content) return JSON.parse(b64dec(j.content));
+      return fetch(j.download_url,{cache:'no-store'}).then(function(r){return r.json()});
+    });
+  }
+  S.sha=null;
+  return fetch(RAW_FEED+'?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('피드 HTTP '+r.status);return r.json()});
+}
+function loadMain(){
+  return fetch('data/polls.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()})
+    .catch(function(){return fetch(RAW_MAIN+'?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():[]})}).catch(function(){return []});
+}
+function load(){
+  $('#stamp').textContent='불러오는 중…';
+  S.err='';
+  return Promise.all([loadMain(),loadFeed().catch(function(e){S.err='피드를 불러오지 못했습니다: '+e.message;return S.feed})]).then(function(r){
+    S.main=Array.isArray(r[0])?r[0]:[]; S.feed=Array.isArray(r[1])?r[1]:[]; S.loaded=Date.now();
+    stamp(); render();
+  });
+}
+function stamp(){
+  $('#stamp').textContent=(S.err?S.err+' · ':'')+'기본 '+S.main.length+'개 · 피드 '+S.feed.length+'개 · '+hm(S.loaded)+' 기준';
+  var c=$('#tokChip'); if(token()){c.className='chip live';c.textContent='GitHub 연결됨'}else{c.className='chip mute';c.textContent='읽기 전용'}
+}
+
+// ===== 규칙 검사 (data/README.md 기준) =====
+function check(p,list){
+  var e=[],w=[];
+  if(!/^\d{4}-\d\d-\d\dT\d\d:[0-5][05]:00\+09:00$/.test(p.at||'')) e.push('공개 시각은 5분 단위, +09:00 형식이어야 합니다');
+  if(!CATS[p.cat]) e.push('대분류가 표에 없습니다');
+  else if(CATS[p.cat].indexOf(p.sub)<0) e.push('소분류가 '+p.cat+' 표에 없습니다');
+  if(p.cat==='사연'||p.cat==='그림·재능') w.push('자동 수집하지 않는 대분류입니다');
+  if(!p.q) e.push('질문이 비어 있습니다'); else if([...p.q].length>40) e.push('질문이 40자를 넘습니다 ('+[...p.q].length+'자)');
+  var o=Array.isArray(p.o)?p.o:[];
+  if(p.type==='vs'&&o.length!==2) e.push('vs는 보기 2개여야 합니다');
+  if(p.type==='multi'&&(o.length<3||o.length>4)) e.push('multi는 보기 3~4개여야 합니다');
+  if(p.type!=='vs'&&p.type!=='multi') e.push('형식은 vs 또는 multi입니다');
+  o.forEach(function(x,i){ if(!x) e.push('보기 '+(i+1)+'이 비어 있습니다'); else if([...x].length>20) e.push('보기 '+(i+1)+'이 20자를 넘습니다') });
+  if(!p.desc) w.push('배경 설명이 없습니다');
+  if(!p.src||!p.src.length) w.push('출처 링크가 없습니다');
+  if(list){
+    var sameId=list.filter(function(x){return x.p.id===p.id}).length, sameAt=list.filter(function(x){return x.p.at===p.at}).length;
+    if(sameId>1) e.push('id가 중복됩니다');
+    if(sameAt>1) e.push('같은 시각에 다른 투표가 있습니다');
+  }
+  return {e:e,w:w};
+}
+function issuesAll(){
+  var L=all(),n={e:0,w:0,items:[]};
+  L.forEach(function(x){ if(x.src!=='feed') return; var r=check(x.p,L); if(r.e.length||r.w.length){n.items.push({x:x,r:r}); if(r.e.length)n.e++; else n.w++} });
+  return n;
+}
+
+// ===== 차트 (단일 계열 막대, 호버 툴팁) =====
+var tip=$('#tip');
+document.addEventListener('mouseover',function(ev){var t=ev.target.closest&&ev.target.closest('[data-tip]');if(!t){tip.hidden=true;return}tip.textContent=t.getAttribute('data-tip');tip.hidden=false});
+document.addEventListener('mousemove',function(ev){if(!tip.hidden){tip.style.left=ev.clientX+'px';tip.style.top=(ev.clientY-8)+'px'}});
+function vbars(data,opt){
+  opt=opt||{};var W=720,H=200,pl=30,pb=24,pt=10,n=data.length,max=Math.max(1,...data.map(function(d){return d.v}));
+  var step=Math.ceil(max/4)||1; max=step*4;
+  var bw=(W-pl)/n, g='';
+  for(var i=0;i<=4;i++){var y=pt+(H-pt-pb)*(1-i/4);g+='<line class="grid" x1="'+pl+'" x2="'+W+'" y1="'+y+'" y2="'+y+'"/><text x="'+(pl-6)+'" y="'+(y+4)+'" text-anchor="end">'+(step*i)+'</text>'}
+  data.forEach(function(d,i){
+    var h=(H-pt-pb)*d.v/max,x=pl+i*bw+Math.min(2,bw*.15),w=Math.max(1,bw-Math.min(4,bw*.3)),y=H-pb-h;
+    var r=Math.min(4,w/2,h);
+    var path=h>0?'M'+x+','+(H-pb)+'V'+(y+r)+'Q'+x+','+y+' '+(x+r)+','+y+'H'+(x+w-r)+'Q'+(x+w)+','+y+' '+(x+w)+','+(y+r)+'V'+(H-pb)+'Z':'';
+    g+='<g data-tip="'+esc(d.tip||(d.l+' · '+d.v))+'"><rect class="hit" x="'+(pl+i*bw)+'" y="'+pt+'" width="'+bw+'" height="'+(H-pt-pb)+'"/>'+(path?'<path class="b'+(d.f?' f':'')+'" d="'+path+'"/>':'')+'</g>';
+    if(d.lab) g+='<text x="'+(x+w/2)+'" y="'+(H-6)+'" text-anchor="middle">'+esc(d.lab)+'</text>';
+  });
+  if(opt.now!=null){var nx=pl+opt.now*bw;g+='<line class="now" x1="'+nx+'" x2="'+nx+'" y1="'+pt+'" y2="'+(H-pb)+'"/><text x="'+(nx+4)+'" y="'+(pt+10)+'" style="fill:var(--a);font-weight:700">지금</text>'}
+  return '<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(opt.label||'막대 차트')+'">'+g+'</svg>';
+}
+function line(data,label){
+  var W=720,H=200,pl=40,pb=24,pt=10,n=data.length,max=Math.max(1,...data.map(function(d){return d.v}));
+  var step=Math.ceil(max/4/10)*10||1;max=step*4;var g='',pts=[];
+  for(var i=0;i<=4;i++){var y=pt+(H-pt-pb)*(1-i/4);g+='<line class="grid" x1="'+pl+'" x2="'+W+'" y1="'+y+'" y2="'+y+'"/><text x="'+(pl-6)+'" y="'+(y+4)+'" text-anchor="end">'+(step*i).toLocaleString()+'</text>'}
+  data.forEach(function(d,i){var x=pl+(W-pl-8)*i/(n-1),y=pt+(H-pt-pb)*(1-d.v/max);pts.push(x+','+y);
+    g+='<g data-tip="'+esc(d.l+' · '+d.v.toLocaleString())+'"><rect class="hit" x="'+(x-(W-pl)/n/2)+'" y="'+pt+'" width="'+((W-pl)/n)+'" height="'+(H-pt-pb)+'"/></g>';
+    if(i%2===0||i===n-1) g+='<text x="'+x+'" y="'+(H-6)+'" text-anchor="middle">'+esc(d.l)+'</text>'});
+  g+='<polyline class="ln" points="'+pts.join(' ')+'"/>';
+  var last=pts[pts.length-1].split(',');g+='<circle cx="'+last[0]+'" cy="'+last[1]+'" r="4" style="fill:var(--bar);stroke:var(--surface);stroke-width:2"/>';
+  return '<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(label)+'">'+g+'</svg>';
+}
+function hbars(rows,withTarget){
+  var max=Math.max(1,...rows.map(function(r){return Math.max(r.v,withTarget?(r.t||0):0)}));
+  return '<div class="hbars">'+rows.map(function(r){
+    return '<div class="hbar" data-tip="'+esc(r.tip||(r.l+' · '+r.v))+'"><span>'+esc(r.l)+'</span><div class="trk"><div class="fill" style="width:'+(r.v/max*100)+'%"></div>'+(withTarget&&r.t!=null?'<div class="tgt" style="left:calc('+(r.t/max*100)+'% - 1px)"></div>':'')+'</div><span class="val"><b>'+esc(r.vl!=null?r.vl:r.v)+'</b>'+(withTarget&&r.t!=null?' / '+r.t+'%':'')+'</span></div>';
+  }).join('')+'</div>';
+}
+
+// ===== 화면 =====
+function cur(){var h=(location.hash||'').slice(1);return VIEWS.some(function(v){return v.id===h})?h:'dash'}
+function navs(){
+  var c=cur(),g='',lastGrp='';
+  VIEWS.forEach(function(v){ if(v.grp!==lastGrp){g+='<div class="grp">'+v.grp+'</div>';lastGrp=v.grp}
+    g+='<a href="#'+v.id+'"'+(v.id===c?' aria-current="page"':'')+'><span>'+v.name+'</span>'+(v.tag?'<span class="tag">'+v.tag+'</span>':'')+'</a>' });
+  $('#nav').innerHTML=g;
+  $('#mtabs').innerHTML=VIEWS.map(function(v){return '<a href="#'+v.id+'"'+(v.id===c?' aria-current="page"':'')+'>'+v.name+'</a>'}).join('');
+  var a=$('#mtabs [aria-current]'); if(a&&a.scrollIntoView) a.scrollIntoView({block:'nearest',inline:'center'});
+}
+function render(){
+  navs(); var c=cur(), v=VIEWS.filter(function(x){return x.id===c})[0];
+  $('#title').textContent=v.name; document.title=v.name+' · 네아니요 관리자';
+  var fn={dash:vDash,content:vContent,sched:vSched,stats:vStats,traffic:vTraffic,device:vDevice,members:vMembers,reports:vReports,settings:vSettings}[c];
+  $('#view').innerHTML=fn()+saveBar(); bind(c);
+}
+window.addEventListener('hashchange',function(){render();window.scrollTo(0,0)});
+
+function saveBar(){
+  var n=Object.keys(S.dirty).length+Object.keys(S.deleted).length;
+  if(!n) return '';
+  return '<div class="savebar"><span>저장하지 않은 피드 변경 <b>'+n+'건</b></span><div style="display:flex;gap:8px"><button class="btn" type="button" data-act="discard">되돌리기</button><button class="btn" type="button" data-act="commit">feed 브랜치에 저장</button></div></div>';
+}
+
+function vDash(){
+  var now=Date.now(), L=all(), feedL=L.filter(function(x){return x.src==='feed'});
+  var live=L.filter(function(x){return tms(x.p)<=now}).length;
+  var t=kst(now), dayStart=Date.UTC(t.Y,t.M-1,t.D)-H9;
+  var today=L.filter(function(x){var m=tms(x.p);return m>=dayStart&&m<=now}).length;
+  var waiting=feedL.filter(function(x){return tms(x.p)>now}).sort(function(a,b){return tms(a.p)-tms(b.p)});
+  var taken={};L.forEach(function(x){taken[tms(x.p)]=1});
+  var s0=nextSlot(now),gaps=0,firstGap=null;for(var i=0;i<36;i++){var s=s0+i*SLOT;if(!taken[s]){gaps++;if(firstGap==null)firstGap=s}}
+  var lastAt=waiting.length?tms(waiting[waiting.length-1].p):null;
+  var iss=issuesAll();
+  // 시간대별 (지난 24시간 + 앞으로 24시간)
+  var h0=Math.floor(now/3600e3)*3600e3-23*3600e3, bars=[];
+  for(var k=0;k<48;k++){var a=h0+k*3600e3,b=a+3600e3,c=L.filter(function(x){var m=tms(x.p);return m>=a&&m<b}).length;var kk=kst(a);
+    bars.push({v:c,f:a>now,lab:kk.h%6===0?p2(kk.h)+'시':'',tip:md(a)+' '+p2(kk.h)+'시 · '+c+'개'+(a>now?' (예약)':'')})}
+  // 카테고리 비율 (최근 7일 + 예약)
+  var from=now-7*864e5, cnt={},tot=0;
+  L.forEach(function(x){var m=tms(x.p);if(m>=from&&TARGET[x.p.cat]!=null){cnt[x.p.cat]=(cnt[x.p.cat]||0)+1;tot++}});
+  var rows=Object.keys(TARGET).map(function(c){var v=tot?Math.round((cnt[c]||0)/tot*1000)/10:0;return {l:c,v:v,vl:v+'%',t:TARGET[c],tip:c+' · '+(cnt[c]||0)+'개 ('+v+'%), 목표 '+TARGET[c]+'%'}});
+  return '<div class="grid kpis">'+
+    kpi('전체 투표',L.length.toLocaleString(),'기본 '+S.main.length+' · 피드 '+(feedL.length))+
+    kpi('오늘 공개',today,'한국 시간 0시부터 지금까지')+
+    kpi('예약 대기',waiting.length,lastAt?'마지막 '+when(lastAt):'예약 없음')+
+    kpi('3시간 내 빈 칸',gaps+' / 36',firstGap?'첫 빈 칸 '+when(firstGap):'모두 채워짐',gaps>6?'warn':'')+
+    kpi('규칙 경고',iss.e+iss.w,iss.e?'오류 '+iss.e+' · 주의 '+iss.w:'주의 '+iss.w,iss.e?'bad':'')+
+  '</div>'+
+  '<div class="grid two" style="margin-top:14px">'+
+    '<section class="card"><h2>시간대별 공개 수</h2><p class="desc">지난 24시간과 앞으로 24시간. 연한 막대는 예약된 투표입니다.</p>'+vbars(bars,{now:24,label:'시간대별 공개 수'})+
+      '<div class="legend"><span><i class="sw"></i>공개됨</span><span><i class="sw b2"></i>예약</span></div></section>'+
+    '<section class="card"><h2>다음 공개</h2><p class="desc">곧 공개될 피드 투표</p><div class="list">'+
+      (waiting.slice(0,8).map(function(x){return '<div class="it" data-edit="'+esc(x.p.id)+'"><span class="t">'+when(tms(x.p)).replace('오늘 ','')+'</span><span class="q">'+esc(x.p.q)+'</span><span class="chip mute">'+esc(x.p.cat)+'</span></div>'}).join('')||'<div class="empty"><b>예약된 투표가 없습니다</b>자동 수집 작업이 돌면 채워집니다.</div>')+
+    '</div></section>'+
+  '</div>'+
+  '<div class="grid half" style="margin-top:14px">'+
+    '<section class="card"><h2>카테고리 비율</h2><p class="desc">최근 7일 공개·예약 '+tot+'개 기준. 세로선은 README의 자동 수집 목표 비율입니다.</p>'+hbars(rows,true)+
+      '<div class="legend"><span><i class="sw"></i>실제 비율</span><span><i class="sw tg"></i>목표</span></div></section>'+
+    '<section class="card"><h2>방문·참여 지표</h2><p class="desc">방문자, 투표 참여, 가입자 수</p>'+
+      '<div class="empty"><b>아직 수집되는 데이터가 없습니다</b>지금 사이트는 투표·댓글·로그인을 방문자 브라우저에만 저장합니다. 서버(DB)와 분석 도구를 연결하면 이 자리에 실제 수치가 표시됩니다.<div style="margin-top:10px"><a class="btn" href="#stats" style="text-decoration:none;color:inherit">무엇이 필요한지 보기</a></div></div></section>'+
+  '</div>'+
+  (iss.items.length?'<section class="card" style="margin-top:14px"><h2>규칙 점검</h2><p class="desc">data/README.md 작성 규칙에 어긋나는 피드 투표</p><div class="list">'+
+    iss.items.slice(0,10).map(function(o){return '<div class="it" data-edit="'+esc(o.x.p.id)+'"><span class="t">'+when(tms(o.x.p)).replace('오늘 ','')+'</span><span><span class="q">'+esc(o.x.p.q||'(질문 없음)')+'</span><br><span class="dim" style="font-size:12px">'+esc(o.r.e.concat(o.r.w).join(' · '))+'</span></span><span class="chip '+(o.r.e.length?'bad':'warn')+'">'+(o.r.e.length?'오류':'주의')+'</span></div>'}).join('')+
+    (iss.items.length>10?'<div class="dim" style="padding-top:8px">외 '+(iss.items.length-10)+'건 · <a href="#content">콘텐츠 관리에서 보기</a></div>':'')+'</div></section>':'');
+}
+function kpi(l,v,s,tone){return '<div class="card kpi"><div class="l">'+l+'</div><div class="v"'+(tone?' style="color:var(--'+tone+')"':'')+'>'+v+'</div><div class="s">'+esc(s)+'</div></div>'}
+
+var F={q:'',src:'',st:'',cat:'',lim:100};
+function vContent(){
+  var now=Date.now(),L=all();
+  var rows=L.filter(function(x){
+    if(F.src&&x.src!==F.src) return false;
+    var st=tms(x.p)>now?'wait':'live'; if(F.st==='issue'){var r=check(x.p,L);if(!r.e.length&&!r.w.length)return false} else if(F.st&&st!==F.st) return false;
+    if(F.cat&&x.p.cat!==F.cat) return false;
+    if(F.q){var hay=(x.p.q+' '+(x.p.o||[]).join(' ')+' '+(x.p.desc||'')+' '+x.p.id).toLowerCase();if(hay.indexOf(F.q.toLowerCase())<0)return false}
+    return true;
+  }).sort(function(a,b){return tms(b.p)-tms(a.p)});
+  var opts=function(arr,v){return arr.map(function(o){return '<option value="'+esc(o[0])+'"'+(o[0]===v?' selected':'')+'>'+esc(o[1])+'</option>'}).join('')};
+  return '<div class="filters">'+
+    '<input type="search" id="fq" placeholder="질문·보기·설명·id 검색" value="'+esc(F.q)+'" aria-label="검색">'+
+    '<select id="fsrc" aria-label="출처">'+opts([['','전체 출처'],['feed','피드 (자동 수집)'],['main','기본 (사이트 배포)']],F.src)+'</select>'+
+    '<select id="fst" aria-label="상태">'+opts([['','전체 상태'],['live','공개됨'],['wait','예약'],['issue','규칙 경고']],F.st)+'</select>'+
+    '<select id="fcat" aria-label="대분류">'+opts([['','전체 대분류']].concat(Object.keys(CATS).map(function(c){return [c,c]})),F.cat)+'</select>'+
+    '<button class="btn pri" type="button" data-act="new">+ 새 투표</button></div>'+
+    '<div class="dim" style="margin-bottom:8px;font-size:12.5px">'+rows.length.toLocaleString()+'개 · 행을 누르면 편집합니다. 기본 투표는 사이트 배포가 필요해 여기서는 읽기만 합니다.</div>'+
+    '<div class="tbl-wrap"><table><thead><tr><th>공개 시각</th><th>상태</th><th>분류</th><th>질문</th><th>형식</th><th>출처</th><th>점검</th></tr></thead><tbody>'+
+    rows.slice(0,F.lim).map(function(x){var r=check(x.p,L),m=tms(x.p);
+      return '<tr data-edit="'+esc(x.p.id)+'"><td class="mono">'+(m?md(m)+' '+hm(m):'-')+'</td><td>'+(m>now?'<span class="chip wait">예약</span>':'<span class="chip live">공개</span>')+(S.dirty[x.p.id]?' <span class="chip warn">수정됨</span>':'')+'</td><td>'+esc(x.p.cat)+'<div class="dim" style="font-size:12px">'+esc(x.p.sub||'')+'</div></td><td><span class="q">'+esc(x.p.q)+'</span><div class="dim" style="font-size:12px">'+esc((x.p.o||[]).join(' · '))+'</div></td><td>'+esc(x.p.type)+'</td><td>'+(x.src==='feed'?'피드':'기본')+'</td><td>'+(r.e.length?'<span class="chip bad" title="'+esc(r.e.join('\n'))+'">오류 '+r.e.length+'</span>':r.w.length?'<span class="chip warn" title="'+esc(r.w.join('\n'))+'">주의 '+r.w.length+'</span>':'<span class="chip mute">정상</span>')+'</td></tr>'}).join('')+
+    (rows.length?'':'<tr><td colspan="7"><div class="empty" style="margin:8px 0"><b>조건에 맞는 투표가 없습니다</b>필터를 바꿔 보세요.</div></td></tr>')+
+    '</tbody></table></div>'+(rows.length>F.lim?'<div style="text-align:center;margin-top:12px"><button class="btn" type="button" data-act="more">더 보기 ('+(rows.length-F.lim)+'개 남음)</button></div>':'');
+}
+
+var SD={days:0};
+function vSched(){
+  var now=Date.now(),L=all(),by={};L.forEach(function(x){by[tms(x.p)]=x});
+  var start=Math.floor(now/3600e3)*3600e3+SD.days*24*3600e3, rows='';
+  for(var h=0;h<24;h++){
+    var hs=start+h*3600e3, k=kst(hs), cells='';
+    for(var i=0;i<12;i++){var s=hs+i*SLOT,x=by[s],past=s<=now,soon=!past&&s-now<3*3600e3;
+      var cls='slot'+(x?' full':' gap')+(past?' past':'')+(!x&&soon?' soon':'')+(i>=6?' h2':'');
+      cells+=x?'<button type="button" class="'+cls+'" data-edit="'+esc(x.p.id)+'" data-tip="'+esc(hm(s)+' · '+x.p.q)+'"><span class="m">:'+p2(kst(s).m)+'</span><span class="c">'+esc(x.p.cat)+'</span></button>'
+             :'<button type="button" class="'+cls+'" '+(past?'disabled':'data-newat="'+s+'"')+' data-tip="'+hm(s)+' · 빈 칸'+(past?'':' (눌러서 추가)')+'"><span class="m">:'+p2(kst(s).m)+'</span>'+(past?'':'<span>+</span>')+'</button>'}
+    rows+='<div class="srow"><span class="h">'+p2(k.h)+':00</span>'+cells+'</div>';
+  }
+  var ks=kst(start);
+  return '<div class="filters"><button class="btn" type="button" data-act="dprev"'+(SD.days<=-3?' disabled':'')+'>← 이전 24시간</button><b>'+ks.M+'/'+ks.D+' '+p2(ks.h)+':00부터 24시간</b><button class="btn" type="button" data-act="dnext"'+(SD.days>=3?' disabled':'')+'>다음 24시간 →</button>'+(SD.days?'<button class="btn" type="button" data-act="dnow">지금으로</button>':'')+'</div>'+
+    '<div class="legend" style="margin:0 0 12px"><span><i class="sw" style="background:var(--b-soft)"></i>채워진 칸</span><span><i class="sw" style="background:var(--warn-soft);outline:1px dashed var(--warn)"></i>3시간 안의 빈 칸</span><span><i class="sw" style="background:var(--surface);outline:1px dashed var(--line)"></i>빈 칸</span><span>5분 간격 · 빈 칸을 누르면 그 시각으로 새 투표를 만듭니다</span></div>'+
+    '<div class="card"><div class="sched">'+rows+'</div></div>';
+}
+
+// ===== 분석·커뮤니티: 실제 데이터 없음 → 연결 안내 + 예시 화면 =====
+function needs(id,what,how){
+  var on=S.sample[id];
+  return '<div class="note" style="margin-bottom:14px"><b>아직 수집되는 데이터가 없습니다.</b> '+what+'<br>'+how+'</div>'+
+    '<div class="filters"><button class="btn" type="button" data-act="sample" data-id="'+id+'">'+(on?'예시 화면 닫기':'예시 화면 보기')+'</button><a class="btn" href="#settings" style="text-decoration:none;color:inherit">연결 방법</a></div>'+
+    (on?'<div class="ribbon">예시 데이터 · 실제 수치가 아닙니다. 연결 후 보일 화면의 모양만 보여 줍니다.</div>':'');
+}
+function rnd(seed){return function(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646}}
+function vStats(){
+  var h=needs('stats','방문자 수, 투표 참여 수, 참여율은 서버가 있어야 모을 수 있습니다. 지금 투표 결과는 방문자 브라우저에만 남습니다.','투표 저장용 DB(예: Supabase)와 방문 분석 도구(예: Vercel Web Analytics)를 붙이면 이 화면이 실제 수치로 채워집니다.');
+  if(!S.sample.stats) return h;
+  var r=rnd(7),days=[],now=Date.now();for(var i=13;i>=0;i--){var m=now-i*864e5;days.push({l:md(m),v:Math.round(1800+i*-40+r()*600)})}
+  var top=all().filter(function(x){return tms(x.p)<=now}).sort(function(a,b){return tms(b.p)-tms(a.p)}).slice(0,6);
+  return h+'<div class="grid kpis">'+kpi('일 방문자 (예시)','2,431','어제 대비 +8%')+kpi('투표 참여 (예시)','9,812','방문자 1명당 4.0회')+kpi('참여율 (예시)','63%','카드를 본 사람 중 투표한 비율')+kpi('신규 가입 (예시)','57','오늘')+'</div>'+
+    '<div class="grid two" style="margin-top:14px"><section class="card"><h2>일 방문자 (최근 14일, 예시)</h2><p class="desc">하루 단위 순 방문자</p>'+line(days,'일 방문자 예시')+'</section>'+
+    '<section class="card"><h2>참여가 많은 투표 (예시)</h2><p class="desc">최근 공개 투표에 예시 숫자를 붙였습니다</p>'+hbars(top.map(function(x,i){var v=Math.round(900-i*110+r()*80);return {l:(x.p.q||'').slice(0,6)+'…',v:v,vl:v.toLocaleString(),tip:x.p.q+' · '+v+'표 (예시)'}}))+'</section></div>';
+}
+function vTraffic(){
+  var h=needs('traffic','어디서 들어왔는지(검색, SNS, 커뮤니티, 임베드)는 방문 기록을 모아야 알 수 있습니다.','Vercel Web Analytics를 켜면 Vercel 대시보드에서 바로 볼 수 있고, 이 화면에 불러오려면 분석 도구의 API 키가 필요합니다. 공유 링크에 utm 태그를 붙이면 캠페인별로도 나눠 볼 수 있습니다.');
+  if(!S.sample.traffic) return h;
+  var ch=[['검색',38],['SNS·메신저',27],['직접 방문',18],['커뮤니티',11],['임베드',6]];
+  var ref=[['google.com','검색',1204],['m.search.naver.com','검색',988],['t.co (X)','SNS',512],['kakaotalk','메신저',433],['theqoo.net','커뮤니티',210],['blog.naver.com','임베드',96]];
+  return h+'<div class="grid half"><section class="card"><h2>유입 채널 (예시)</h2><p class="desc">최근 7일 방문 비율</p>'+hbars(ch.map(function(c){return {l:c[0],v:c[1],vl:c[1]+'%'}}))+'</section>'+
+    '<section class="card"><h2>상위 유입 사이트 (예시)</h2><p class="desc">리퍼러 기준 방문 수</p><div class="tbl-wrap"><table style="min-width:0"><thead><tr><th>사이트</th><th>채널</th><th class="num">방문</th></tr></thead><tbody>'+ref.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td class="num">'+r[2].toLocaleString()+'</td></tr>'}).join('')+'</tbody></table></div></section></div>';
+}
+function vDevice(){
+  var h=needs('device','모바일·PC 비율, 운영체제, 브라우저, 화면 크기는 방문 분석 도구가 자동으로 모읍니다.','Vercel Web Analytics나 GA4 같은 도구를 사이트에 붙이면 별도 개발 없이 수집됩니다.');
+  if(!S.sample.device) return h;
+  var d=[['모바일',78],['데스크톱',19],['태블릿',3]],os=[['iOS',44],['Android',34],['Windows',15],['macOS',6],['기타',1]],br=[['Safari',41],['Chrome',36],['삼성 인터넷',12],['카카오톡 인앱',8],['기타',3]];
+  var f=function(a){return hbars(a.map(function(c){return {l:c[0],v:c[1],vl:c[1]+'%'}}))};
+  return h+'<div class="grid kpis" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"><section class="card"><h2>기기 (예시)</h2>'+f(d)+'</section><section class="card"><h2>운영체제 (예시)</h2>'+f(os)+'</section><section class="card"><h2>브라우저 (예시)</h2>'+f(br)+'</section></div>';
+}
+function vMembers(){
+  var h=needs('members','지금 로그인은 방문자 브라우저 안에서만 동작하는 시안이라, 가입자 목록이 서버에 없습니다.','회원 DB와 인증(예: Supabase Auth, 카카오·네이버 로그인)을 붙이면 가입자 검색, 활동 내역, 이용 정지, 탈퇴 처리를 여기서 할 수 있습니다.');
+  if(!S.sample.members) return h;
+  var r=rnd(3),names=['투표요정','네네','아니요파','밸런스왕','새벽감성','출근러','커피두잔','야구보는곰'],via=['카카오','네이버','구글','이메일'];
+  var rows=names.map(function(n,i){return {n:n,d:md(Date.now()-Math.round(r()*40)*864e5),v:via[i%4],c:Math.round(r()*300),p:Math.round(r()*12),s:i===5?'정지':'정상'}});
+  return h+'<div class="grid kpis">'+kpi('전체 회원 (예시)','3,208','이번 주 +241')+kpi('7일 활동 (예시)','1,145','최근 7일 1회 이상 투표')+kpi('정지 회원 (예시)','4','신고 누적')+'</div>'+
+    '<div class="filters" style="margin-top:14px"><input type="search" placeholder="닉네임·이메일 검색 (예시)" disabled><select disabled><option>전체 가입 경로</option></select><select disabled><option>전체 상태</option></select></div>'+
+    '<div class="tbl-wrap"><table><thead><tr><th>닉네임</th><th>가입일</th><th>가입 경로</th><th class="num">투표</th><th class="num">작성 투표</th><th>상태</th><th>관리</th></tr></thead><tbody>'+rows.map(function(x){return '<tr><td class="q">'+x.n+'</td><td>'+x.d+'</td><td>'+x.v+'</td><td class="num">'+x.c+'</td><td class="num">'+x.p+'</td><td>'+(x.s==='정상'?'<span class="chip live">정상</span>':'<span class="chip bad">정지</span>')+'</td><td><button class="btn" type="button" disabled>상세</button></td></tr>'}).join('')+'</tbody></table></div>';
+}
+function vReports(){
+  var h=needs('reports','댓글과 사용자 투표(사연·그림 등)는 지금 작성자 브라우저에만 저장돼, 다른 사람이 쓴 글을 여기서 볼 수 없습니다.','댓글·사용자 투표를 DB에 저장하고 신고 버튼을 연결하면, 신고 접수 → 검토 → 숨김/삭제/작성자 정지 흐름을 여기서 처리할 수 있습니다. 금칙어 자동 숨김도 같은 자리에 붙일 수 있습니다.');
+  if(!S.sample.reports) return h;
+  var q=[['욕설·비하','댓글','“…” (가려진 내용)',5],['개인정보 노출','사연 투표','실명과 학교가 적힌 사연',3],['도배','댓글','같은 링크 반복',8],['허위 사실','투표 설명','출처 없는 주장',2]];
+  return h+'<div class="grid kpis">'+kpi('대기 중 신고 (예시)','18','평균 처리 3시간')+kpi('오늘 처리 (예시)','42','숨김 30 · 반려 12')+kpi('자동 숨김 (예시)','9','금칙어 필터')+'</div>'+
+    '<div class="tbl-wrap" style="margin-top:14px"><table><thead><tr><th>사유</th><th>대상</th><th>내용</th><th class="num">신고 수</th><th>처리</th></tr></thead><tbody>'+q.map(function(x){return '<tr><td><span class="chip warn">'+x[0]+'</span></td><td>'+x[1]+'</td><td>'+x[2]+'</td><td class="num">'+x[3]+'</td><td style="white-space:nowrap"><button class="btn" type="button" disabled>숨김</button> <button class="btn" type="button" disabled>반려</button></td></tr>'}).join('')+'</tbody></table></div>';
+}
+function vSettings(){
+  var t=token();
+  return '<div class="grid half">'+
+  '<section class="card"><h2>GitHub 연결</h2><p class="desc">피드 투표를 고치려면 이 저장소의 feed 브랜치에 쓸 수 있는 토큰이 필요합니다. 토큰은 이 브라우저에만 저장되고 GitHub 외 다른 곳으로 보내지 않습니다.</p>'+
+    '<div class="field"><label for="tok">Fine-grained personal access token</label><input id="tok" type="password" autocomplete="off" placeholder="github_pat_…" value="'+(t?'••••••••••••':'')+'"></div>'+
+    '<div class="filters" style="margin-top:10px"><button class="btn pri" type="button" data-act="tsave">저장하고 확인</button>'+(t?'<button class="btn dng" type="button" data-act="tdel">토큰 지우기</button>':'')+'</div>'+
+    '<div class="note">만드는 곳: GitHub → Settings → Developer settings → Fine-grained tokens. <b>Repository access</b>는 '+REPO+' 하나만, <b>Contents</b> 권한은 Read and write로 두세요. 저장은 feed 브랜치에만 하므로 Vercel 배포는 일어나지 않습니다.</div></section>'+
+  '<section class="card"><h2>데이터 위치</h2><p class="desc">이 관리자 화면이 읽고 쓰는 곳</p><div class="tbl-wrap"><table style="min-width:0"><tbody>'+
+    '<tr><td>기본 투표</td><td class="mono">main / '+PATH+'</td><td>읽기</td></tr><tr><td>피드 투표</td><td class="mono">feed / '+PATH+'</td><td>읽기·쓰기</td></tr></tbody></table></div>'+
+    '<h2 style="margin-top:16px">자동 수집 목표 비율</h2><p class="desc">data/README.md 기준</p>'+hbars(Object.keys(TARGET).map(function(c){return {l:c,v:TARGET[c],vl:TARGET[c]+'%'}}))+'</section>'+
+  '</div>'+
+  '<section class="card" style="margin-top:14px"><h2>분석·회원 기능을 켜려면</h2><p class="desc">“연결 필요” 메뉴를 실제 데이터로 채우는 순서</p><div class="list">'+
+    [['1','방문 분석','Vercel 프로젝트에서 Web Analytics를 켜고 사이트에 스크립트 한 줄 추가 → 방문자·유입 경로·기기'],['2','투표 저장','투표 결과를 DB(예: Supabase)에 저장 → 실제 득표 수, 참여율, 인기 투표 순위'],['3','회원','카카오·네이버·구글 로그인을 DB 인증에 연결 → 회원 목록, 정지·탈퇴 처리'],['4','신고·댓글','댓글과 사용자 투표를 DB로 옮기고 신고 버튼 연결 → 신고 처리 대기열'],['5','관리자 잠금','관리자 계정으로 로그인한 사람만 이 화면을 열도록 제한']].map(function(x){return '<div class="it" style="cursor:default"><span class="chip wait">'+x[0]+'단계</span><span><span class="q">'+x[1]+'</span><br><span class="dim" style="font-size:12.5px">'+x[2]+'</span></span><span></span></div>'}).join('')+'</div></section>';
+}
+
+// ===== 편집 대화상자 =====
+var dlg=$('#dlg'),editing=null;
+function find(id){var L=all();for(var i=0;i<L.length;i++)if(L[i].p.id===id)return L[i];return null}
+function openEdit(id,newAt){
+  var x=id?find(id):null,ro=x&&x.src==='main';
+  var p=x?JSON.parse(JSON.stringify(x.p)):{id:idFor(newAt),at:atStr(newAt),cat:'연예',sub:'아이돌·K팝',type:'vs',q:'',o:['',''],desc:'',src:[]};
+  editing={orig:x?x.p.id:null,isNew:!x,ro:ro};
+  $('#dlgTitle').textContent=ro?'기본 투표 (읽기 전용)':x?'피드 투표 편집':'새 피드 투표';
+  var srcTxt=(p.src||[]).map(function(s){return s.title+' | '+s.url}).join('\n');
+  var o=p.o||[];while(o.length<4)o.push('');
+  var m=tms(p);var local=m?(function(){var k=kst(m);return k.Y+'-'+p2(k.M)+'-'+p2(k.D)+'T'+p2(k.h)+':'+p2(k.m)})():'';
+  $('#dlgBody').innerHTML=
+    '<div class="row2"><div class="field"><label for="e_at">공개 시각 (한국 시간, 5분 단위)</label><input id="e_at" type="datetime-local" step="300" value="'+local+'"></div><div class="field"><label>id</label><input id="e_id" class="mono" value="'+esc(p.id)+'" readonly></div></div>'+
+    '<div class="row3"><div class="field"><label for="e_cat">대분류</label><select id="e_cat">'+Object.keys(CATS).map(function(c){return '<option'+(c===p.cat?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select></div><div class="field"><label for="e_sub">소분류</label><select id="e_sub"></select></div><div class="field"><label for="e_type">형식</label><select id="e_type"><option value="vs"'+(p.type==='vs'?' selected':'')+'>vs (2개)</option><option value="multi"'+(p.type==='multi'?' selected':'')+'>multi (3~4개)</option></select></div></div>'+
+    '<div class="field"><label for="e_q">질문</label><input id="e_q" maxlength="60" value="'+esc(p.q)+'"><div class="cnt" data-for="e_q" data-max="40"></div></div>'+
+    '<div class="row2">'+[0,1,2,3].map(function(i){return '<div class="field ofld" data-i="'+i+'"><label for="e_o'+i+'">보기 '+(i+1)+'</label><input id="e_o'+i+'" maxlength="30" value="'+esc(o[i])+'"><div class="cnt" data-for="e_o'+i+'" data-max="20"></div></div>'}).join('')+'</div>'+
+    '<div class="field"><label for="e_desc">배경 설명 (2~4문장)</label><textarea id="e_desc" rows="3">'+esc(p.desc||'')+'</textarea></div>'+
+    '<div class="field"><label for="e_src">출처 (한 줄에 하나: 제목 | 주소)</label><textarea id="e_src" rows="2" class="mono">'+esc(srcTxt)+'</textarea></div>'+
+    '<div class="issues" id="e_iss"></div>';
+  var sub=function(){var c=$('#e_cat').value;$('#e_sub').innerHTML=CATS[c].map(function(s){return '<option'+(s===p.sub?' selected':'')+'>'+esc(s)+'</option>'}).join('')};
+  sub();$('#e_cat').onchange=function(){p.sub='';sub();live()};
+  var typ=function(){var mu=$('#e_type').value==='multi';document.querySelectorAll('.ofld').forEach(function(f){f.hidden=!mu&&+f.dataset.i>=2})};typ();$('#e_type').onchange=function(){typ();live()};
+  $('#dlgBody').oninput=live;
+  $('#dlgBody').querySelectorAll('input,select,textarea').forEach(function(el){el.disabled=ro});
+  $('#dlgDel').hidden=ro||!x; $('#dlgOk').hidden=ro;
+  live(); dlg.showModal();
+}
+function readForm(){
+  var v=$('#e_at').value,ms=v?Date.parse(v+':00+09:00'):NaN, mu=$('#e_type').value==='multi';
+  var o=[0,1,2,3].slice(0,mu?4:2).map(function(i){return $('#e_o'+i).value.trim()}); if(mu) while(o.length>3&&!o[o.length-1]) o.pop();
+  var p={id:isNaN(ms)?'':idFor(ms),at:isNaN(ms)?'':atStr(ms),cat:$('#e_cat').value,sub:$('#e_sub').value,type:mu?'multi':'vs',q:$('#e_q').value.trim(),o:o,desc:$('#e_desc').value.trim()};
+  var src=$('#e_src').value.split('\n').map(function(l){var i=l.lastIndexOf('|');return i<0?null:{title:l.slice(0,i).trim(),url:l.slice(i+1).trim()}}).filter(function(s){return s&&s.url});
+  if(src.length) p.src=src;
+  // 원래 투표의 다른 필드(ai, v 등)는 그대로 둔다
+  if(editing&&editing.orig){var x=find(editing.orig);if(x)for(var k in x.p)if(!(k in p)&&k!=='src')p[k]=x.p[k]}
+  return p;
+}
+function live(){
+  document.querySelectorAll('#dlgBody .cnt').forEach(function(c){var el=$('#'+c.dataset.for),n=[...(el.value||'')].length,mx=+c.dataset.max;c.textContent=n+' / '+mx;c.classList.toggle('over',n>mx)});
+  if(editing.ro){$('#e_iss').innerHTML='<div class="dim">기본 투표는 main 브랜치에 있어 고치면 사이트 배포가 일어납니다. 여기서는 읽기만 합니다.</div>';return}
+  var p=readForm(),L=all().filter(function(x){return x.p.id!==editing.orig});L.push({p:p,src:'feed'});
+  var r=check(p,L);
+  $('#e_iss').innerHTML=r.e.map(function(m){return '<div class="e">오류 · '+esc(m)+'</div>'}).join('')+r.w.map(function(m){return '<div class="w">주의 · '+esc(m)+'</div>'}).join('')||'<div class="dim">규칙 점검 통과</div>';
+  $('#dlgOk').disabled=r.e.length>0;
+}
+$('#dlgOk').onclick=function(){
+  var p=readForm();
+  if(editing.orig&&editing.orig!==p.id){ // 시각을 옮기면 id도 바뀐다
+    if(S.feed.some(function(x){return x.id===editing.orig})) S.deleted[editing.orig]=1;
+    delete S.dirty[editing.orig];
+  }
+  S.dirty[p.id]=p; delete S.deleted[p.id]; dlg.close(); render(); toast('적용했습니다. 아래 저장 버튼으로 feed 브랜치에 반영하세요.');
+};
+$('#dlgDel').onclick=function(){
+  if(!confirm('이 투표를 삭제할까요? 저장 전까지는 되돌릴 수 있습니다.')) return;
+  var id=editing.orig; delete S.dirty[id]; if(S.feed.some(function(x){return x.id===id})) S.deleted[id]=1;
+  dlg.close(); render();
+};
+
+// ===== 저장 (GitHub contents API, feed 브랜치) =====
+function commit(){
+  if(!token()){toast('설정에서 GitHub 토큰을 먼저 저장하세요.');location.hash='settings';return}
+  var btn=document.querySelector('[data-act=commit]'); if(btn){btn.disabled=true;btn.textContent='저장 중…'}
+  var nEdit=0,nNew=0,nDel=Object.keys(S.deleted).length;
+  gh('/repos/'+REPO+'/contents/'+PATH+'?ref='+FEED_BRANCH+'&t='+Date.now()).then(function(j){
+    var remote=j.content?JSON.parse(b64dec(j.content)):null; var sha=j.sha;
+    var go=remote?Promise.resolve(remote):fetch(j.download_url,{cache:'no-store'}).then(function(r){return r.json()});
+    return go.then(function(list){
+      list=list.filter(function(p){return !S.deleted[p.id]});
+      Object.keys(S.dirty).forEach(function(id){var i=list.findIndex(function(p){return p.id===id});if(i>=0){list[i]=S.dirty[id];nEdit++}else{list.push(S.dirty[id]);nNew++}});
+      // 다른 실행이 그사이 같은 칸을 채웠는지 확인
+      var seen={},clash=[];list.forEach(function(p){if(seen[p.at])clash.push(p.at.slice(11,16));seen[p.at]=1});
+      if(clash.length) throw new Error('같은 시각에 투표가 두 개 생깁니다: '+clash.join(', ')+' — 새로 고침 후 다시 편집하세요.');
+      if(list.length>600){list.sort(function(a,b){return Date.parse(a.at)-Date.parse(b.at)});list=list.slice(list.length-600)}
+      var parts=[];if(nEdit)parts.push('수정 '+nEdit);if(nNew)parts.push('추가 '+nNew);if(nDel)parts.push('삭제 '+nDel);
+      return gh('/repos/'+REPO+'/contents/'+PATH,{method:'PUT',body:JSON.stringify({message:'관리자: 피드 '+parts.join(' · '),content:b64enc(JSON.stringify(list,null,1)+'\n'),sha:sha,branch:FEED_BRANCH})});
+    });
+  }).then(function(){S.dirty={};S.deleted={};toast('feed 브랜치에 저장했습니다. 사이트에는 10분 안에 반영됩니다.');return load()})
+  .catch(function(e){toast((e.status===409||e.status===422)?'그사이 다른 변경이 있었습니다. 다시 시도하세요.':(e.status===401||e.status===403||e.status===404)?'토큰 권한을 확인하세요 ('+e.message+')':e.message);render()});
+}
+
+// ===== 이벤트 =====
+function bind(view){
+  var v=$('#view');
+  v.onclick=function(ev){
+    var t=ev.target.closest('[data-act],[data-edit],[data-newat]'); if(!t||t.disabled) return;
+    if(t.dataset.edit) return openEdit(t.dataset.edit);
+    if(t.dataset.newat) return openEdit(null,+t.dataset.newat);
+    var a=t.dataset.act;
+    if(a==='new'){var L=all(),taken={};L.forEach(function(x){taken[tms(x.p)]=1});var s=nextSlot(Date.now());while(taken[s])s+=SLOT;openEdit(null,s)}
+    else if(a==='more'){F.lim+=100;render()}
+    else if(a==='sample'){S.sample[t.dataset.id]=!S.sample[t.dataset.id];render()}
+    else if(a==='dprev'){SD.days--;render()} else if(a==='dnext'){SD.days++;render()} else if(a==='dnow'){SD.days=0;render()}
+    else if(a==='discard'){if(confirm('저장하지 않은 변경을 모두 버릴까요?')){S.dirty={};S.deleted={};render()}}
+    else if(a==='commit') commit();
+    else if(a==='tsave'){var val=$('#tok').value.trim();if(!val||/^•+$/.test(val)){toast('토큰을 붙여 넣으세요.');return}
+      try{localStorage.setItem(TKEY,val)}catch(e){}
+      gh('/repos/'+REPO).then(function(j){if(!j.permissions||!j.permissions.push)throw new Error('이 토큰에는 쓰기 권한이 없습니다');toast('연결했습니다. 쓰기 권한 확인 완료.');return load()})
+        .catch(function(e){toast('확인 실패: '+e.message);try{localStorage.removeItem(TKEY)}catch(x){}stamp();render()})}
+    else if(a==='tdel'){try{localStorage.removeItem(TKEY)}catch(e){}toast('토큰을 지웠습니다.');load()}
+  };
+  if(view==='content'){
+    var deb;$('#fq').oninput=function(e){clearTimeout(deb);deb=setTimeout(function(){F.q=e.target.value;F.lim=100;render();var q=$('#fq');q.focus();q.setSelectionRange(q.value.length,q.value.length)},250)};
+    $('#fsrc').onchange=function(e){F.src=e.target.value;F.lim=100;render()};
+    $('#fst').onchange=function(e){F.st=e.target.value;F.lim=100;render()};
+    $('#fcat').onchange=function(e){F.cat=e.target.value;F.lim=100;render()};
+  }
+}
+$('#reload').onclick=function(){if(Object.keys(S.dirty).length+Object.keys(S.deleted).length&&!confirm('저장하지 않은 변경이 있습니다. 새로 고치면 화면의 변경은 그대로 두고 원본만 다시 받습니다. 계속할까요?'))return;load()};
+window.addEventListener('beforeunload',function(e){if(Object.keys(S.dirty).length+Object.keys(S.deleted).length){e.preventDefault();e.returnValue=''}});
+setInterval(function(){if(!document.hidden&&!dlg.open&&(cur()==='dash'||cur()==='sched'))render()},60000);
+navs(); load();
+})();
+</script>
+</body>
+</html>
