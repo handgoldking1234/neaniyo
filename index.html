@@ -977,6 +977,8 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
 .attach button[aria-expanded="true"] .ai{color:var(--ink)}
 .attach button:focus-visible{outline:2px solid var(--a);outline-offset:2px}
 .attach button .cl{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.attach button.unset .cl{color:var(--ink)}
+.attach button:not(.unset) .cl{color:var(--b)}
 @media (max-width:440px){.attach{gap:5px}.attach button{padding:9px 6px;gap:3px;font-size:calc(13px * var(--fs))}.attach button .ai svg{width:15px;height:15px}.attach button em{font-size:calc(11.5px * var(--fs))}}
 .fold:not(.open){display:none!important}
 .phow button[disabled]{opacity:.45;cursor:not-allowed}
@@ -2674,7 +2676,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     linkPrev.hidden=!raw; linkPrev.className='linkprev'+(lk?' ok':'');
     linkPrev.innerHTML=lk?(lk.yt?ic('clapperboard')+'유튜브 영상 · 카드에서 바로 재생':ic('newspaper')+esc(lk.host)+' · 카드 아래 원문 링크로 붙어요'):'주소 형식이 아니에요. https://로 시작하는 주소를 넣어 주세요.';
     var tags='<span class="at-main">'+d.name+'</span><span>'+d.desc+'</span>'+(d.story?'<span class="at-tag">사연 판정</span>':'')+(d.img?'<span class="at-tag">'+(d.nImg>1?'사진 '+d.nImg+'장 넘겨 보기':'사진·캡처 1장')+'</span>':'')+(lk&&!relayMode?'<span class="at-tag">'+(lk.yt?'유튜브 영상':'기사 링크')+'</span>':'');
-    var sc=document.getElementById('sumCat'); sc.textContent=catLabel(catSel.value); sc.parentNode.setAttribute('aria-label','카테고리: '+catLabel(catSel.value)+(subSel.value?' › '+subSel.value:'')+(catTouched?'':' (자동 선택)')); sc.parentNode.title=sc.parentNode.getAttribute('aria-label');
+    var sc=document.getElementById('sumCat'), catSet=catTouched||!!sync.key; sc.textContent=catSet?catLabel(catSel.value):'카테고리'; sc.parentNode.classList.toggle('unset',!catSet); sc.parentNode.setAttribute('aria-label','카테고리: '+catLabel(catSel.value)+(subSel.value?' › '+subSel.value:'')+(catTouched?'':' (자동 선택)')); sc.parentNode.title=sc.parentNode.getAttribute('aria-label');
     document.getElementById('autotype').innerHTML=ic('sparkles')+'<span class="at-label">이렇게 올라가요</span>'+tags;
     var vis=document.querySelector('input[name="f-vis"]:checked').value;
     document.getElementById('moreSum').innerHTML=ic('settings-2')+'설정 <small>'+(vis==='public'?'전체 공개':vis==='link'?'링크 공유만':'비밀방')+(d.story||document.getElementById('f-cmt').checked?' · 한줄평 켜짐':'')+(!mselWrap.hidden&&document.getElementById('f-msel').checked?' · 복수 선택':'')+'</small>';
