@@ -966,15 +966,18 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
 .editbar button{all:unset;cursor:pointer;font-weight:600;color:var(--muted);padding:4px 8px}
 
 /* 만들기: 사진·링크·카테고리는 접어 두고 버튼으로 펼침 */
-.attach{display:flex;gap:8px;flex-wrap:wrap}
-.attach button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:calc(14px * var(--fs));font-weight:600;color:var(--ink);min-width:0;max-width:100%}
-.attach button .ai{display:inline-grid;color:var(--muted)}
+.attach{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.attach button[hidden]{display:none}
+.attach button{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:9px 12px;white-space:nowrap;overflow:hidden;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:calc(14px * var(--fs));font-weight:600;color:var(--ink);min-width:0;max-width:100%}
+.attach button .ai{display:inline-grid;color:var(--muted);flex:none}
 .attach button .ai svg{width:17px;height:17px}
-.attach button em{font-style:normal;font-weight:500;color:var(--b);font-size:calc(12.5px * var(--fs));overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.attach button em{font-style:normal;flex:0 1 auto;font-weight:500;color:var(--b);font-size:calc(12.5px * var(--fs));overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .attach button em:empty{display:none}
 .attach button[aria-expanded="true"]{border-color:var(--ink);background:color-mix(in srgb,var(--ink) 5%,var(--surface))}
 .attach button[aria-expanded="true"] .ai{color:var(--ink)}
 .attach button:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+.attach button .cl{overflow:hidden;text-overflow:ellipsis;min-width:0}
+@media (max-width:440px){.attach{gap:5px}.attach button{padding:9px 6px;gap:3px;font-size:calc(13px * var(--fs))}.attach button .ai svg{width:15px;height:15px}.attach button em{font-size:calc(11.5px * var(--fs))}}
 .fold:not(.open){display:none!important}
 .phow button[disabled]{opacity:.45;cursor:not-allowed}
 </style>
@@ -1046,7 +1049,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
         <div class="attach" id="attach" role="group" aria-label="더 넣기">
           <button type="button" data-fold="f-photo-wrap" aria-expanded="false"><span class="ai" data-i="image-plus"></span>사진<em id="sumPhoto"></em></button>
           <button type="button" data-fold="f-link-wrap" aria-expanded="false"><span class="ai" data-i="link"></span>링크<em id="sumLink"></em></button>
-          <button type="button" data-fold="f-cat-wrap" aria-expanded="false"><span class="ai" data-i="tag"></span>카테고리<em id="sumCat"></em></button>
+          <button type="button" data-fold="f-cat-wrap" aria-expanded="false"><span class="ai" data-i="tag"></span><span class="cl" id="sumCat">카테고리</span></button>
         </div>
         <div class="field fold" id="f-photo-wrap"><label>사진 <small>(선택, 최대 10장 · 고르기 투표는 6장까지)</small></label>
           <div class="drop" id="drop" tabindex="0" role="button" aria-describedby="drop-hint">
@@ -2671,7 +2674,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     linkPrev.hidden=!raw; linkPrev.className='linkprev'+(lk?' ok':'');
     linkPrev.innerHTML=lk?(lk.yt?ic('clapperboard')+'유튜브 영상 · 카드에서 바로 재생':ic('newspaper')+esc(lk.host)+' · 카드 아래 원문 링크로 붙어요'):'주소 형식이 아니에요. https://로 시작하는 주소를 넣어 주세요.';
     var tags='<span class="at-main">'+d.name+'</span><span>'+d.desc+'</span>'+(d.story?'<span class="at-tag">사연 판정</span>':'')+(d.img?'<span class="at-tag">'+(d.nImg>1?'사진 '+d.nImg+'장 넘겨 보기':'사진·캡처 1장')+'</span>':'')+(lk&&!relayMode?'<span class="at-tag">'+(lk.yt?'유튜브 영상':'기사 링크')+'</span>':'');
-    document.getElementById('sumCat').textContent=catLabel(catSel.value)+(subSel.value?' › '+subSel.value:'')+(catTouched?'':' (자동)');
+    var sc=document.getElementById('sumCat'); sc.textContent=catLabel(catSel.value); sc.parentNode.setAttribute('aria-label','카테고리: '+catLabel(catSel.value)+(subSel.value?' › '+subSel.value:'')+(catTouched?'':' (자동 선택)')); sc.parentNode.title=sc.parentNode.getAttribute('aria-label');
     document.getElementById('autotype').innerHTML=ic('sparkles')+'<span class="at-label">이렇게 올라가요</span>'+tags;
     var vis=document.querySelector('input[name="f-vis"]:checked').value;
     document.getElementById('moreSum').innerHTML=ic('settings-2')+'설정 <small>'+(vis==='public'?'전체 공개':vis==='link'?'링크 공유만':'비밀방')+(d.story||document.getElementById('f-cmt').checked?' · 한줄평 켜짐':'')+(!mselWrap.hidden&&document.getElementById('f-msel').checked?' · 복수 선택':'')+'</small>';
