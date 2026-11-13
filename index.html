@@ -917,10 +917,18 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
 
 /* 카테고리 아이콘 */
 #catchips .chip{display:inline-flex;align-items:center;gap:5px}
-#catchips .chip .i{width:16px;height:16px;flex:none;opacity:.75}
-#catchips .chip[aria-pressed="true"] .i{opacity:1;stroke-width:2.3}
+.cic{display:inline-grid;place-items:center;flex:none;width:26px;height:26px;border-radius:50%;background:color-mix(in srgb,var(--cc) 16%,transparent);color:var(--cc);transition:background .15s,color .15s}
+.cic .i{width:15px;height:15px;stroke-width:2.2}
+#catchips .chip{gap:6px}
+#catchips .chip .cic .i{width:15px;height:15px}
+#catchips .chip[aria-pressed="true"] .cic{background:var(--cc);color:#fff}
+#catchips .chip:hover .cic{background:color-mix(in srgb,var(--cc) 26%,transparent)}
+#catchips .chip[aria-pressed="true"]:hover .cic{background:var(--cc)}
+#catchips .chip[aria-pressed="true"]{background:color-mix(in srgb,var(--cc) 14%,var(--surface));color:var(--ink);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--cc) 35%,transparent)}
+@media (max-width:720px){.hd-cats #catchips .chip[aria-pressed="true"]{background:none;box-shadow:none}.hd-cats #catchips .chip[aria-pressed="true"]::after{background:var(--cc)}}
 .meta .cat{display:inline-flex;align-items:center;gap:4px}
-.meta .cat > .i{width:14px;height:14px;flex:none}
+.meta .cat > .cic{width:20px;height:20px;margin-right:1px}
+.meta .cat > .cic .i{width:12px;height:12px}
 </style>
 </head>
 <body>
@@ -1431,7 +1439,8 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     {c:'밸런스',l:'밸런스',s:['밸런스게임','취향']}
   ];
   var CATIC={"all": "sparkles", "new": "clock", "연예": "mic-vocal", "사회": "users", "경제": "trending-up", "라이프": "coffee", "사연": "message-circle-heart", "패션·쇼핑": "shirt", "스포츠": "volleyball", "IT·게임": "gamepad-2", "그림·재능": "palette", "정치": "landmark", "밸런스": "scale"};
-  function catIc(c){ return CATIC[c]?ic(CATIC[c]):''; }
+  var CATCOL={"all": "#F59E0B", "new": "#06B6D4", "연예": "#EC4899", "사회": "#3B82F6", "경제": "#10B981", "라이프": "#B45309", "사연": "#F43F5E", "패션·쇼핑": "#A855F7", "스포츠": "#F97316", "IT·게임": "#6366F1", "그림·재능": "#14B8A6", "정치": "#475569", "밸런스": "#84CC16"};
+  function catIc(c){ return CATIC[c]?'<span class="cic" style="--cc:'+(CATCOL[c]||'var(--muted)')+'">'+ic(CATIC[c])+'</span>':''; }
   function catLabel(c){var t=TAX.filter(function(x){return x.c===c})[0];return t?t.l:c}
   var SUBMAP={yt1:'유튜버·인플루언서',p1:'아이돌·K팝',s1:'생활·소비',e1:'부동산',p2:'배우·드라마',n2:'아이돌·K팝',p3:'아이돌·K팝',sp1:'야구',e2:'주식',n3:'예능·방송',s2:'직장·노동',g1:'제도',p4:'아이돌·K팝',p7:'생활·소비',e3:'부동산',p5:'밸런스게임',p6:'예능·방송',sp2:'축구',g2:'제도',
     x1:'음식·맛집',x2:'육아·가족',a1:'예능·방송',a2:'야구',a3:'생활·소비',a4:'부동산',a5:'밸런스게임',rl1:'취향',rl2:'재테크·소비',ph1:'패션',ph2:'패션',ph3:'패션',dr1:'아이 그림',dr2:'아이 그림',
@@ -2403,7 +2412,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   });
 
   var subFilter='', catChips=document.getElementById('catchips'), subChips=document.getElementById('subchips');
-  catChips.innerHTML='<button class="chip" data-c="all" aria-pressed="true">'+catIc('all')+'추천</button><button class="chip" data-c="new" aria-pressed="false">'+catIc('new')+'최신</button>'+TAX.map(function(t){return '<button class="chip" data-c="'+t.c+'" aria-pressed="false">'+catIc(t.c)+t.l+'</button>'}).join('')+'<button class="chip intset" type="button" data-int-open aria-label="관심사 설정">'+ic('settings-2')+'관심사</button>';
+  catChips.innerHTML='<button class="chip" style="--cc:#F59E0B" data-c="all" aria-pressed="true">'+catIc('all')+'추천</button><button class="chip" style="--cc:#06B6D4" data-c="new" aria-pressed="false">'+catIc('new')+'최신</button>'+TAX.map(function(t){return '<button class="chip" style="--cc:'+(CATCOL[t.c]||'')+'" data-c="'+t.c+'" aria-pressed="false">'+catIc(t.c)+t.l+'</button>'}).join('')+'<button class="chip intset" type="button" data-int-open aria-label="관심사 설정">'+ic('settings-2')+'관심사</button>';
   function intChipUI(){ var b=catChips.querySelector('[data-int-open]'); if(b) b.classList.toggle('on',!!intr.cats.length); }
   intChipUI();
   function drawSubs(){
