@@ -671,7 +671,24 @@ body.embedded .side-hot{display:none!important}
 .credit a{color:var(--muted)}
 .pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .pgrid.n3{grid-template-columns:repeat(3,1fr)}
-@media (max-width:520px){.pgrid.n3{grid-template-columns:repeat(2,1fr)}}
+.pgrid.n4{grid-template-columns:repeat(4,1fr)}
+/* 사진 3~4장: PC는 한 줄에 모두, 좁은 화면은 옆으로 넘기기(다음 사진이 살짝 보이게) */
+.pwrap{position:relative;display:flex;flex-direction:column;gap:10px}
+.parr{position:absolute;top:calc(50% - 40px);z-index:3;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:none;place-items:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.18);transition:opacity .2s}
+.parr .i{width:20px;height:20px}
+.parr.prev{left:-6px}.parr.next{right:-6px}
+.parr[disabled]{opacity:0;pointer-events:none}
+.pdots{display:none;justify-content:center;gap:6px}
+.pdots i{width:6px;height:6px;border-radius:50%;background:var(--line);transition:background .2s,width .2s}
+.pdots i.on{background:var(--ink);width:16px;border-radius:3px}
+@media (max-width:720px){
+  .pgrid.n3,.pgrid.n4{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin:0 -16px;padding:3px 16px;scroll-padding:0 16px;overscroll-behavior-x:contain}
+  .pgrid.n3::-webkit-scrollbar,.pgrid.n4::-webkit-scrollbar{display:none}
+  .pgrid.n3 .ptile,.pgrid.n4 .ptile{flex:0 0 44%;scroll-snap-align:start}
+  .pwrap.ovf .pdots{display:flex}
+}
+@media (max-width:720px) and (hover:hover){.pwrap.ovf .parr{display:grid}}
+@media (max-width:720px) and (hover:hover){.parr.prev{left:-10px}.parr.next{right:-10px}}
 .ptile{position:relative;padding:0;border:2px solid var(--line);border-radius:14px;overflow:hidden;background:var(--bg);cursor:pointer;display:flex;flex-direction:column;text-align:left;color:inherit;transition:transform .12s,border-color .15s}
 .ptile:hover{transform:translateY(-2px)}
 .ptile img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;object-position:center 20%;background:var(--line)}
@@ -1282,6 +1299,38 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     },{threshold:[0,.3,.6,.9]}):null;
     function scan(){ if(!io) return; document.querySelectorAll('.pimg.yt:not([data-io])').forEach(function(el){ el.dataset.io='1'; io.observe(el); }); }
     new MutationObserver(scan).observe(document.documentElement,{childList:true,subtree:true});
+    // 사진 넘기기: 자동 슬라이드는 하지 않음(투표 보기가 움직이면 잘못 누르기 쉬움).
+    // 넘칠 때만 점·좌우 버튼을 보이고, 처음 화면에 들어올 때 한 번 살짝 움직여 '옆에 더 있음'을 알려 줌.
+    function pstate(w){
+      var g=w.querySelector('.pgrid'); if(!g) return;
+      var ovf=g.scrollWidth>g.clientWidth+4; w.classList.toggle('ovf',ovf);
+      var pv=w.querySelector('.parr.prev'), nx=w.querySelector('.parr.next');
+      if(pv) pv.disabled=g.scrollLeft<8; if(nx) nx.disabled=g.scrollLeft+g.clientWidth>=g.scrollWidth-8;
+      var tiles=g.children, dots=w.querySelectorAll('.pdots i'), gl=g.getBoundingClientRect().left, k=0, best=1e9;
+      for(var i=0;i<tiles.length;i++){ var d=Math.abs(tiles[i].getBoundingClientRect().left-gl-16); if(d<best){best=d;k=i;} }
+      if(g.scrollLeft+g.clientWidth>=g.scrollWidth-8) k=tiles.length-1;
+      [].forEach.call(dots,function(d,i){ d.classList.toggle('on',i===k); });
+    }
+    var pReduce=false; try{pReduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
+    var pio='IntersectionObserver' in window?new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        var w=e.target; pstate(w);
+        if(!e.isIntersecting||e.intersectionRatio<.7||w.dataset.nudged||pReduce||!w.classList.contains('ovf')) return;
+        var g=w.querySelector('.pgrid'); if(g.scrollLeft>0) return;
+        w.dataset.nudged='1';
+        setTimeout(function(){ if(g.scrollLeft>0) return; g.style.scrollSnapType='none'; g.scrollTo({left:60,behavior:'smooth'});
+          setTimeout(function(){ g.scrollTo({left:0,behavior:'smooth'}); setTimeout(function(){ g.style.scrollSnapType=''; },500); },550); },350);
+      });
+    },{threshold:[0,.7]}):null;
+    function pscan(){ document.querySelectorAll('.pwrap:not([data-pio])').forEach(function(w){ w.dataset.pio='1'; if(pio) pio.observe(w); pstate(w); }); }
+    new MutationObserver(pscan).observe(document.documentElement,{childList:true,subtree:true});
+    document.addEventListener('scroll',function(e){ var g=e.target; if(g&&g.classList&&g.classList.contains('pgrid')&&g.parentNode.classList.contains('pwrap')) pstate(g.parentNode); },true);
+    window.addEventListener('resize',function(){ document.querySelectorAll('.pwrap').forEach(pstate); });
+    document.addEventListener('click',function(e){
+      var b=e.target.closest('[data-pnav]'); if(!b) return; e.stopPropagation();
+      var g=b.parentNode.querySelector('.pgrid'), t=g.children[0];
+      g.scrollBy({left:(+b.dataset.pnav)*((t?t.getBoundingClientRect().width:g.clientWidth*.44)+10),behavior:'smooth'});
+    },true);
     window.addEventListener('message',function(e){
       if(!/youtube(-nocookie)?\.com$/.test((e.origin||'').replace(/^https?:\/\//,''))) return;
       var d; try{ d=JSON.parse(e.data); }catch(err){ return; }
@@ -1484,7 +1533,10 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
         var cls='ptile'+(done&&p.v[i]===mx&&mx>0?' top':'')+(isMine(p,i)?' mine':'');
         return '<button class="'+cls+'" '+(done?'tabindex="-1"':pk+'="'+i+'"')+' aria-label="'+esc(p.o[i])+'"><img src="'+src+'" alt="'+esc(p.o[i])+'" loading="lazy" referrerpolicy="no-referrer">'+
           '<span class="pcap"><b>'+esc(p.o[i])+(isMine(p,i)?' '+ic('check'):'')+'</b>'+(done?'<em>'+ps[i]+'%</em>':'')+'</span>'+(done?'<span class="pfill" style="--w:'+ps[i]+'%"></span>':'')+'</button>';
-      }).join('')+'</div>'+(p.multiSel&&!done?'<button class="btn dark pick-go" data-act="pickgo" disabled>여러 개 고른 뒤 투표하기</button>':'');
+      }).join('')+'</div>';
+      if(p.imgs.length>=3) body='<div class="pwrap"><button class="parr prev" type="button" data-pnav="-1" aria-label="이전 사진" disabled>'+ic('chevron-right').replace('<svg','<svg style="transform:rotate(180deg)"')+'</button>'+body+
+        '<button class="parr next" type="button" data-pnav="1" aria-label="다음 사진">'+ic('chevron-right')+'</button><div class="pdots" aria-hidden="true">'+p.imgs.map(function(_,i){return '<i'+(i?'':' class="on"')+'></i>'}).join('')+'</div></div>';
+      body+=(p.multiSel&&!done?'<button class="btn dark pick-go" data-act="pickgo" disabled>여러 개 고른 뒤 투표하기</button>':'');
     }else{
       var max=Math.max.apply(null,p.v), pk2=p.multiSel?'data-pick':'data-i';
       body='<div class="opts">'+p.o.map(function(o,i){
