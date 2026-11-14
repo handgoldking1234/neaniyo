@@ -4,6 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>네아니요</title>
+<meta name="description" content="실시간 이슈에 한 표로 답하고 결과를 바로 확인하세요.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="네아니요">
+<meta property="og:title" content="네아니요 - 실시간 이슈 투표">
+<meta property="og:description" content="실시간 이슈에 한 표로 답하고 결과를 바로 확인하세요.">
+<meta property="og:url" content="https://neaniyo.iux.kr/">
+<meta property="og:image" content="https://neaniyo.iux.kr/api/og">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2216%22%20height%3D%2232%22%20fill%3D%22%23E8336D%22/%3E%3Crect%20x%3D%2216%22%20width%3D%2216%22%20height%3D%2232%22%20fill%3D%22%232F5BEA%22/%3E%3Ccircle%20cx%3D%229%22%20cy%3D%2216%22%20r%3D%224.2%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.6%22/%3E%3Cpath%20d%3D%22M20%2012l7%208M27%2012l-7%208%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.6%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -2376,7 +2386,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   function saveMine(){try{localStorage.setItem(MKEY,JSON.stringify(polls.filter(function(p){return p.own}).map(function(p){var c={};for(var k in p){if(k!=='t'&&k!=='h')c[k]=p[k]}return c})))}catch(e){}}
   function pwHash(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return 'h'+(h>>>0).toString(36)}
 
-  function shareUrl(p){return SITE+'?p='+p.id}
+  function shareUrl(p){return SITE+'p/'+p.id}
   // 임베드 안 로고: 누르면 네아니요 사이트(이 투표 페이지)가 새 탭으로 열림
   function embedBrand(p){
     return '<a class="ebrand" href="'+SITE+'?p='+p.id+'" target="_blank" rel="noopener" aria-label="네아니요에서 이 투표 보기 (새 탭)">'+
@@ -2392,7 +2402,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       '<div class="row"><input type="checkbox" id="a-'+p.id+'"><label for="a-'+p.id+'">높이 자동 맞춤 스크립트 포함 (스크립트를 허용하는 사이트용)</label></div>'+
       '<pre class="code" id="c-'+p.id+'"></pre>'+
       '<div class="row"><button class="btn dark" data-act="copycode">코드 복사</button><a class="btn" href="'+SITE+'?embed='+p.id+'" target="_blank" rel="noopener">'+ic('external-link')+'미리보기</a></div>'+
-      '<p class="hint">티스토리·워드프레스는 HTML 편집에, 네이버 블로그·카페는 HTML 모드나 링크 붙여넣기로 넣으면 됩니다. 투표 결과는 원본과 같은 데이터를 씁니다.</p>';
+      '<p class="hint"><b>카카오톡·문자로 보낼 때는 이 코드 말고 <u>링크 복사</u>를 쓰세요.</b> 링크만 보내면 질문과 보기가 담긴 이미지 카드로 보입니다.</p><p class="hint">티스토리·워드프레스는 HTML 편집에, 네이버 블로그·카페는 HTML 모드나 링크 붙여넣기로 넣으면 됩니다. 투표 결과는 원본과 같은 데이터를 씁니다.</p>';
     var w=el.querySelector('#w-'+p.id),t=el.querySelector('#t-'+p.id),a=el.querySelector('#a-'+p.id),c=el.querySelector('#c-'+p.id);
     function upd(){
       var src=SITE+'?embed='+p.id+(t.value!=='auto'?'&theme='+t.value:'');

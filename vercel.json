@@ -18,6 +18,10 @@
   ],
   "rewrites": [
     {
+      "source": "/p/:id",
+      "destination": "/api/share?p=:id"
+    },
+    {
       "source": "/admin",
       "destination": "/admin.html"
     },
