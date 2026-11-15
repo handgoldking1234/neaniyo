@@ -1044,6 +1044,32 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
 }
 @media (prefers-reduced-motion:reduce){.hr-track.go{transition:none}}
 @media (max-width:720px) and (pointer:coarse){.foot .acts [data-act="embed"]{display:none!important}}
+
+/* 내 투표 내역 */
+.mine-hd{display:flex;flex-direction:column;gap:6px;margin:4px 0 12px}
+.mine-hd h2{margin:0;font-size:calc(20px * var(--fs))}
+.mine-sum{margin:0;display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:calc(13.5px * var(--fs))}
+.mine-sum b{color:var(--ink)}
+.mine-list{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.mine-it{display:flex;flex-direction:column;gap:7px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:inherit;text-decoration:none}
+a.mine-it:hover{border-color:var(--muted)}
+.mine-it.off{opacity:.7}
+.mi-top{display:flex;align-items:center;gap:6px;font-size:calc(12px * var(--fs));color:var(--muted)}
+.mi-top .cic{width:20px;height:20px}.mi-top .cic .i{width:12px;height:12px}
+.mi-t{margin-left:auto}
+.mi-q{font-size:calc(15px * var(--fs));line-height:1.4}
+.mi-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:calc(13px * var(--fs))}
+.mi-c{color:var(--muted);min-width:0}.mi-c b{color:var(--ink)}
+.mi-side{margin-left:auto;padding:2px 9px;border-radius:999px;font-size:calc(12px * var(--fs));font-weight:700;white-space:nowrap}
+.mi-side.maj{background:color-mix(in srgb,var(--a) 12%,transparent);color:var(--a)}
+.mi-side.min{background:color-mix(in srgb,var(--b) 12%,transparent);color:var(--b)}
+.mi-side.end{background:var(--bg);color:var(--muted);font-weight:500}
+.mi-b{padding:1px 7px;border-radius:999px;border:1px solid var(--line);font-size:calc(11.5px * var(--fs));color:var(--muted)}
+.mi-bar{display:block;height:5px;border-radius:3px;background:var(--bg);overflow:hidden}
+.mi-bar i{display:block;height:100%;border-radius:3px}
+.mine-empty{display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 16px;color:var(--muted);text-align:center;border:1px dashed var(--line);border-radius:14px}
+.mine-note{margin:14px 0 0;font-size:calc(12.5px * var(--fs));color:var(--muted);line-height:1.6}
+.linkbtn{all:unset;cursor:pointer;color:var(--b);font-weight:600;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -1091,6 +1117,18 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       <p class="note">예시 투표입니다. 1인 1표는 이 브라우저 기준으로만 체크합니다.</p>
     </section>
 
+    <section id="v-mine" hidden>
+      <div class="mine-hd"><h2>내 투표</h2><p class="mine-sum" id="mineSum"></p></div>
+      <div class="chips" role="group" aria-label="내 투표 보기">
+        <button class="chip" data-m="voted" aria-pressed="true">투표한 것</button>
+        <button class="chip" data-m="maj" aria-pressed="false">다수 편</button>
+        <button class="chip" data-m="min" aria-pressed="false">소수 편</button>
+        <button class="chip" data-m="made" aria-pressed="false">내가 만든 것</button>
+      </div>
+      <ul class="mine-list" id="mineList"></ul>
+      <button type="button" class="btn morebtn" id="mineMore" hidden></button>
+      <p class="mine-note" id="mineNote"></p>
+    </section>
     <section id="v-ranking" hidden>
       <div class="chips" role="group" aria-label="랭킹 기간">
         <button class="chip" data-r="live" aria-pressed="true">실시간</button>
@@ -1316,6 +1354,9 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   <div class="dr-me" id="drMe"></div>
   <nav class="dr-nav" aria-label="전체 메뉴 링크">
     <a href="./#vote" data-v="vote"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="3"/><path d="m9 12 2 2 4-4"/></svg>투표</a>
+    <a href="./#mine" data-v="mine"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+  <path d="M3 3v5h5" />
+  <path d="M12 7v5l4 2" /></svg>내 투표</a>
     <a href="./#ranking" data-v="ranking"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>랭킹</a>
     <a href="./#create" data-v="create"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>투표 만들기</a>
     <a href="./#premium" data-v="premium"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>프리미엄</a>
@@ -1343,7 +1384,14 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
 (function(){
   var KEY='neaniyo-voted', NY=null;
   var voted={}; try{voted=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){voted={}}
-  function save(){try{localStorage.setItem(KEY,JSON.stringify(voted))}catch(e){} if(NY) NY.onSave(); setTimeout(maybeAskInt,900)}
+  // 내 투표 기록: 투표한 시각과 질문·보기를 따로 남겨 둠 (투표가 목록에서 빠져도 내역에 보이게)
+  var VLOG='neaniyo-vlog', vlog={}; try{vlog=JSON.parse(localStorage.getItem(VLOG)||'{}')||{}}catch(e){vlog={}}
+  function logVotes(){
+    var ch=false;
+    Object.keys(voted).forEach(function(id){ if(vlog[id]) return; var p=polls.find(function(x){return x.id===id}); vlog[id]={t:Date.now()}; if(p){ vlog[id].q=p.q; vlog[id].o=p.o.slice(0,8); vlog[id].cat=p.cat; vlog[id].type=p.type; } ch=true; });
+    if(ch) try{localStorage.setItem(VLOG,JSON.stringify(vlog))}catch(e){}
+  }
+  function save(){logVotes(); try{localStorage.setItem(KEY,JSON.stringify(voted))}catch(e){} if(NY) NY.onSave(); setTimeout(maybeAskInt,900)}
   // 관심사: 고른 대분류 위주로 추천(관심 약 70% + 나머지 섞기). 로그인 없이 브라우저에 저장, 로그인하면 계정 정보에도 함께 저장.
   var IKEY='neaniyo-interests', intr={cats:[],skip:0};
   try{var _ir=JSON.parse(localStorage.getItem(IKEY)||'null'); if(_ir&&Array.isArray(_ir.cats)) intr=_ir;}catch(e){}
@@ -1617,7 +1665,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sv);
   }
   // Lucide 아이콘 (lucide-static 0.460, ISC)
-  var ICONS={"sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />", "route": "<circle cx=\"6\" cy=\"19\" r=\"3\" /> <path d=\"M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15\" /> <circle cx=\"18\" cy=\"5\" r=\"3\" />", "settings-2": "<path d=\"M20 7h-9\" /> <path d=\"M14 17H5\" /> <circle cx=\"17\" cy=\"17\" r=\"3\" /> <circle cx=\"7\" cy=\"7\" r=\"3\" />", "image-plus": "<path d=\"M16 5h6\" /> <path d=\"M19 2v6\" /> <path d=\"M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5\" /> <path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\" /> <circle cx=\"9\" cy=\"9\" r=\"2\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" />\n  <path d=\"M16 9a5 5 0 0 1 0 6\" />\n  <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" />\n  <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" />\n  <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "log-out": "<path d=\"m16 17 5-5-5-5\" /> <path d=\"M21 12H9\" /> <path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />", "play": "<polygon points=\"6 3 20 12 6 21 6 3\" />", "newspaper": "<path d=\"M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2\" />\n  <path d=\"M18 14h-8\" />\n  <path d=\"M15 18h-5\" />\n  <path d=\"M10 6h8v4h-8V6Z\" />", "clapperboard": "<path d=\"M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z\" />\n  <path d=\"m6.2 5.3 3.1 3.9\" />\n  <path d=\"m12.4 3.4 3.1 4\" />\n  <path d=\"M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z\" />", "captions": "<rect width=\"18\" height=\"14\" x=\"3\" y=\"5\" rx=\"2\" ry=\"2\" />\n  <path d=\"M7 15h4M15 15h2M7 11h2M13 11h4\" />", "arrow-up-right": "<path d=\"M7 7h10v10\" />\n  <path d=\"M7 17 17 7\" />", "palette": "<circle cx=\"13.5\" cy=\"6.5\" r=\".5\" fill=\"currentColor\" />\n  <circle cx=\"17.5\" cy=\"10.5\" r=\".5\" fill=\"currentColor\" />\n  <circle cx=\"8.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\" />\n  <circle cx=\"6.5\" cy=\"12.5\" r=\".5\" fill=\"currentColor\" />\n  <path d=\"M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z\" />", "trending-up": "<polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\" />\n  <polyline points=\"16 7 22 7 22 13\" />", "mic-vocal": "<path d=\"m11 7.601-5.994 8.19a1 1 0 0 0 .1 1.298l.817.818a1 1 0 0 0 1.314.087L15.09 12\" />\n  <path d=\"M16.5 21.174C15.5 20.5 14.372 20 13 20c-2.058 0-3.928 2.356-6 2-2.072-.356-2.775-3.369-1.5-4.5\" />\n  <circle cx=\"16\" cy=\"7\" r=\"5\" />", "coffee": "<path d=\"M10 2v2\" />\n  <path d=\"M14 2v2\" />\n  <path d=\"M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1\" />\n  <path d=\"M6 2v2\" />", "gamepad-2": "<line x1=\"6\" x2=\"10\" y1=\"11\" y2=\"11\" />\n  <line x1=\"8\" x2=\"8\" y1=\"9\" y2=\"13\" />\n  <line x1=\"15\" x2=\"15.01\" y1=\"12\" y2=\"12\" />\n  <line x1=\"18\" x2=\"18.01\" y1=\"10\" y2=\"10\" />\n  <path d=\"M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z\" />", "landmark": "<line x1=\"3\" x2=\"21\" y1=\"22\" y2=\"22\" />\n  <line x1=\"6\" x2=\"6\" y1=\"18\" y2=\"11\" />\n  <line x1=\"10\" x2=\"10\" y1=\"18\" y2=\"11\" />\n  <line x1=\"14\" x2=\"14\" y1=\"18\" y2=\"11\" />\n  <line x1=\"18\" x2=\"18\" y1=\"18\" y2=\"11\" />\n  <polygon points=\"12 2 20 7 4 7\" />", "scale": "<path d=\"m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z\" />\n  <path d=\"m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z\" />\n  <path d=\"M7 21h10\" />\n  <path d=\"M12 3v18\" />\n  <path d=\"M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2\" />", "users": "<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" />\n  <circle cx=\"9\" cy=\"7\" r=\"4\" />\n  <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" />\n  <path d=\"M16 3.13a4 4 0 0 1 0 7.75\" />", "shirt": "<path d=\"M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z\" />", "volleyball": "<path d=\"M11.1 7.1a16.55 16.55 0 0 1 10.9 4\" />\n  <path d=\"M12 12a12.6 12.6 0 0 1-8.7 5\" />\n  <path d=\"M16.8 13.6a16.55 16.55 0 0 1-9 7.5\" />\n  <path d=\"M20.7 17a12.8 12.8 0 0 0-8.7-5 13.3 13.3 0 0 1 0-10\" />\n  <path d=\"M6.3 3.8a16.55 16.55 0 0 0 1.9 11.5\" />\n  <circle cx=\"12\" cy=\"12\" r=\"10\" />", "message-circle-heart": "<path d=\"M7.9 20A9 9 0 1 0 4 16.1L2 22Z\" />\n  <path d=\"M15.8 9.2a2.5 2.5 0 0 0-3.5 0l-.3.4-.35-.3a2.42 2.42 0 1 0-3.2 3.6l3.6 3.5 3.6-3.5c1.2-1.2 1.1-2.7.2-3.7\" />", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" />\n  <path d=\"m15 5 4 4\" />", "trash-2": "<path d=\"M3 6h18\" />\n  <path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\" />\n  <path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\" />\n  <line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\" />\n  <line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\" />", "chevron-left": "<path d=\"m15 18-6-6 6-6\" />", "images": "<path d=\"M18 22H4a2 2 0 0 1-2-2V6\" />\n  <path d=\"m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18\" />\n  <circle cx=\"12\" cy=\"8\" r=\"2\" />\n  <rect width=\"16\" height=\"16\" x=\"6\" y=\"2\" rx=\"2\" />", "layout-grid": "<rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\" />\n  <rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\" />\n  <rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\" />\n  <rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\" />", "tag": "<path d=\"M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z\" />\n  <circle cx=\"7.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\" />", "share-2": "<circle cx=\"18\" cy=\"5\" r=\"3\" />\n  <circle cx=\"6\" cy=\"12\" r=\"3\" />\n  <circle cx=\"18\" cy=\"19\" r=\"3\" />\n  <line x1=\"8.59\" x2=\"15.42\" y1=\"13.51\" y2=\"17.49\" />\n  <line x1=\"15.41\" x2=\"8.59\" y1=\"6.51\" y2=\"10.49\" />"};
+  var ICONS={"sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />", "route": "<circle cx=\"6\" cy=\"19\" r=\"3\" /> <path d=\"M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15\" /> <circle cx=\"18\" cy=\"5\" r=\"3\" />", "settings-2": "<path d=\"M20 7h-9\" /> <path d=\"M14 17H5\" /> <circle cx=\"17\" cy=\"17\" r=\"3\" /> <circle cx=\"7\" cy=\"7\" r=\"3\" />", "image-plus": "<path d=\"M16 5h6\" /> <path d=\"M19 2v6\" /> <path d=\"M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5\" /> <path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\" /> <circle cx=\"9\" cy=\"9\" r=\"2\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" />\n  <path d=\"M16 9a5 5 0 0 1 0 6\" />\n  <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "volume-x": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" />\n  <line x1=\"22\" x2=\"16\" y1=\"9\" y2=\"15\" />\n  <line x1=\"16\" x2=\"22\" y1=\"9\" y2=\"15\" />", "thumbs-up": "<path d=\"M7 10v12\" /> <path d=\"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />", "code": "<polyline points=\"16 18 22 12 16 6\" /> <polyline points=\"8 6 2 12 8 18\" />", "chart-column": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "log-in": "<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\" /> <polyline points=\"10 17 15 12 10 7\" /> <line x1=\"15\" x2=\"3\" y1=\"12\" y2=\"12\" />", "log-out": "<path d=\"m16 17 5-5-5-5\" /> <path d=\"M21 12H9\" /> <path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\" />", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\" /> <path d=\"M20 21a8 8 0 0 0-16 0\" />", "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\" />", "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "message-square-text": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "external-link": "<path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-up": "<path d=\"m18 15-6-6-6 6\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"7 10 12 15 17 10\" /> <line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "crown": "<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\" /> <path d=\"M5 21h14\" />", "minus": "<path d=\"M5 12h14\" />", "play": "<polygon points=\"6 3 20 12 6 21 6 3\" />", "newspaper": "<path d=\"M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2\" />\n  <path d=\"M18 14h-8\" />\n  <path d=\"M15 18h-5\" />\n  <path d=\"M10 6h8v4h-8V6Z\" />", "clapperboard": "<path d=\"M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z\" />\n  <path d=\"m6.2 5.3 3.1 3.9\" />\n  <path d=\"m12.4 3.4 3.1 4\" />\n  <path d=\"M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z\" />", "captions": "<rect width=\"18\" height=\"14\" x=\"3\" y=\"5\" rx=\"2\" ry=\"2\" />\n  <path d=\"M7 15h4M15 15h2M7 11h2M13 11h4\" />", "arrow-up-right": "<path d=\"M7 7h10v10\" />\n  <path d=\"M7 17 17 7\" />", "palette": "<circle cx=\"13.5\" cy=\"6.5\" r=\".5\" fill=\"currentColor\" />\n  <circle cx=\"17.5\" cy=\"10.5\" r=\".5\" fill=\"currentColor\" />\n  <circle cx=\"8.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\" />\n  <circle cx=\"6.5\" cy=\"12.5\" r=\".5\" fill=\"currentColor\" />\n  <path d=\"M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z\" />", "trending-up": "<polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\" />\n  <polyline points=\"16 7 22 7 22 13\" />", "mic-vocal": "<path d=\"m11 7.601-5.994 8.19a1 1 0 0 0 .1 1.298l.817.818a1 1 0 0 0 1.314.087L15.09 12\" />\n  <path d=\"M16.5 21.174C15.5 20.5 14.372 20 13 20c-2.058 0-3.928 2.356-6 2-2.072-.356-2.775-3.369-1.5-4.5\" />\n  <circle cx=\"16\" cy=\"7\" r=\"5\" />", "coffee": "<path d=\"M10 2v2\" />\n  <path d=\"M14 2v2\" />\n  <path d=\"M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1\" />\n  <path d=\"M6 2v2\" />", "gamepad-2": "<line x1=\"6\" x2=\"10\" y1=\"11\" y2=\"11\" />\n  <line x1=\"8\" x2=\"8\" y1=\"9\" y2=\"13\" />\n  <line x1=\"15\" x2=\"15.01\" y1=\"12\" y2=\"12\" />\n  <line x1=\"18\" x2=\"18.01\" y1=\"10\" y2=\"10\" />\n  <path d=\"M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z\" />", "landmark": "<line x1=\"3\" x2=\"21\" y1=\"22\" y2=\"22\" />\n  <line x1=\"6\" x2=\"6\" y1=\"18\" y2=\"11\" />\n  <line x1=\"10\" x2=\"10\" y1=\"18\" y2=\"11\" />\n  <line x1=\"14\" x2=\"14\" y1=\"18\" y2=\"11\" />\n  <line x1=\"18\" x2=\"18\" y1=\"18\" y2=\"11\" />\n  <polygon points=\"12 2 20 7 4 7\" />", "scale": "<path d=\"m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z\" />\n  <path d=\"m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z\" />\n  <path d=\"M7 21h10\" />\n  <path d=\"M12 3v18\" />\n  <path d=\"M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2\" />", "users": "<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" />\n  <circle cx=\"9\" cy=\"7\" r=\"4\" />\n  <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" />\n  <path d=\"M16 3.13a4 4 0 0 1 0 7.75\" />", "shirt": "<path d=\"M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z\" />", "volleyball": "<path d=\"M11.1 7.1a16.55 16.55 0 0 1 10.9 4\" />\n  <path d=\"M12 12a12.6 12.6 0 0 1-8.7 5\" />\n  <path d=\"M16.8 13.6a16.55 16.55 0 0 1-9 7.5\" />\n  <path d=\"M20.7 17a12.8 12.8 0 0 0-8.7-5 13.3 13.3 0 0 1 0-10\" />\n  <path d=\"M6.3 3.8a16.55 16.55 0 0 0 1.9 11.5\" />\n  <circle cx=\"12\" cy=\"12\" r=\"10\" />", "message-circle-heart": "<path d=\"M7.9 20A9 9 0 1 0 4 16.1L2 22Z\" />\n  <path d=\"M15.8 9.2a2.5 2.5 0 0 0-3.5 0l-.3.4-.35-.3a2.42 2.42 0 1 0-3.2 3.6l3.6 3.5 3.6-3.5c1.2-1.2 1.1-2.7.2-3.7\" />", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" />\n  <path d=\"m15 5 4 4\" />", "trash-2": "<path d=\"M3 6h18\" />\n  <path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\" />\n  <path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\" />\n  <line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\" />\n  <line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\" />", "chevron-left": "<path d=\"m15 18-6-6 6-6\" />", "images": "<path d=\"M18 22H4a2 2 0 0 1-2-2V6\" />\n  <path d=\"m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18\" />\n  <circle cx=\"12\" cy=\"8\" r=\"2\" />\n  <rect width=\"16\" height=\"16\" x=\"6\" y=\"2\" rx=\"2\" />", "layout-grid": "<rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\" />\n  <rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\" />\n  <rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\" />\n  <rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\" />", "tag": "<path d=\"M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z\" />\n  <circle cx=\"7.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\" />", "share-2": "<circle cx=\"18\" cy=\"5\" r=\"3\" />\n  <circle cx=\"6\" cy=\"12\" r=\"3\" />\n  <circle cx=\"18\" cy=\"19\" r=\"3\" />\n  <line x1=\"8.59\" x2=\"15.42\" y1=\"13.51\" y2=\"17.49\" />\n  <line x1=\"15.41\" x2=\"8.59\" y1=\"6.51\" y2=\"10.49\" />", "history": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" />\n  <path d=\"M3 3v5h5\" />\n  <path d=\"M12 7v5l4 2\" />"};
   function ic(n){return '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[n]||'')+'</svg>'}
   // ===== 효과음 (Web Audio로 합성, 파일 없음) =====
   var SKEY='neaniyo-sound', soundOn=true, actx=null;
@@ -2945,7 +2993,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   }
 
   // 라우팅
-  var views=['vote','ranking','create','premium','analysis'];
+  var views=['vote','mine','ranking','create','premium','analysis'];
   // 뒤로: 사이트 안에서 넘어왔으면 이전 화면으로, 바로 들어왔으면 투표 피드로
   var inNav=0; window.addEventListener('hashchange',function(){ inNav++; });
   document.getElementById('pgBack').addEventListener('click',function(){ if(inNav>0) history.back(); else location.hash='vote'; });
@@ -3033,6 +3081,57 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       });
     },{passive:true});
   })();
+
+  // ===== 내 투표 내역 =====
+  var mineTab='voted', mineShown=20;
+  function choiceText(p,c,snap){
+    var o=(p&&p.o)||(snap&&snap.o)||[];
+    if(Array.isArray(c)){
+      if(p&&p.type==='relay'&&p.qs) return c.map(function(x,k){ var q=p.qs[k]; return 'Q'+(k+1)+' '+(q&&q.o[x]!=null?q.o[x]:'?'); }).join(' · ');
+      return c.map(function(x){return o[x]!=null?o[x]:'?'}).join(', ');
+    }
+    return o[c]!=null?o[c]:'?';
+  }
+  function sideOf(p,c){
+    if(!p||Array.isArray(c)||p.type==='relay'||!p.v) return null;
+    var ps=pct(p), mx=Math.max.apply(null,ps); if(!sum(p.v)) return null;
+    return {maj:ps[c]>=mx, pc:ps[c]};
+  }
+  function renderMine(){
+    logVotes();
+    var list=document.getElementById('mineList'), sumEl=document.getElementById('mineSum'), note=document.getElementById('mineNote'), more=document.getElementById('mineMore');
+    var ids=Object.keys(voted).sort(function(a,b){ return ((vlog[b]&&vlog[b].t)||0)-((vlog[a]&&vlog[a].t)||0); });
+    var rows=ids.map(function(id){ var p=polls.find(function(x){return x.id===id}); return {id:id,p:p,c:voted[id],s:sideOf(p,voted[id]),snap:vlog[id]||{}}; });
+    var known=rows.filter(function(r){return r.s}), maj=known.filter(function(r){return r.s.maj}).length;
+    var made=polls.filter(function(p){return p.own});
+    sumEl.innerHTML='<span><b>'+fmt(rows.length)+'</b>개 투표</span>'+(known.length?'<span>다수 편 <b>'+maj+'</b> · 소수 편 <b>'+(known.length-maj)+'</b></span><span>다수와 같은 선택 <b>'+Math.round(maj*100/known.length)+'%</b></span>':'')+(made.length?'<span>만든 투표 <b>'+made.length+'</b></span>':'');
+    [].forEach.call(document.querySelectorAll('#v-mine [data-m]'),function(b){ b.setAttribute('aria-pressed',String(b.dataset.m===mineTab)); });
+    var html='', items;
+    if(mineTab==='made'){
+      items=made;
+      html=items.slice(0,mineShown).map(function(p){
+        var v=p.type==='relay'?(p.n||0):voters(p);
+        return '<li><a class="mine-it" href="?p='+p.id+'"><span class="mi-top">'+catIc(p.cat)+'<span>'+catLabel(p.cat)+'</span><span class="mi-t">'+ago(p.t||0)+'</span></span><b class="mi-q">'+esc(p.q)+'</b><span class="mi-row"><span class="mi-c">참여 '+fmt(v)+'명</span>'+(p.vis==='secret'?'<span class="mi-b">비밀방</span>':p.vis==='link'?'<span class="mi-b">링크 공유</span>':'')+'</span></a></li>';
+      }).join('');
+      if(!items.length) html='<li class="mine-empty">아직 만든 투표가 없어요.<a class="btn dark" href="./#create">'+ic('plus')+'투표 만들기</a></li>';
+    }else{
+      items=rows.filter(function(r){ return mineTab==='voted'||(r.s&&(mineTab==='maj'?r.s.maj:!r.s.maj)); });
+      html=items.slice(0,mineShown).map(function(r){
+        var p=r.p, q=p?p.q:r.snap.q, cat=p?p.cat:r.snap.cat, t=r.snap.t?(Date.now()-r.snap.t)/36e5:null;
+        var bar=r.s?'<span class="mi-bar"><i style="width:'+r.s.pc+'%;background:'+(r.s.maj?'var(--a)':'var(--b)')+'"></i></span>':'';
+        var badge=r.s?'<span class="mi-side '+(r.s.maj?'maj':'min')+'">'+(r.s.maj?'다수 편':'소수 편')+' '+r.s.pc+'%</span>':(p?'':'<span class="mi-side end">목록에서 내려감</span>');
+        var inner='<span class="mi-top">'+(cat?catIc(cat)+'<span>'+catLabel(cat)+'</span>':'')+(t!=null?'<span class="mi-t">'+ago(t)+' 투표</span>':'')+'</span><b class="mi-q">'+esc(q||'(지금은 볼 수 없는 투표)')+'</b><span class="mi-row"><span class="mi-c">내 선택 <b>'+esc(choiceText(p,r.c,r.snap))+'</b></span>'+badge+'</span>'+bar;
+        return '<li>'+(p?'<a class="mine-it" href="?p='+r.id+'">'+inner+'</a>':'<div class="mine-it off">'+inner+'</div>')+'</li>';
+      }).join('');
+      if(!items.length) html='<li class="mine-empty">'+(rows.length?'해당하는 투표가 없어요.':'아직 투표한 게 없어요.<a class="btn dark" href="./#vote">투표하러 가기</a>')+'</li>';
+    }
+    list.innerHTML=html;
+    more.hidden=items.length<=mineShown; if(!more.hidden) more.innerHTML=ic('chevron-down')+'더보기 ('+Math.min(mineShown,items.length)+' / '+items.length+')';
+    note.innerHTML=(NY&&NY.uid)?'로그인한 계정의 투표 기록이에요. 다른 기기에서 한 투표도 함께 보여요.':'지금은 이 브라우저에서 한 투표만 보여요. <button type="button" class="linkbtn" id="mineLogin">로그인</button>하면 다른 기기에서도 내 투표 내역을 볼 수 있어요.';
+    var lb=document.getElementById('mineLogin'); if(lb) lb.onclick=function(){ loginBtn.click(); };
+  }
+  document.querySelector('#v-mine .chips').addEventListener('click',function(e){ var b=e.target.closest('[data-m]'); if(!b) return; mineTab=b.dataset.m; mineShown=20; renderMine(); });
+  document.getElementById('mineMore').onclick=function(){ mineShown+=20; renderMine(); };
   function route(){
     var h=(location.hash||'').slice(1);
     if(embedded) h='vote';
@@ -3040,7 +3139,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     views.forEach(function(v){document.getElementById('v-'+v).hidden=v!==h; document.body.classList.toggle('v-'+v,v===h)});
     document.body.classList.remove('hd-hide');
     document.querySelectorAll('.tabs a, .cta, .fab-new, .btabs a, .dr-nav a').forEach(function(a){ if(a.dataset.v===h) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
-    render();
+    render(); if(h==='mine') renderMine();
   }
 
   // ===== 백엔드 연결 (Supabase 로그인 + Vercel /api) =====
@@ -3134,7 +3233,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     function loadMe(session){
       api.token=session.access_token; api.uid=session.user.id;
       call('profile').then(function(j){
-        (j.votes||[]).forEach(function(v){ if(voted[v.poll_id]===undefined){ var p=polls.find(function(x){return x.id===v.poll_id}); voted[v.poll_id]=p&&p.type!=='relay'&&!p.multiSel?v.choice[0]:v.choice; } sent[v.poll_id]=1; });
+        (j.votes||[]).forEach(function(v){ if(!vlog[v.poll_id]&&v.created_at){ vlog[v.poll_id]={t:Date.parse(v.created_at)}; } if(voted[v.poll_id]===undefined){ var p=polls.find(function(x){return x.id===v.poll_id}); voted[v.poll_id]=p&&p.type!=='relay'&&!p.multiSel?v.choice[0]:v.choice; } sent[v.poll_id]=1; });
         saveSent(); try{localStorage.setItem(KEY,JSON.stringify(voted))}catch(e){}
         var via=viaOf(session), pf=j.profile;
         if(pf){
