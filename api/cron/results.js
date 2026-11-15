@@ -8,17 +8,17 @@ async function pollTitles(ids) {
     try { const r = await fetch(u); if (r.ok) (await r.json()).forEach(p => { if (ids.includes(p.id)) map[p.id] = p; }); } catch {}
   }
   const up = ids.filter(i => i.startsWith('u') && !map[i]);
-  if (up.length) (await db(`user_polls?select=id,data&id=in.(${up.join(',')})`)).forEach(r => { map[r.id] = r.data; });
+  if (up.length) (await db(`ny_user_polls?select=id,data&id=in.(${up.join(',')})`)).forEach(r => { map[r.id] = r.data; });
   return map;
 }
 
 export default async function (req, res) {
   if (!configured()) return fail(res, 503, 'backend-not-configured');
   if (process.env.CRON_SECRET && req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) return fail(res, 401, 'cron');
-  const due = await db(`result_alerts?select=user_id,poll_id&sent_at=is.null&send_at=lte.${new Date().toISOString()}&order=user_id&limit=2000`);
+  const due = await db(`ny_result_alerts?select=user_id,poll_id&sent_at=is.null&send_at=lte.${new Date().toISOString()}&order=user_id&limit=2000`);
   if (!due.length) return send(res, 200, { sent: 0 });
   const ids = [...new Set(due.map(d => d.poll_id))];
-  const [counts, polls] = await Promise.all([rpc('poll_counts', { ids }), pollTitles(ids)]);
+  const [counts, polls] = await Promise.all([rpc('ny_poll_counts', { ids }), pollTitles(ids)]);
   const byUser = {};
   due.forEach(d => { (byUser[d.user_id] = byUser[d.user_id] || []).push(d.poll_id); });
   let sent = 0;
@@ -39,7 +39,7 @@ export default async function (req, res) {
       });
       if (r.ok) sent++;
     }
-    await db(`result_alerts?user_id=eq.${uid}&poll_id=in.(${list.map(encodeURIComponent).join(',')})`, { method: 'PATCH', body: { sent_at: new Date().toISOString() } });
+    await db(`ny_result_alerts?user_id=eq.${uid}&poll_id=in.(${list.map(encodeURIComponent).join(',')})`, { method: 'PATCH', body: { sent_at: new Date().toISOString() } });
   }
   send(res, 200, { sent, users: Object.keys(byUser).length });
 }

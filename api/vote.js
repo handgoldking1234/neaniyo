@@ -19,13 +19,13 @@ export default handler(async (req, res) => {
   const ipH = hash(ipOf(req));
 
   if (!user) {
-    const same = await db(`votes?select=voter&poll_id=eq.${encodeURIComponent(pollId)}&ip_hash=eq.${ipH}&limit=${IP_LIMIT}`);
+    const same = await db(`ny_votes?select=voter&poll_id=eq.${encodeURIComponent(pollId)}&ip_hash=eq.${ipH}&limit=${IP_LIMIT}`);
     if (same.length >= IP_LIMIT) return fail(res, 429, 'too-many-from-network');
   }
 
   let prof = null;
   if (user) {
-    const r = await db(`profiles?select=gender,birth_year,region,notify_results&id=eq.${user.id}`);
+    const r = await db(`ny_profiles?select=gender,birth_year,region,notify_results&id=eq.${user.id}`);
     prof = r[0] || null;
   }
   const row = {
@@ -33,16 +33,16 @@ export default handler(async (req, res) => {
     gender: prof?.gender || null, age_band: ageBand(prof?.birth_year), region: prof?.region || null, ip_hash: ipH
   };
   let already = false;
-  try { await db('votes', { method: 'POST', body: row, prefer: 'return=minimal' }); }
+  try { await db('ny_votes', { method: 'POST', body: row, prefer: 'return=minimal' }); }
   catch (e) { if (e.code === '23505') already = true; else throw e; }
 
   // 로그인 투표자는 24시간 뒤 결과 메일 대기열에 넣는다
   if (user && !already && prof && prof.notify_results !== false) {
-    await db('result_alerts', {
+    await db('ny_result_alerts', {
       method: 'POST', prefer: 'resolution=ignore-duplicates,return=minimal',
       body: { user_id: user.id, poll_id: pollId, send_at: new Date(Date.now() + 864e5).toISOString() }
     }).catch(e => console.error('alert', e.message));
   }
-  const counts = await rpc('poll_counts', { ids: [pollId] });
+  const counts = await rpc('ny_poll_counts', { ids: [pollId] });
   send(res, 200, { ok: true, already, counts: counts || {} });
 });

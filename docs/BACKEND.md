@@ -20,19 +20,21 @@
 | `GET·POST /api/comments` | 한줄평 (투표한 회원만, 운영 규칙 자동 적용) |
 | `POST /api/comment-action` | 공감·취소·신고 (신고 3회면 자동 숨김) |
 | `GET·POST /api/polls` | 사용자 투표. 공개는 승인 후 노출, 링크·비밀방은 바로 |
-| `GET·POST /api/admin` | 승인·반려, 한줄평 보이기·숨기기·삭제 (`profiles.is_admin`) |
+| `GET·POST /api/admin` | 승인·반려, 한줄평 보이기·숨기기·삭제 (`ny_profiles.is_admin`) |
 | `/api/cron/results` | 매일 10:00(KST) 투표 24시간 지난 회원에게 결과 메일 |
 
 ## 1. Supabase
 
-1. supabase.com에서 프로젝트를 만듭니다 (리전: Northeast Asia (Seoul)).
-2. **SQL Editor**에 `supabase/schema.sql`을 붙여 넣고 Run.
+새 프로젝트를 만들지 않고 **IUX Cloud(studio.iux.kr이 쓰는 공용 Supabase 프로젝트)**에 넣습니다. 테이블·함수 이름이 모두 `ny_`로 시작해서 다른 서비스 테이블과 겹치지 않습니다. 회원 계정(auth.users)은 IUX 서비스끼리 공유됩니다.
+
+1. IUX Cloud 프로젝트를 엽니다.
+2. **SQL Editor**에 `supabase/schema.sql`을 붙여 넣고 Run. 기존 테이블은 건드리지 않습니다.
 3. **Authentication → URL Configuration**
-   - Site URL: `https://neaniyo.iux.kr`
-   - Redirect URLs: `https://neaniyo.iux.kr/**`, 미리보기용 `https://*.vercel.app/**`
-4. **Authentication → Emails → SMTP Settings**: 쓰고 있는 메일 서비스의 SMTP 정보를 넣습니다. 넣지 않으면 Supabase 기본 메일이 시간당 몇 통만 나갑니다.
+   - Site URL은 바꾸지 않습니다 (다른 서비스가 쓰는 값).
+   - Redirect URLs에 `https://neaniyo.iux.kr/**`, 미리보기용 `https://neaniyo-*.vercel.app/**` 를 **추가**합니다.
+4. **Authentication → Emails → SMTP Settings**: 이미 IUX ART용으로 넣어 둔 SMTP가 있으면 그대로 씁니다. 보내는 이름을 `IUX`처럼 공통으로 두면 네아니요 로그인 메일에도 어색하지 않습니다.
 5. (선택) **Authentication → Providers**에서 Kakao·Google을 켜면 버튼이 생깁니다. 켠 것만 `AUTH_PROVIDERS`에 적습니다.
-6. 운영자 계정: 사이트에서 한 번 로그인한 뒤 Table Editor → `profiles`에서 내 행의 `is_admin`을 `true`로 바꿉니다.
+6. 운영자 계정: 사이트에서 한 번 로그인한 뒤 Table Editor → `ny_profiles`에서 내 행의 `is_admin`을 `true`로 바꿉니다.
 
 ## 2. Vercel 환경 변수
 
@@ -56,11 +58,11 @@
 ## 3. 확인
 
 - `https://<도메인>/api/config` 가 `{"enabled":true,...}` 를 돌려주면 연결된 것입니다.
-- 투표 → Supabase `votes` 테이블에 행이 생기는지 확인.
-- 로그인 → 메일 링크 → 프로필 입력 → `profiles`에 행.
+- 투표 → Supabase `ny_votes` 테이블에 행이 생기는지 확인.
+- 로그인 → 메일 링크 → 프로필 입력 → `ny_profiles`에 행.
 
 ## 아직 남은 것
 
-- 관리자 화면(`/admin`)에 승인·검토 탭 붙이기. 그 전에는 `user_polls.status`를 Table Editor에서 `approved`로 바꾸면 됩니다.
+- 관리자 화면(`/admin`)에 승인·검토 탭 붙이기. 그 전에는 `ny_user_polls.status`를 Table Editor에서 `approved`로 바꾸면 됩니다.
 - 사진 투표의 이미지를 Supabase Storage로 옮기기 (지금은 1.5MB까지 DB에 그대로 저장).
 - 그룹별(성별·연령·지역) 실제 통계 API. 투표 때 프로필은 이미 함께 저장하고 있습니다.

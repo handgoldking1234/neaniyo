@@ -12,15 +12,15 @@ export default handler(async (req, res) => {
     if (req.query.id) {
       const id = String(req.query.id);
       if (!/^u[\w-]{1,39}$/.test(id)) return fail(res, 400, 'id');
-      const r = await db(`user_polls?select=*&id=eq.${id}&status=eq.approved`);
+      const r = await db(`ny_user_polls?select=*&id=eq.${id}&status=eq.approved`);
       return r.length ? send(res, 200, { poll: out(r[0]) }, 'public, s-maxage=30') : fail(res, 404, 'not-found');
     }
     if (req.query.mine) {
       const user = await authUser(req); if (!user) return fail(res, 401, 'login');
-      const r = await db(`user_polls?select=*&user_id=eq.${user.id}&order=created_at.desc&limit=200`);
+      const r = await db(`ny_user_polls?select=*&user_id=eq.${user.id}&order=created_at.desc&limit=200`);
       return send(res, 200, { polls: r.map(out) });
     }
-    const r = await db('user_polls?select=*&status=eq.approved&vis=eq.public&order=created_at.desc&limit=300');
+    const r = await db('ny_user_polls?select=*&status=eq.approved&vis=eq.public&order=created_at.desc&limit=300');
     return send(res, 200, { polls: r.map(out) }, 'public, s-maxage=60, stale-while-revalidate=300');
   }
   if (req.method !== 'POST') return fail(res, 405, 'method');
@@ -31,11 +31,11 @@ export default handler(async (req, res) => {
   if (Array.isArray(data.qs)) data.qs = data.qs.map(x => ({ q: x.q, o: x.o }));
   if (JSON.stringify(data).length > MAX) return fail(res, 413, 'too-large');
   const vis = ['public', 'link', 'secret'].includes(p.vis) ? p.vis : 'public';
-  const prev = await db(`user_polls?select=user_id,status&id=eq.${p.id}`);
+  const prev = await db(`ny_user_polls?select=user_id,status&id=eq.${p.id}`);
   if (prev.length && prev[0].user_id !== user.id) return fail(res, 403, 'not-owner');
   const status = vis === 'public' ? 'pending' : 'approved';
   const row = { id: p.id, user_id: user.id, data, vis, status, updated_at: new Date().toISOString() };
-  const r = await db('user_polls?on_conflict=id', { method: 'POST', body: row, prefer: 'resolution=merge-duplicates,return=representation' });
+  const r = await db('ny_user_polls?on_conflict=id', { method: 'POST', body: row, prefer: 'resolution=merge-duplicates,return=representation' });
   if (status === 'pending') await mailAdmin('승인 대기 새 투표', [`[${data.cat || '-'}] ${data.q}`, `보기: ${data.o.join(' / ')}`, `미리보기: ${SITE}/?p=${p.id}`]);
   send(res, 200, { ok: true, poll: out(r[0]) });
 });

@@ -9,8 +9,8 @@ export default handler(async (req, res) => {
   const user = await authUser(req);
   if (!user) return fail(res, 401, 'login');
   if (req.method === 'GET') {
-    const r = await db(`profiles?select=${COLS}&id=eq.${user.id}`);
-    const votes = await db(`votes?select=poll_id,choice&user_id=eq.${user.id}&order=created_at.desc&limit=1000`);
+    const r = await db(`ny_profiles?select=${COLS}&id=eq.${user.id}`);
+    const votes = await db(`ny_votes?select=poll_id,choice&user_id=eq.${user.id}&order=created_at.desc&limit=1000`);
     return send(res, 200, { email: user.email, provider: user.app_metadata?.provider || 'email', profile: r[0] || null, votes });
   }
   if (req.method !== 'POST') return fail(res, 405, 'method');
@@ -26,6 +26,6 @@ export default handler(async (req, res) => {
     updated_at: new Date().toISOString()
   };
   if (!row.gender || !row.birth_year || !row.region) return fail(res, 400, 'profile');
-  const out = await db('profiles?on_conflict=id', { method: 'POST', body: row, prefer: 'resolution=merge-duplicates,return=representation' });
+  const out = await db('ny_profiles?on_conflict=id', { method: 'POST', body: row, prefer: 'resolution=merge-duplicates,return=representation' });
   send(res, 200, { profile: out[0] });
 });
