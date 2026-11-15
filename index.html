@@ -1341,9 +1341,9 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
 
 <script>
 (function(){
-  var KEY='neaniyo-voted';
+  var KEY='neaniyo-voted', NY=null;
   var voted={}; try{voted=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){voted={}}
-  function save(){try{localStorage.setItem(KEY,JSON.stringify(voted))}catch(e){} setTimeout(maybeAskInt,900)}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(voted))}catch(e){} if(NY) NY.onSave(); setTimeout(maybeAskInt,900)}
   // 관심사: 고른 대분류 위주로 추천(관심 약 70% + 나머지 섞기). 로그인 없이 브라우저에 저장, 로그인하면 계정 정보에도 함께 저장.
   var IKEY='neaniyo-interests', intr={cats:[],skip:0};
   try{var _ir=JSON.parse(localStorage.getItem(IKEY)||'null'); if(_ir&&Array.isArray(_ir.cats)) intr=_ir;}catch(e){}
@@ -2000,6 +2000,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   function closeDialog(){ try{auth.close()}catch(e){auth.removeAttribute('open')} }
   function openAuth(){
     if(user){ return showMe(); }
+    if(NY&&NY.on) return NY.openLogin();
     authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>'+
       '<h2 id="authTitle">네아니요 시작하기</h2><p>투표는 로그인 없이도 됩니다. 로그인하면 내 그룹별 결과와 투표 기록을 볼 수 있어요.</p>'+
       '<div class="sso"><button class="kakao" type="button" data-sso="kakao">카카오로 시작하기</button><button class="google" type="button" data-sso="google">Google로 시작하기</button></div>'+
@@ -2034,7 +2035,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       if(!g||!yv||!r){m.textContent='성별, 출생연도, 지역을 선택해 주세요.';return}
       if(!chk('pf-c1')||!chk('pf-c2')||!chk('pf-c3')){m.textContent='필수 항목에 동의해 주세요.';return}
       user={via:auth.dataset.via||'kakao',gender:g,birth:+yv,region:r,edu:val('pf-e'),stat:chk('pf-c4'),pro:false};
-      if(intr.cats.length) user.interests=intr.cats.slice(); saveUser(); authUI(); if(!intr.cats.length&&auth.dataset.next!=='pro') showIntDialog('signup'); else closeDialog(); toast('가입을 마쳤습니다.'); reRenderKeep();
+      if(intr.cats.length) user.interests=intr.cats.slice(); saveUser(); if(NY&&NY.on) NY.saveProfile(user); authUI(); if(!intr.cats.length&&auth.dataset.next!=='pro') showIntDialog('signup'); else closeDialog(); toast('가입을 마쳤습니다.'); reRenderKeep();
       if(auth.dataset.next==='pro'){ startTrial(); }
     });
     openDialog();
@@ -2043,7 +2044,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     var age=user.birth?ageBand(user.birth):'-';
     authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>'+
       '<h2 id="authTitle">내 정보 '+(user.pro?'<span class="pbadge">프리미엄 체험 중</span>':'')+'</h2>'+
-      '<div class="me"><div><span>로그인</span><b>'+(user.via==='google'?'Google':'카카오')+'</b></div><div><span>성별</span><b>'+esc(user.gender)+'</b></div><div><span>연령대</span><b>'+age+'</b></div><div><span>지역</span><b>'+esc(user.region)+'</b></div><div><span>학력</span><b>'+(esc(user.edu)||'응답 안 함')+'</b></div><div><span>참여한 투표</span><b>'+Object.keys(voted).length+'개</b></div></div>'+
+      '<div class="me"><div><span>로그인</span><b>'+viaName(user.via)+'</b></div><div><span>성별</span><b>'+esc(user.gender)+'</b></div><div><span>연령대</span><b>'+age+'</b></div><div><span>지역</span><b>'+esc(user.region)+'</b></div><div><span>학력</span><b>'+(esc(user.edu)||'응답 안 함')+'</b></div><div><span>참여한 투표</span><b>'+Object.keys(voted).length+'개</b></div></div>'+
       '<p style="font-size:calc(12px * var(--fs))">프로필은 30일에 한 번만 바꿀 수 있습니다.</p>'+
       '<div class="row">'+(user.pro?'<button class="btn" type="button" data-me="unpro">체험 종료</button>':'<button class="btn gold" type="button" data-me="pro">프리미엄 7일 체험</button>')+'<button class="btn" type="button" data-me="logout">로그아웃</button></div>';
     openDialog();
@@ -2055,7 +2056,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     if(t.closest('[data-close]')) return closeDialog();
     var sso=t.closest('[data-sso]'); if(sso){ auth.dataset.via=sso.dataset.sso; return showProfile(); }
     var me=t.closest('[data-me]'); if(!me) return;
-    if(me.dataset.me==='logout'){ user=null; saveUser(); authUI(); closeDialog(); toast('로그아웃했습니다.'); reRenderKeep(); }
+    if(me.dataset.me==='logout'){ if(NY) NY.signOut(); user=null; saveUser(); authUI(); closeDialog(); toast('로그아웃했습니다.'); reRenderKeep(); }
     if(me.dataset.me==='pro'){ startTrial(); closeDialog(); }
     if(me.dataset.me==='unpro'){ user.pro=false; saveUser(); authUI(); closeDialog(); toast('프리미엄 체험을 종료했습니다.'); refreshOpenStats(); }
   });
@@ -2065,10 +2066,11 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   function openMenu(){
     if(!user){
       acctMenu.innerHTML='<div class="am-hd"><b>네아니요 시작하기</b><small>투표는 로그인 없이도 됩니다. 로그인하면 내 그룹별 결과와 투표 기록을 볼 수 있어요.</small></div>'+
-        '<div class="sso"><button class="kakao" type="button" data-am="kakao">카카오로 시작하기</button><button class="google" type="button" data-am="google">Google로 시작하기</button></div>'+
+        (NY&&NY.on?'<div class="sso">'+NY.providers.filter(function(x){return x==='kakao'||x==='google'}).map(function(x){return '<button class="'+x+'" type="button" data-am="'+x+'">'+(x==='kakao'?'카카오로 시작하기':'Google로 시작하기')+'</button>'}).join('')+'<button class="btn dark" type="button" data-am="mail">'+ic('log-in')+'이메일로 시작하기</button></div>'
+          :'<div class="sso"><button class="kakao" type="button" data-am="kakao">카카오로 시작하기</button><button class="google" type="button" data-am="google">Google로 시작하기</button></div>')+
         '<ul><li><a href="./#premium" data-am="link">'+ic('crown')+'프리미엄 알아보기</a></li></ul>';
     }else{
-      acctMenu.innerHTML='<div class="am-hd"><b>'+(user.via==='google'?'Google':'카카오')+' 계정'+(user.pro?' <span class="pro" style="font-size:calc(10.5px * var(--fs));font-weight:700;color:#fff;background:var(--gold);border-radius:4px;padding:1px 5px">PRO</span>':'')+'</b><small>'+esc(user.gender)+' · '+(user.birth?ageBand(user.birth):'-')+' · '+esc(user.region)+' · 참여 '+Object.keys(voted).length+'개</small></div>'+
+      acctMenu.innerHTML='<div class="am-hd"><b>'+viaName(user.via)+' 계정'+(user.pro?' <span class="pro" style="font-size:calc(10.5px * var(--fs));font-weight:700;color:#fff;background:var(--gold);border-radius:4px;padding:1px 5px">PRO</span>':'')+'</b><small>'+esc(user.gender)+' · '+(user.birth?ageBand(user.birth):'-')+' · '+esc(user.region)+' · 참여 '+Object.keys(voted).length+'개</small></div>'+
         '<ul><li><button type="button" data-am="me">'+ic('user-round')+'내 정보</button></li>'+
         '<li>'+(user.pro?'<button type="button" data-am="unpro">'+ic('crown')+'프리미엄 체험 종료</button>':'<button type="button" data-am="pro">'+ic('crown')+'프리미엄 7일 체험</button>')+'</li>'+
         '<li class="sep" aria-hidden="true"></li>'+
@@ -2080,11 +2082,12 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   acctMenu.addEventListener('click',function(e){
     var b=e.target.closest('[data-am]'); if(!b) return;
     var a=b.dataset.am; closeMenu();
-    if(a==='kakao'||a==='google'){ auth.dataset.next=''; auth.dataset.via=a; return showProfile(); }
+    if(a==='mail') return NY.openLogin();
+    if(a==='kakao'||a==='google'){ if(NY&&NY.on) return NY.openLogin(a); auth.dataset.next=''; auth.dataset.via=a; return showProfile(); }
     if(a==='me') return showMe();
     if(a==='pro') return startTrial();
     if(a==='unpro'){ user.pro=false; saveUser(); authUI(); toast('프리미엄 체험을 종료했습니다.'); return refreshOpenStats(); }
-    if(a==='logout'){ user=null; saveUser(); authUI(); toast('로그아웃했습니다.'); return reRenderKeep(); }
+    if(a==='logout'){ if(NY) NY.signOut(); user=null; saveUser(); authUI(); toast('로그아웃했습니다.'); return reRenderKeep(); }
   });
   document.addEventListener('click',function(e){ if(!e.target.closest('#acct')) closeMenu(); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!acctMenu.hidden){ closeMenu(); loginBtn.focus(); } });
@@ -2404,6 +2407,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       '</ul>'+(p.comments&&!embedded?'<p class="aifoot">AI가 쓴 요약이에요. 내 생각은 아래 한줄평으로 남겨 주세요.</p>':'<p class="aifoot">AI가 쓴 요약이에요. 실제 참여자 의견이 아닙니다.</p>')+'</div>';
   }
   function cmtBlock(p,done){
+    if(NY&&NY.on&&p.comments) NY.needComments(p);
     var list=getC(p).filter(function(c){return !c.hidden&&(!c.review||c.mine)});
     if(!done) return '<div class="cmts"><h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개</small></h4><p class="hint">투표하면 한줄평을 보고 남길 수 있어요.</p></div>';
     var sorted=list.slice().sort(function(a,b){return b.likes-a.likes});
@@ -2521,10 +2525,10 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
         return; }
       if(act==='like'||act==='report'){
         var c=getC(p).filter(function(x){return x.id===actBtn.dataset.cid})[0]; if(!c) return;
-        if(act==='like'){ c.liked=!c.liked; c.likes+=c.liked?1:-1;
+        if(act==='like'){ c.liked=!c.liked; c.likes+=c.liked?1:-1; if(NY) NY.commentAct(c,c.liked?'like':'unlike');
           if(c.liked){ var rb=actBtn.getBoundingClientRect(); burst(rb.left+12,rb.top+rb.height/2,'var(--a)',{small:true}); }
           saveC(); var fr=rerender(art,p); var nb=fr.querySelector('[data-cid="'+c.id+'"][data-act=like]'); if(nb&&c.liked) nb.classList.add('likepop'); return; }
-        else { c.reports=(c.reports||0)+1; c.hidden=true; toast('신고했습니다. 검토 전까지 이 한줄평은 가려집니다.'); }
+        else { if(NY) NY.commentAct(c,'report'); c.reports=(c.reports||0)+1; c.hidden=true; toast('신고했습니다. 검토 전까지 이 한줄평은 가려집니다.'); }
         saveC(); rerender(art,p); return;
       }
       if(act==='copy'){
@@ -2617,6 +2621,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       var recent=[]; Object.keys(cmts).forEach(function(k){ (cmts[k]||[]).forEach(function(c){ if(c.mine&&c.ts&&Date.now()-c.ts<600000) recent.push(c); }); });
       var jd=modJudge(t,MOD,recent);
       if(jd.action==='block'){ m.textContent=jd.message; return; }
+      if(NY&&NY.on&&NY.isReal(p.id)) return NY.postComment(p,t,art,m);
       var nc={id:p.id+'-'+Date.now().toString(36),o:myIdx(p),text:t,likes:0,at:'방금',mine:true,ts:Date.now()};
       if(jd.action==='review') nc.review={rule:jd.rule,name:jd.name};
       getC(p).push(nc); saveC();
@@ -2891,10 +2896,10 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
       var sameO=old.type===np.type&&JSON.stringify(old.o)===JSON.stringify(np.o)&&JSON.stringify((old.qs||[]).map(function(x){return [x.q,x.o]}))===JSON.stringify((np.qs||[]).map(function(x){return [x.q,x.o]}));
       if(sameO){ np.v=old.v; if(old.n!=null) np.n=old.n; if(old.qs&&np.qs) np.qs.forEach(function(x,i){x.v=old.qs[i].v}); }
       else{ delete voted[old.id]; try{localStorage.setItem(KEY,JSON.stringify(voted))}catch(err){} }
-      polls[polls.indexOf(old)]=np; saveMine(); endEdit(true);
+      polls[polls.indexOf(old)]=np; saveMine(); if(NY) NY.submitPoll(np); endEdit(true);
       location.href='?p='+np.id; return;
     }
-    polls.unshift(np); saveMine();
+    polls.unshift(np); saveMine(); if(NY) NY.submitPoll(np);
     form.reset(); upImgs=[]; photoAsk=false; relayMode=false; catTouched=false; sync.key=''; ['f-photo-wrap','f-link-wrap','f-cat-wrap'].forEach(function(id){openFold(id,false)}); rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='연예'; fillSubs();
     document.getElementById('f-story-n').textContent='0'; syncVis();
     showMade(np,vis);
@@ -3000,7 +3005,7 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
   }else if(exists(params.get('p'))){
     shareId=params.get('p'); document.body.classList.add('shared');
     document.getElementById('sharebar').hidden=false;
-    var sp=polls.find(function(x){return x.id===shareId}); document.title=(sp.vis==='secret'&&!sp.own&&!unlocked[sp.id]?'비밀 투표':sp.q)+' | 네아니요';
+    var sp=polls.find(function(x){return x.id===shareId}); if(sp) document.title=(sp.vis==='secret'&&!sp.own&&!unlocked[sp.id]?'비밀 투표':sp.q)+' | 네아니요';
   }
   window.addEventListener('hashchange',route);
   route();
@@ -3038,15 +3043,194 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
     render();
   }
 
+  // ===== 백엔드 연결 (Supabase 로그인 + Vercel /api) =====
+  // /api/config 가 enabled:false 거나 응답이 없으면 지금처럼 브라우저 저장(시안 모드)으로 동작한다.
+  NY=(function(){
+    var api={on:false,sb:null,token:null,uid:null,providers:[]};
+    var SUPA_JS='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+    var REAL=/^(f\d{10}|d\d{6}-\d+|u[a-z0-9]{5,})$/;
+    var DEV='neaniyo-device', SENT='neaniyo-sent', dev='', sent={};
+    try{ dev=localStorage.getItem(DEV)||''; if(!dev){ dev=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)).replace(/[^\w-]/g,''); localStorage.setItem(DEV,dev); } }catch(e){ dev='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,10); }
+    try{ sent=JSON.parse(localStorage.getItem(SENT)||'{}')||{}; }catch(e){ sent={}; }
+    function saveSent(){ try{localStorage.setItem(SENT,JSON.stringify(sent))}catch(e){} }
+    api.isReal=function(id){ return REAL.test(String(id||'')); };
+
+    function call(path,opt){
+      opt=opt||{}; var h={'Content-Type':'application/json'}; if(api.token) h.Authorization='Bearer '+api.token;
+      return fetch('/api/'+path,{method:opt.method||'GET',headers:h,body:opt.body?JSON.stringify(opt.body):undefined,cache:'no-store'})
+        .then(function(r){ return r.json().catch(function(){return {}}).then(function(j){ if(!r.ok){ var e=new Error(j.error||('HTTP '+r.status)); e.status=r.status; throw e; } return j; }); });
+    }
+    function cardOf(id){ return document.querySelector('.poll[data-id="'+id+'"]'); }
+    function redraw(p){ var a=cardOf(p.id); if(a&&!a.querySelector('.cform input:focus')) rerender(a,p); }
+    function load(src){ return new Promise(function(ok,no){ var s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); }); }
+
+    // ---- 득표 ----
+    function apply(counts){
+      Object.keys(counts||{}).forEach(function(id){
+        var p=polls.find(function(x){return x.id===id}), c=counts[id]; if(!p||!c) return;
+        var rows=c.v||{};
+        if(p.type==='relay'&&p.qs){ p.qs.forEach(function(qq,k){ var row=rows[k]||{}; qq.v=qq.o.map(function(_,i){return row[i]||0}); }); p.v=p.qs[0].v; }
+        else { var row=rows[0]||{}; p.v=p.o.map(function(_,i){return row[i]||0}); }
+        p.n=c.n;
+      });
+    }
+    api.syncCounts=function(done){
+      if(!api.on){ if(done) done(); return; }
+      var ids=polls.filter(function(p){return REAL.test(p.id)}).map(function(p){return p.id}), jobs=[];
+      for(var i=0;i<ids.length;i+=150) jobs.push(call('counts?ids='+encodeURIComponent(ids.slice(i,i+150).join(','))).then(function(j){ apply(j.counts); }).catch(function(){}));
+      Promise.all(jobs).then(function(){
+        if(started) [].forEach.call(document.querySelectorAll('.poll[data-id]'),function(a){ var p=polls.find(function(x){return x.id===a.dataset.id}); if(p&&REAL.test(p.id)) redraw(p); });
+        if(done) done();
+      });
+    };
+    // save()가 불릴 때마다 아직 서버에 안 보낸 내 표를 보낸다
+    api.onSave=function(){
+      if(!api.on) return;
+      Object.keys(voted).forEach(function(id){
+        if(sent[id]||!REAL.test(id)) return;
+        var p=polls.find(function(x){return x.id===id}); if(!p) return;
+        sent[id]=1; saveSent();
+        call('vote',{method:'POST',body:{pollId:id,choice:[].concat(voted[id]),relay:p.type==='relay',deviceId:dev}})
+          .then(function(j){ apply(j.counts); setTimeout(function(){ redraw(p); renderRank(); },800); })
+          .catch(function(e){ if(e.status!==429&&e.status!==400){ delete sent[id]; saveSent(); } });
+      });
+    };
+
+    // ---- 로그인 ----
+    function viaOf(s){ var pv=s&&s.user&&s.user.app_metadata&&s.user.app_metadata.provider; return pv==='google'||pv==='kakao'?pv:'email'; }
+    api.openLogin=function(prefer){
+      if(!api.sb){ toast('로그인 준비 중이에요. 잠시 후 다시 눌러 주세요.'); return; }
+      if(prefer&&api.providers.indexOf(prefer)>=0) return api.oauth(prefer);
+      var sso=api.providers.filter(function(x){return x==='kakao'||x==='google'});
+      authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>'+
+        '<h2 id="authTitle">네아니요 시작하기</h2><p>투표는 로그인 없이도 됩니다. 로그인하면 한줄평을 남기고, 내 그룹별 결과와 투표 기록을 어느 기기에서나 볼 수 있어요.</p>'+
+        (sso.length?'<div class="sso">'+sso.map(function(x){return '<button class="'+x+'" type="button" data-ny-sso="'+x+'">'+(x==='kakao'?'카카오로 시작하기':'Google로 시작하기')+'</button>'}).join('')+'</div><p style="text-align:center;margin:10px 0;font-size:calc(12px * var(--fs))">또는 이메일로</p>':'')+
+        '<form class="pf" id="nyMail" novalidate><div class="field full"><label for="nyMailIn">이메일</label><input id="nyMailIn" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required></div>'+
+        '<p class="msg full" id="nyMailMsg" role="status"></p><button class="btn dark full" type="submit">로그인 링크 받기</button></form>'+
+        '<p style="font-size:calc(12px * var(--fs))">비밀번호 없이, 메일로 받은 링크를 누르면 로그인돼요. 처음이면 자동으로 가입됩니다.</p>';
+      openDialog();
+      var f=document.getElementById('nyMail'); if(!f) return;
+      f.addEventListener('submit',function(e){
+        e.preventDefault();
+        var em=document.getElementById('nyMailIn').value.trim(), m=document.getElementById('nyMailMsg'), b=f.querySelector('button');
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){ m.className='msg err full'; m.textContent='이메일 주소를 확인해 주세요.'; return; }
+        b.disabled=true; m.className='msg full'; m.textContent='보내는 중…';
+        api.sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:location.origin+location.pathname+location.search}}).then(function(r){
+          b.disabled=false;
+          if(r.error){ m.className='msg err full'; m.textContent=/rate|seconds/i.test(r.error.message)?'잠시 후 다시 시도해 주세요.':'메일을 보내지 못했어요. 잠시 후 다시 시도해 주세요.'; return; }
+          m.className='msg ok full'; m.textContent=em+' 으로 로그인 링크를 보냈어요. 메일함(스팸함 포함)을 확인해 주세요.';
+        });
+      });
+      authBody.querySelectorAll('[data-ny-sso]').forEach(function(b){ b.onclick=function(){ api.oauth(b.dataset.nySso); }; });
+    };
+    api.oauth=function(pv){ api.sb.auth.signInWithOAuth({provider:pv,options:{redirectTo:location.origin+location.pathname+location.search}}); };
+    api.signOut=function(){ if(api.sb) api.sb.auth.signOut(); api.token=null; api.uid=null; };
+    api.saveProfile=function(u){
+      if(!api.token) return;
+      u.sid=api.uid; saveUser();
+      call('profile',{method:'POST',body:{gender:u.gender,birth:u.birth,region:u.region,edu:u.edu,stat:u.stat,notify:u.notify!==false}})
+        .catch(function(){ toast('프로필을 저장하지 못했어요. 다시 시도해 주세요.'); });
+    };
+    function loadMe(session){
+      api.token=session.access_token; api.uid=session.user.id;
+      call('profile').then(function(j){
+        (j.votes||[]).forEach(function(v){ if(voted[v.poll_id]===undefined){ var p=polls.find(function(x){return x.id===v.poll_id}); voted[v.poll_id]=p&&p.type!=='relay'&&!p.multiSel?v.choice[0]:v.choice; } sent[v.poll_id]=1; });
+        saveSent(); try{localStorage.setItem(KEY,JSON.stringify(voted))}catch(e){}
+        var via=viaOf(session), pf=j.profile;
+        if(pf){
+          var pro=user&&user.pro;
+          user={via:via,sid:api.uid,email:j.email,gender:pf.gender,birth:pf.birth_year,region:pf.region,edu:pf.edu||'',stat:pf.stat_consent,notify:pf.notify_results,admin:pf.is_admin,pro:!!pro};
+          saveUser(); authUI(); if(started) reRenderKeep();
+        }else{
+          user=null; saveUser(); authUI();
+          auth.dataset.via=via; auth.dataset.next=''; showProfile();
+        }
+        api.onSave();
+      }).catch(function(){});
+    }
+
+    // ---- 한줄평 ----
+    var cLoaded={}, cBusy={};
+    api.needComments=function(p){
+      if(!api.on||!REAL.test(p.id)||cLoaded[p.id]||cBusy[p.id]) return;
+      cBusy[p.id]=1;
+      call('comments?poll='+encodeURIComponent(p.id)).then(function(j){
+        cmts[p.id]=(j.comments||[]).map(function(c){ c.at=c.ts?ago(Math.max(0,(Date.now()-c.ts)/36e5)):''; return c; });
+        cLoaded[p.id]=1; redraw(p);
+      }).catch(function(){}).then(function(){ delete cBusy[p.id]; });
+    };
+    api.postComment=function(p,text,art,msgEl){
+      if(!api.token){ msgEl.textContent='로그인 후 남길 수 있어요.'; return; }
+      msgEl.textContent='등록 중…';
+      call('comments',{method:'POST',body:{pollId:p.id,text:text}}).then(function(j){
+        if(!j.ok){ msgEl.textContent=j.message||'등록할 수 없어요.'; return; }
+        var c=j.comment; c.at='방금'; getC(p).push(c); saveC();
+        rerender(art,p); toast(j.action==='review'?(j.message||'검토 후 공개돼요.'):'한줄평을 등록했습니다.');
+      }).catch(function(e){ msgEl.textContent=e.message==='vote-first'?'투표가 아직 저장되지 않았어요. 잠시 후 다시 시도해 주세요.':'등록하지 못했어요. 잠시 후 다시 시도해 주세요.'; });
+    };
+    api.commentAct=function(c,act){
+      if(!api.on||!api.token||!/^[0-9a-f-]{36}$/.test(c.id)) return false;
+      call('comment-action',{method:'POST',body:{id:c.id,act:act}}).catch(function(){});
+      return true;
+    };
+
+    // ---- 사용자 투표 ----
+    function addUserPoll(x,own){
+      if(!x||!x.id||!x.q||!Array.isArray(x.o)) return;
+      var have=polls.find(function(p){return p.id===x.id}); if(have) return;
+      normCat(x); x.t=Math.max(0,(Date.now()-(x.created||Date.now()))/36e5); x.h=ago(x.t);
+      if(x.type==='relay'&&x.qs){ x.qs.forEach(function(q){ q.v=q.o.map(function(){return 0}); }); x.v=x.qs[0].v; }
+      else x.v=x.o.map(function(){return 0});
+      if(own) x.own=true;
+      polls.push(x);
+    }
+    api.loadPolls=function(done){
+      ready.then(function(){
+        if(!api.on) return done();
+        var want=params.get('p')||params.get('embed'), jobs=[call('polls').then(function(j){ (j.polls||[]).forEach(function(x){addUserPoll(x)}); })];
+        if(want&&/^u/.test(want)&&!polls.some(function(p){return p.id===want})) jobs.push(call('polls?id='+encodeURIComponent(want)).then(function(j){ addUserPoll(j.poll); }).catch(function(){}));
+        Promise.all(jobs).catch(function(){}).then(function(){ api.syncCounts(done); });
+      },function(){ done(); });
+    };
+    api.submitPoll=function(np){
+      if(!api.on) return;
+      if(!api.token){ if(np.vis!=='public') toast('로그인하면 다른 사람도 이 링크로 투표할 수 있어요.'); return; }
+      var c={}; for(var k in np){ if(k!=='t'&&k!=='h'&&k!=='v'&&k!=='own') c[k]=np[k]; }
+      call('polls',{method:'POST',body:{poll:c}}).then(function(j){
+        if(j.poll&&j.poll.status==='pending') toast('공개 투표는 운영자 확인 뒤 피드에 올라가요. 링크로는 바로 투표할 수 있어요.');
+      }).catch(function(e){ toast(e.message==='too-large'?'사진 용량이 커서 서버에 올리지 못했어요.':'투표를 서버에 저장하지 못했어요.'); });
+    };
+
+    // ---- 시작 ----
+    var ready=fetch('/api/config',{cache:'no-store'}).then(function(r){return r.ok?r.json():{}}).then(function(cfg){
+      if(!cfg||!cfg.enabled) return;
+      api.providers=cfg.providers||['email']; api.on=true;
+      // 로그인 라이브러리는 투표 표시를 막지 않도록 따로 불러온다
+      api.authReady=load(SUPA_JS).then(function(){
+        api.sb=window.supabase.createClient(cfg.url,cfg.anonKey,{auth:{flowType:'pkce',persistSession:true,detectSessionInUrl:true,autoRefreshToken:true}});
+        api.sb.auth.onAuthStateChange(function(ev,session){
+          if(params.get('code')&&ev!=='TOKEN_REFRESHED'){ var cu=new URL(location.href); cu.searchParams.delete('code'); history.replaceState(null,'',cu.pathname+cu.search+cu.hash); }
+          if(session&&(ev==='SIGNED_IN'||ev==='INITIAL_SESSION')){ if(api.uid!==session.user.id) loadMe(session); else api.token=session.access_token; }
+          else if(session&&ev==='TOKEN_REFRESHED') api.token=session.access_token;
+          else if(ev==='SIGNED_OUT'||(ev==='INITIAL_SESSION'&&!session)){ api.token=null; api.uid=null; if(user){ user=null; saveUser(); authUI(); if(started) reRenderKeep(); } }
+        });
+      }).catch(function(){ toast('로그인 기능을 불러오지 못했어요. 새로고침해 주세요.'); });
+    }).catch(function(){ api.on=false; });
+    api.ready=ready;
+    return api;
+  })();
+  function viaName(v){ return v==='google'?'Google':v==='kakao'?'카카오':'이메일'; }
+
   // 투표 데이터: 사이트에 포함된 data/polls.json + 자동 수집 피드(feed 브랜치, 배포 없이 갱신)
   var FEEDS=['data/polls.json','https://raw.githubusercontent.com/handgoldking1234/neaniyo/feed/data/polls.json'];
   function loadFeeds(done){
-    var left=FEEDS.length, fin=function(){ if(--left===0) done(); };
+    var left=FEEDS.length+1, fin=function(){ if(--left===0) done(); };
+    var dataLeft=FEEDS.length, afterFiles=function(){ if(--dataLeft===0) NY.loadPolls(fin); };
     FEEDS.forEach(function(u,i){
       try{
         fetch(u+(i?'?t='+Math.floor(Date.now()/300000):''),{cache:'no-store'}).then(function(r){return r.ok?r.json():[]})
-          .then(function(list){ if(Array.isArray(list)) list.forEach(addDaily); fin(); }).catch(fin);
-      }catch(e){ fin(); }
+          .then(function(list){ if(Array.isArray(list)) list.forEach(addDaily); afterFiles(); fin(); }).catch(function(){ afterFiles(); fin(); });
+      }catch(e){ afterFiles(); fin(); }
     });
   }
   // 매일 올라오는 투표(data/polls.json)를 불러와 합친 뒤 시작
