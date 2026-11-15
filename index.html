@@ -1070,6 +1070,8 @@ a.mine-it:hover{border-color:var(--muted)}
 .mine-empty{display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 16px;color:var(--muted);text-align:center;border:1px dashed var(--line);border-radius:14px}
 .mine-note{margin:14px 0 0;font-size:calc(12.5px * var(--fs));color:var(--muted);line-height:1.6}
 .linkbtn{all:unset;cursor:pointer;color:var(--b);font-weight:600;text-decoration:underline}
+.feed-end{margin:6px 0 0;padding:28px 16px;text-align:center;color:var(--muted);font-size:calc(13.5px * var(--fs));line-height:1.7;border:1px dashed var(--line);border-radius:14px}
+.feed-end a{color:var(--b);font-weight:600}
 </style>
 </head>
 <body>
@@ -1825,7 +1827,7 @@ a.mine-it:hover{border-color:var(--muted)}
   // 추천 순서: 첫 화면은 최신순이 아니라 '인기 + 새로움 + 무작위'를 섞고, 같은 카테고리가 몰리지 않게 섞는다.
   // 방문할 때마다 순서가 바뀌고(추천 칩을 다시 누르면 새로 섞음), 보는 동안에는 순서가 그대로 유지된다.
   // 이미 투표한 것은 뒤로, 사진·영상 있는 투표는 조금 앞으로. (개발 단계에서 서버의 개인화 추천으로 교체)
-  var recSeed=String(Math.random()), recOrder=null, recKey='';
+  var recSeed=String(Math.random()), recOrder=null, recKey='', recHide={};
   // 보기 쉬운 형식 판별: OX(짧은 양자택일) > 유튜브 > 사진 > 그 외(긴 사연·릴레이·보기 많은 객관식)
   function kindOf(p){
     if(p.link&&p.link.yt) return 'yt';
@@ -1862,7 +1864,9 @@ a.mine-it:hover{border-color:var(--muted)}
   }
   function recommend(list){
     var key=filter+'|'+subFilter;
-    if(!recOrder||recKey!==key){ recKey=key; recOrder=buildRec(list); }
+    // 추천(전체)에서는 이미 투표한 것을 뺀다. 순서를 만든 뒤에 투표한 카드는 그 자리에 그대로 둠(투표하자마자 사라지지 않게)
+    if(!recOrder||recKey!==key){ recKey=key; recHide={}; if(filter==='all'&&!subFilter) Object.keys(voted).forEach(function(id){ recHide[id]=1; }); recOrder=buildRec(list.filter(function(p){return !recHide[p.id]})); }
+    list=list.filter(function(p){return !recHide[p.id]});
     var pos={}; recOrder.forEach(function(id,i){pos[id]=i});
     var fresh=list.filter(function(p){return pos[p.id]==null}), known=list.filter(function(p){return pos[p.id]!=null}).sort(function(a,b){return pos[a.id]-pos[b.id]});
     return fresh.concat(known);
@@ -1874,7 +1878,9 @@ a.mine-it:hover{border-color:var(--muted)}
     var sr=document.getElementById('srchRes'); if(sr){ sr.hidden=!searchQ||!!only; if(searchQ&&!only) sr.innerHTML='<span><b>\''+esc(searchQ)+'\'</b> 검색 결과 '+list.length+'개</span><button type="button" data-srch-clear>검색 지우기</button>'; }
     feedList=list;
     var cards=list.slice(0,feedShown).map(card); if(!only&&shouldAskInt()&&cards.length>3) cards.splice(3,0,intCard());
-    feed.innerHTML=list.length?cards.join(''):(searchQ?'<p class="tag">검색 결과가 없습니다. 다른 단어로 찾아보세요.</p>':'<p class="tag">이 카테고리에 투표가 아직 없습니다.</p>');
+    var hidN=(!only&&!searchQ&&filter==='all'&&!subFilter)?Object.keys(recHide).length:0;
+    if(hidN&&list.length<=feedShown) cards.push('<p class="feed-end">'+(list.length?'추천 투표를 다 봤어요. ':'')+'투표한 '+fmt(hidN)+'개는 <a href="./#mine">내 투표</a>에 있어요. <button type="button" class="linkbtn" data-c-new>최신 순으로 전체 보기</button></p>');
+    feed.innerHTML=(list.length||hidN)?cards.join(''):(searchQ?'<p class="tag">검색 결과가 없습니다. 다른 단어로 찾아보세요.</p>':'<p class="tag">이 카테고리에 투표가 아직 없습니다.</p>');
     moreLabel(feedMore,feedShown,only?1:list.length,'feed');
     renderRank();
     renderHot();
@@ -2546,6 +2552,7 @@ a.mine-it:hover{border-color:var(--muted)}
   window.addEventListener('resize',resize);
 
   feed.addEventListener('click',function(e){
+    if(e.target.closest('[data-c-new]')){ setFilter('new',''); window.scrollTo({top:0}); return; }
     var art=e.target.closest('.poll'); if(!art) return;
     var p=polls.find(function(x){return x.id===art.dataset.id});
     var actBtn=e.target.closest('[data-act]');
