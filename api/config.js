@@ -6,6 +6,7 @@ export default function (req, res) {
     enabled: true,
     url: process.env.SUPABASE_URL,
     anonKey: process.env.SUPABASE_ANON_KEY,
-    providers: (process.env.AUTH_PROVIDERS || 'email').split(',').map(s => s.trim()).filter(Boolean)
+    providers: (process.env.AUTH_PROVIDERS || 'email').split(',').map(s => s.trim()).filter(Boolean),
+    demo: process.env.DEMO_VOTES !== 'off' // 정식 오픈 때 DEMO_VOTES=off 로 시험 참여 끄기
   }, 'public, max-age=300');
 }

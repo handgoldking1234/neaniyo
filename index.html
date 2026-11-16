@@ -1101,6 +1101,10 @@ a.mine-it:hover{border-color:var(--muted)}
 .poll.just{box-shadow:0 0 0 2px var(--a);animation:justIn .6s ease}
 .poll.just::before{content:"방금 올린 투표";display:inline-block;align-self:flex-start;width:max-content;margin-bottom:8px;padding:2px 9px;border-radius:999px;background:var(--a);color:#fff;font-size:calc(11.5px * var(--fs));font-weight:700}
 @keyframes justIn{from{transform:translateY(-8px);opacity:.3}to{transform:none;opacity:1}}
+
+/* 오픈 전 BETA 표시 */
+.logo .beta{margin-left:6px;padding:2px 6px;border-radius:6px;background:color-mix(in srgb,var(--a) 12%,transparent);color:var(--a);font-size:10.5px;font-weight:800;letter-spacing:.5px;vertical-align:3px;cursor:help}
+.no-beta .logo .beta{display:none}
 </style>
 </head>
 <body>
@@ -1108,7 +1112,7 @@ a.mine-it:hover{border-color:var(--muted)}
 <header class="hd gut">
   <div class="hd-in">
     <div class="pg-hd"><button class="pg-back" id="pgBack" type="button" aria-label="뒤로"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><h1 class="pg-ttl">투표 만들기</h1></div>
-    <a class="logo" href="./" aria-label="네아니요 홈"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><clipPath id="lg"><rect width="32" height="32" rx="9"/></clipPath></defs><g clip-path="url(#lg)"><rect width="16" height="32" fill="var(--a)"/><rect x="16" width="16" height="32" fill="var(--b)"/></g><circle cx="9" cy="16" r="4.2" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M20 12l7 8M27 12l-7 8" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg><span class="word">네아니요</span></a>
+    <a class="logo" href="./" aria-label="네아니요 홈"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><clipPath id="lg"><rect width="32" height="32" rx="9"/></clipPath></defs><g clip-path="url(#lg)"><rect width="16" height="32" fill="var(--a)"/><rect x="16" width="16" height="32" fill="var(--b)"/></g><circle cx="9" cy="16" r="4.2" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M20 12l7 8M27 12l-7 8" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg><span class="word">네아니요</span><span class="beta" title="정식 오픈 전 시험 운영 중이에요. 참여 수에는 시험용 예시 참여가 포함돼 있어요.">BETA</span></a>
     <nav class="tabs" aria-label="메뉴">
       <a href="./#vote" data-v="vote">투표</a>
       <a href="./#ranking" data-v="ranking">랭킹</a>
@@ -2000,7 +2004,7 @@ a.mine-it:hover{border-color:var(--muted)}
   // 시안용: 8초마다 표가 들어오는 것처럼 보이게 (개발 단계에서 실시간 구독으로 교체)
   setInterval(function(){
     if(document.hidden) return;
-    polls.forEach(function(p){ if(!isPublic(p)||p.closed) return;
+    polls.forEach(function(p){ if(!isPublic(p)||p.closed||/^(f\d{10}|d\d{6}-\d+|u[a-z0-9]{5,})$/.test(String(p.id))) return; // 실제 투표(피드·사용자)는 DEMO 곡선만 따름
       var r=Math.random(); if(r<0.4){ var add=Math.ceil(Math.random()*160/(1+p.t/8)); p.boost=(p.boost||0)+add; p.v[Math.floor(Math.random()*p.v.length)]+=add; } });
     renderHot();
     if(period==='live'&&!document.getElementById('v-ranking').hidden) renderRank();
@@ -2528,7 +2532,7 @@ a.mine-it:hover{border-color:var(--muted)}
   // ===== 내가 만든 투표 (시안: 브라우저에만 저장) =====
   var MKEY='neaniyo-mine';
   try{(JSON.parse(localStorage.getItem(MKEY)||'[]')||[]).forEach(function(x){ if(!polls.some(function(p){return p.id===x.id})){ x.t=Math.max(0,(Date.now()-x.created)/36e5); x.h=ago(x.t); x.own=true; polls.push(x);} })}catch(e){}
-  function saveMine(){try{localStorage.setItem(MKEY,JSON.stringify(polls.filter(function(p){return p.own}).map(function(p){var c={};for(var k in p){if(k!=='t'&&k!=='h')c[k]=p[k]}return c})))}catch(e){}}
+  function saveMine(){try{localStorage.setItem(MKEY,JSON.stringify(polls.filter(function(p){return p.own}).map(function(p){var c={};for(var k in p){if(k!=='t'&&k!=='h'&&k!=='_dv'&&k!=='boost')c[k]=p[k]} if(p._dv&&Array.isArray(p.v)) c.v=p.v.map(function(x,i){return Math.max(0,x-(p._dv[i]||0))}); return c})))}catch(e){}}
   function pwHash(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return 'h'+(h>>>0).toString(36)}
 
   function shareUrl(p){return SITE+'?p='+p.id}
@@ -3217,8 +3221,9 @@ a.mine-it:hover{border-color:var(--muted)}
         var rows=c.v||{};
         if(p.type==='relay'&&p.qs){ p.qs.forEach(function(qq,k){ var row=rows[k]||{}; qq.v=qq.o.map(function(_,i){return row[i]||0}); }); p.v=p.qs[0].v; }
         else { var row=rows[0]||{}; p.v=p.o.map(function(_,i){return row[i]||0}); }
-        p.n=c.n;
+        p.n=c.n; p._dv=null;
       });
+      DEMO.tick(true);
     }
     api.syncCounts=function(done){
       if(!api.on){ if(done) done(); return; }
@@ -3350,7 +3355,7 @@ a.mine-it:hover{border-color:var(--muted)}
     // ---- 시작 ----
     var ready=fetch('/api/config',{cache:'no-store'}).then(function(r){return r.ok?r.json():{}}).then(function(cfg){
       if(!cfg||!cfg.enabled) return;
-      api.providers=cfg.providers||['email']; api.on=true;
+      api.providers=cfg.providers||['email']; api.on=true; if(cfg.demo===false){ DEMO.off(); document.documentElement.classList.add('no-beta'); }
       // 로그인 라이브러리는 투표 표시를 막지 않도록 따로 불러온다
       api.authReady=load(SUPA_JS).then(function(){
         api.sb=window.supabase.createClient(cfg.url,cfg.anonKey,{auth:{flowType:'pkce',persistSession:true,detectSessionInUrl:true,autoRefreshToken:true}});
@@ -3380,8 +3385,47 @@ a.mine-it:hover{border-color:var(--muted)}
     });
   }
   // 매일 올라오는 투표(data/polls.json)를 불러와 합친 뒤 시작
+  // ===== 오픈 전 시험 참여 (DEMO) =====
+  // 정식 오픈 전까지 새 투표에 시험용 참여를 얹어 보여 준다. 실제 표(p.v의 실제 몫, 서버 ny_votes)에는 저장하지 않는다.
+  // 끄기: Vercel 환경 변수 DEMO_VOTES=off (또는 주소에 ?demo=0). 투표마다 시간에 따라 같은 값이 나오므로 누가 봐도 숫자가 같다.
+  var DEMO=(function(){
+    var on=params.get('demo')!=='0', o={};
+    function base(p){ if(p.at) return Date.parse(p.at); if(p.created) return p.created; return Date.now()-(p.t||0)*36e5; }
+    function target(p){
+      var m=(Date.now()-base(p))/6e4; if(m<=0) return 0;
+      var r=rnd(String(p.id)+'|demo'), sp=0.75+r()*0.5, first=1+Math.floor(r()*10), hundred=85+Math.floor(r()*35), g=30+r()*35;
+      m*=sp;
+      if(m<1) return Math.max(1,Math.round(first*m));
+      if(m<8){ var k=(m-1)/7, e=k*k*(3-2*k); return Math.round(first+(hundred-first)*e); }
+      return Math.round(hundred+g*Math.log(1+(m-8)/20));
+    }
+    function split(p,n){
+      var r=rnd(String(p.id)+'|demo-w'), w=p.o.map(function(){ return Math.pow(r(),1.3)+0.3; }), t=w.reduce(function(a,b){return a+b},0);
+      var out=w.map(function(x){return Math.floor(n*x/t)}), d=n-out.reduce(function(a,b){return a+b},0);
+      for(var i=0;d>0;i=(i+1)%out.length,d--) out[i]++;
+      return out;
+    }
+    function eligible(p){ return on&&p&&!p.ex&&!p.closed&&p.type!=='relay'&&!p.multiSel&&Array.isArray(p.o)&&Array.isArray(p.v)&&/^(f\d{10}|d\d{6}-\d+|u[a-z0-9]{5,})$/.test(String(p.id)); }
+    o.tick=function(silent){
+      var changed=[];
+      polls.forEach(function(p){
+        if(!eligible(p)) return;
+        var dv=split(p,target(p)), old=p._dv||p.o.map(function(){return 0});
+        if(dv.join()===old.join()) return;
+        p.v=p.v.map(function(x,i){ return Math.max(0,x-(old[i]||0))+dv[i]; }); p._dv=dv; changed.push(p);
+      });
+      if(!silent&&started&&changed.length){
+        changed.forEach(function(p){ var a=document.querySelector('.poll[data-id="'+p.id+'"]'); if(a&&!a.querySelector('input:focus,textarea:focus')) rerender(a,p); });
+        renderRank(); renderHot();
+      }
+    };
+    o.off=function(){ on=false; polls.forEach(function(p){ if(p._dv){ p.v=p.v.map(function(x,i){return Math.max(0,x-(p._dv[i]||0))}); p._dv=null; } }); };
+    o.isOn=function(){ return on; };
+    setInterval(function(){ if(!document.hidden) o.tick(false); },20000);
+    return o;
+  })();
   var started=false;
-  function start(){ if(started) return; started=true; init(); }
+  function start(){ if(started) return; DEMO.tick(true); started=true; init(); }
   setTimeout(start,2500);
   try{
     loadFeeds(function(){ nextUp(); polls.sort(function(a,b){return a.t-b.t}); start(); if(started) route(); });
