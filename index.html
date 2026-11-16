@@ -1096,6 +1096,11 @@ a.mine-it:hover{border-color:var(--muted)}
   body:not(.hd-hide) .make-bar{bottom:calc(64px + env(safe-area-inset-bottom,0px))}
   .make-bar{transition:bottom .25s ease}
 }
+
+/* 방금 올린 투표 강조 */
+.poll.just{box-shadow:0 0 0 2px var(--a);animation:justIn .6s ease}
+.poll.just::before{content:"방금 올린 투표";display:inline-block;align-self:flex-start;width:max-content;margin-bottom:8px;padding:2px 9px;border-radius:999px;background:var(--a);color:#fff;font-size:calc(11.5px * var(--fs));font-weight:700}
+@keyframes justIn{from{transform:translateY(-8px);opacity:.3}to{transform:none;opacity:1}}
 </style>
 </head>
 <body>
@@ -1855,7 +1860,7 @@ a.mine-it:hover{border-color:var(--muted)}
   // 추천 순서: 첫 화면은 최신순이 아니라 '인기 + 새로움 + 무작위'를 섞고, 같은 카테고리가 몰리지 않게 섞는다.
   // 방문할 때마다 순서가 바뀌고(추천 칩을 다시 누르면 새로 섞음), 보는 동안에는 순서가 그대로 유지된다.
   // 이미 투표한 것은 뒤로, 사진·영상 있는 투표는 조금 앞으로. (개발 단계에서 서버의 개인화 추천으로 교체)
-  var recSeed=String(Math.random()), recOrder=null, recKey='', recHide={};
+  var recSeed=String(Math.random()), recOrder=null, recKey='', recHide={}, pinId=null;
   // 보기 쉬운 형식 판별: OX(짧은 양자택일) > 유튜브 > 사진 > 그 외(긴 사연·릴레이·보기 많은 객관식)
   function kindOf(p){
     if(p.link&&p.link.yt) return 'yt';
@@ -1900,10 +1905,12 @@ a.mine-it:hover{border-color:var(--muted)}
     return fresh.concat(known);
   }
   function render(){
+    setTimeout(function(){ if(!pinId) return; var c=document.querySelector('#feed .poll[data-id="'+pinId+'"]'); if(c&&!c.classList.contains('just')){ c.classList.add('just'); } },0);
     var only=embedded?embedId:shareId;
     var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return isPublic(p)&&!p.closed&&(searchQ?matchQ(p):(filter==='all'||filter==='new'||p.cat===filter)&&(!subFilter||p.sub===subFilter))});
     if(!only&&!searchQ&&filter!=='new') list=recommend(list);
     var sr=document.getElementById('srchRes'); if(sr){ sr.hidden=!searchQ||!!only; if(searchQ&&!only) sr.innerHTML='<span><b>\''+esc(searchQ)+'\'</b> 검색 결과 '+list.length+'개</span><button type="button" data-srch-clear>검색 지우기</button>'; }
+    if(pinId&&!only&&!searchQ){ var pi=list.findIndex(function(p){return p.id===pinId}); if(pi>0) list.splice(0,0,list.splice(pi,1)[0]); }
     feedList=list;
     var cards=list.slice(0,feedShown).map(card); if(!only&&shouldAskInt()&&cards.length>3) cards.splice(3,0,intCard());
     var hidN=(!only&&!searchQ&&filter==='all'&&!subFilter)?Object.keys(recHide).length:0;
@@ -2745,6 +2752,9 @@ a.mine-it:hover{border-color:var(--muted)}
   var ANS=[['찬성','반대'],['O','X'],['좋다','별로다'],['한다','안 한다'],['산다','안 산다'],['본다','안 본다'],['간다','안 간다'],['사귄다','안 사귄다'],['공감','비공감']];
   function suggestAns(t){
     t=(t||'').replace(/\s+/g,' ');
+    // "짜장면 vs 짬뽕?" 처럼 두 가지를 견주면 그 둘을 보기로
+    var vs=t.split(/\n/)[0].match(/(?:^|[,:]\s*|\s)([^\s,?!.]{1,12})(?:\s*(?:vs\.?|VS\.?)\s*|\s(?:대|or|아니면)\s)([^\s,?!.]{1,12})/);
+    if(vs&&vs[1]!==vs[2]) return [vs[1],vs[2]];
     if(/사귈|사귀어|사귀는|고백/.test(t)) return ANS[7];
     if(/살까|살래|사야|사도 될|사\?|구매|지를까|질러/.test(t)) return ANS[4];
     if(/볼까|볼래|봐\?|봐 안|보러|시청|예고편/.test(t)) return ANS[5];
@@ -2987,8 +2997,9 @@ a.mine-it:hover{border-color:var(--muted)}
     polls.unshift(np); saveMine(); if(NY) NY.submitPoll(np);
     form.reset(); upImgs=[]; photoAsk=false; relayMode=false; catTouched=false; sync.key=''; ['f-photo-wrap','f-link-wrap','f-cat-wrap','f-story-wrap'].forEach(function(id){openFold(id,false)}); form.classList.remove('st-open'); rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='연예'; fillSubs();
     document.getElementById('f-story-n').textContent='0'; syncVis();
-    showMade(np,vis);
-    setFilter('all','');
+    // 전체 공개는 바로 메인 맨 위로, 링크·비밀방은 주소를 보여 줌
+    if(vis==='public'){ document.getElementById('made').hidden=true; pinId=np.id; setFilter('all',''); location.hash='#vote'; window.scrollTo({top:0}); toast('투표를 올렸어요! 메인 맨 위에 있어요.'); }
+    else { showMade(np,vis); setFilter('all',''); }
   });
   function endEdit(silent){
     editId=null; document.getElementById('editbar').hidden=true; document.getElementById('f-submit').textContent='투표 올리기';
@@ -3333,8 +3344,8 @@ a.mine-it:hover{border-color:var(--muted)}
       if(!api.token){ if(np.vis!=='public') toast('로그인하면 다른 사람도 이 링크로 투표할 수 있어요.'); return; }
       var c={}; for(var k in np){ if(k!=='t'&&k!=='h'&&k!=='v'&&k!=='own') c[k]=np[k]; }
       call('polls',{method:'POST',body:{poll:c}}).then(function(j){
-        if(j.poll&&j.poll.status==='pending') toast('공개 투표는 운영자 확인 뒤 피드에 올라가요. 링크로는 바로 투표할 수 있어요.');
-      }).catch(function(e){ toast(e.message==='too-large'?'사진 용량이 커서 서버에 올리지 못했어요.':'투표를 서버에 저장하지 못했어요.'); });
+          if(j.poll&&j.poll.status==='pending') toast('운영 규칙에 걸리는 표현이 있어 확인 뒤 다른 사람에게 보여요.');
+      }).catch(function(e){ toast(e.message==='too-large'?'사진 용량이 커서 서버에 올리지 못했어요.':e.status===422?'올릴 수 없는 표현이 있어요. 제목·보기를 고쳐 주세요.':'투표를 서버에 저장하지 못했어요.'); });
     };
 
     // ---- 시작 ----
