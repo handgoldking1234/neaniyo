@@ -1,6 +1,8 @@
-# 네아니요 작업 인수인계 (2026-11-15 기준)
+# 네아니요 작업 인수인계 (2026-11-16 기준)
 
-다른 Claude 계정에서 이어 작업할 때 이 파일과 `docs/BACKEND.md`, `data/README.md`부터 읽는다.
+다른 Claude 계정에서 이어 작업할 때 이 파일 → **`docs/POLICY.md`(운영·기획 결정, 정식 오픈 체크리스트)** → `docs/BACKEND.md` → `data/README.md` 순서로 읽는다.
+
+> 2026-11-18에 Claude 계정을 바꿀 예정. 지금 계정의 예약 작업(피드 자동 수집)은 계정 변경 후 멈추므로 새 계정에서 다시 만들어야 한다(아래 '자동 수집 예약 작업').
 
 ## 저장소·배포
 
@@ -33,9 +35,11 @@
 
 ## 다음 할 일 (우선순위)
 
+0. **정식 오픈 전**: `docs/POLICY.md` 1장 체크리스트 — 특히 Vercel `DEMO_VOTES=off`(시험 참여 끄기).
+
 1. **배포 확인**: `https://neaniyo.iux.kr/api/config` 가 `{"enabled":true}` 인지 → 투표 후 `ny_votes`에 행 → 이메일 로그인 → `ny_profiles` 행 → 내 행 `is_admin=true`.
 2. **Resend 연결**: iux.kr 도메인 인증(DNS는 Vercel), Supabase SMTP(`smtp.resend.com:465`, user `resend`, pass API 키, 보내는 사람 `IUX <no-reply@iux.kr>`), Vercel에 `MAIL_PROVIDER=resend`, `MAIL_API_KEY`, `MAIL_FROM`, `ADMIN_EMAIL`.
-3. **관리자 화면**: `admin.html`에 Supabase 로그인 + `/api/admin` 승인·반려·숨김 탭.
+3. **관리자 화면**: `admin.html`에 Supabase 로그인 + `/api/admin` 승인·반려·숨김 탭. 공개 투표는 이제 바로 공개되므로 `recent`(최근 공개) 목록에서 `reject`로 내리는 화면이 필요.
 4. **사진 투표 이미지** → Supabase Storage (지금은 jsonb에 data URL, 1.5MB 제한).
 5. **그룹별 실제 통계 API** (`ny_votes`의 gender·age_band·region 집계) → 상세 통계 화면 연결.
 6. 카카오·Google 로그인: Supabase Providers 켜고 `AUTH_PROVIDERS`에 추가.
