@@ -1101,18 +1101,6 @@ a.mine-it:hover{border-color:var(--muted)}
 .poll.just{box-shadow:0 0 0 2px var(--a);animation:justIn .6s ease}
 .poll.just::before{content:"방금 올린 투표";display:inline-block;align-self:flex-start;width:max-content;margin-bottom:8px;padding:2px 9px;border-radius:999px;background:var(--a);color:#fff;font-size:calc(11.5px * var(--fs));font-weight:700}
 @keyframes justIn{from{transform:translateY(-8px);opacity:.3}to{transform:none;opacity:1}}
-
-/* AI 예측 패널 */
-.panel{border:1px dashed color-mix(in srgb,var(--b) 45%,var(--line));border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:color-mix(in srgb,var(--b) 4%,var(--surface))}
-.pn-hd{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:calc(13.5px * var(--fs))}
-.pn-hd .aitag{font-size:11px;font-weight:700;color:#fff;background:var(--b);padding:2px 7px;border-radius:999px}
-.pn-hd small{color:var(--muted);font-size:calc(11.5px * var(--fs))}
-.pn-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;opacity:.75}
-.pn-leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:calc(12.5px * var(--fs));color:var(--muted)}
-.pn-leg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px;opacity:.75}
-.pn-leg .top{color:var(--ink);font-weight:700}
-.pn-note{margin:0;font-size:calc(11.5px * var(--fs));color:var(--muted)}
-.foot .ai-n{color:var(--b);font-weight:600}
 </style>
 </head>
 <body>
@@ -1853,9 +1841,9 @@ a.mine-it:hover{border-color:var(--muted)}
     return '<article class="poll'+(done?' done':'')+'" data-id="'+p.id+'">'+
       (embedded?embedBrand(p):'')+
       '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+catIc(p.cat)+catLabel(p.cat)+(p.sub?' <span class="sub">› '+esc(p.sub)+'</span>':'')+'</span>'+(p.type==='relay'?'<span class="ex rl">릴레이 '+p.qs.length+'문항</span>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+'<span>·</span><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+(p.own&&!embedded?'<span class="own-acts"><button type="button" data-act="edit">'+ic('pencil')+'수정</button><button type="button" data-act="del">'+ic('trash-2')+'삭제</button></span>':'')+'</div>'+
-      '<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+credit+panelBlock(p,done)+aiBlock(p,done)+
+      '<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+credit+aiBlock(p,done)+
       (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
-      '<div class="foot"><span class="n">'+(panelOn(p)?(voters(p)?'실제 '+fmt(voters(p))+'명':'첫 투표자가 되어 보세요')+' · <span class="ai-n">AI 패널 '+PANEL_N+'명</span>':fmt(voters(p))+'명 참여')+(p.closed?' · 마감된 투표':done?'':' · 투표하면 결과 공개')+'</span>'+
+      '<div class="foot"><span class="n">'+(voters(p)?fmt(voters(p))+'명 참여':'첫 투표자가 되어 보세요')+(p.closed?' · 마감된 투표':done?'':' · 투표하면 결과 공개')+'</span>'+
       (embedded?'<a class="egoto" href="'+SITE+'?p='+p.id+'" target="_blank" rel="noopener">'+(done?'다른 투표 보기':'네아니요에서 보기')+ic('external-link')+'</a>':'')+
       '<span class="acts">'+(done&&p.type!=='relay'?'<button class="btn" data-act="stats">'+ic('chart-column')+'상세 통계</button>':'')+'<button class="btn" data-act="copy">'+ic(canShare?'share-2':'link')+(canShare?'공유':'링크 복사')+'</button>'+(p.vis==='secret'?'':'<button class="btn dark" data-act="embed">'+ic('code')+'임베드</button>')+'</span></div>'+
       '<div class="stats" hidden></div><div class="embed" hidden></div>'+(p.comments&&!embedded?cmtBlock(p,done):'')+'</article>';
@@ -2285,23 +2273,6 @@ a.mine-it:hover{border-color:var(--muted)}
   ];
   function ageBand(b){var a=new Date().getFullYear()-b; if(a<20) return '10대'; if(a>=60) return '60대 이상'; return Math.floor(a/10)*10+'대';}
   function myGroup(k){ if(!user) return null; if(k==='gender') return user.gender; if(k==='age') return ageBand(user.birth); if(k==='region') return user.region; if(k==='edu') return user.edu; return null; }
-  // AI 예측 패널: 실제 참여가 적을 때(100명 미만)만, 실제 결과와 따로 'AI 패널'로 표시. 실제 표·랭킹·리포트에는 섞지 않음
-  // 데이터에 aiPanel:[58,42] 처럼 넣으면 그 값을 쓰고, 없으면 투표마다 고정된 예측값을 만든다
-  var PANEL_N=100, PANEL_OFF=100;
-  function panelOn(p){ return !!p&&p.type!=='relay'&&!p.ex&&Array.isArray(p.o)&&p.o.length>=2&&voters(p)<PANEL_OFF; }
-  function panelOf(p){
-    if(Array.isArray(p.aiPanel)&&p.aiPanel.length===p.o.length) return p.aiPanel.map(Number);
-    var r=rnd(String(p.id)+'|panel'), w=p.o.map(function(){ return Math.pow(r(),1.4)+0.3; }), t=w.reduce(function(a,b){return a+b},0);
-    var out=w.map(function(x){return Math.round(x*100/t)}), d=100-out.reduce(function(a,b){return a+b},0); out[0]+=d; return out;
-  }
-  function panelBlock(p,done){
-    if(!done||!panelOn(p)) return '';
-    var pc=panelOf(p), top=pc.indexOf(Math.max.apply(null,pc));
-    return '<div class="panel"><div class="pn-hd"><span class="aitag">AI</span><b>AI 예측 패널 '+PANEL_N+'명</b><small>실제 참여가 '+PANEL_OFF+'명이 되면 사라져요</small></div>'+
-      '<div class="pn-bar">'+pc.map(function(x,i){return '<i style="flex:'+x+' 1 0;background:'+OPC[i%OPC.length]+'"></i>'}).join('')+'</div>'+
-      '<div class="pn-leg">'+p.o.map(function(o,i){return '<span'+(i===top?' class="top"':'')+'><i style="background:'+OPC[i%OPC.length]+'"></i>'+esc(o)+' '+pc[i]+'%</span>'}).join('')+'</div>'+
-      '<p class="pn-note">AI가 예상한 결과예요. 위의 실제 결과와 따로 셉니다.</p></div>';
-  }
   function rnd(seed){var h=2166136261;for(var i=0;i<seed.length;i++){h^=seed.charCodeAt(i);h=Math.imul(h,16777619)}return function(){h^=h<<13;h^=h>>>17;h^=h<<5;return ((h>>>0)%10000)/10000}}
   function breakdown(p,d){
     var tot=sum(p.v), base=p.v.map(function(x){return (x+1)/(tot+p.v.length)});
