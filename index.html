@@ -183,6 +183,15 @@ form.make{background:var(--surface);border:1px solid var(--line);border-radius:1
 .seg input:checked + .fmt small{color:var(--a)}
 .seg label:has(input:checked){border-color:var(--a);background:var(--a-soft)}
 .optlist{display:flex;flex-direction:column;gap:6px}
+.optrow{display:flex;gap:6px;align-items:center}
+.optrow input{flex:1;min-width:0}
+.optx{flex:none;width:44px;align-self:stretch;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--muted);display:grid;place-items:center;cursor:pointer;padding:0}
+.optx .i{width:16px;height:16px}
+.optlist.pm .optx{display:none}
+.fhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fhead label{font-weight:700;font-size:calc(14px * var(--fs))}
+.foldx{border:0;background:none;color:var(--muted);display:inline-flex;align-items:center;gap:2px;font-size:calc(12px * var(--fs));cursor:pointer;padding:4px 2px}
+.foldx .i{width:14px;height:14px}
 .msg{font-size:calc(13px * var(--fs));color:var(--ok);margin:0;min-height:1em}
 .msg.err{color:var(--a)}
 
@@ -1198,10 +1207,10 @@ a.mine-it:hover{border-color:var(--muted)}
           <button type="button" data-fold="f-photo-wrap" aria-expanded="false"><span class="ai" data-i="image-plus"></span>사진<em id="sumPhoto"></em></button>
           <button type="button" data-fold="f-link-wrap" aria-expanded="false"><span class="ai" data-i="link"></span><span class="cl" id="sumLink">링크·유튜브</span></button>
         </div>
-        <div class="field fold" id="f-story-wrap"><label for="f-story">내용 <small>(선택)</small></label>
+        <div class="field fold" id="f-story-wrap"><div class="fhead"><label for="f-story">내용 <small>(선택)</small></label><button type="button" class="foldx" data-clear="f-story-wrap" aria-label="내용 빼기">빼기</button></div>
           <textarea id="f-story" maxlength="1000" rows="3" placeholder="사연이나 상황을 적으면 사연 판정으로 올라가요. 실명·연락처·회사명은 빼 주세요."></textarea>
           <p class="hint" id="f-story-hint" hidden><span id="f-story-n">0</span> / 1000자 · 한줄평이 자동으로 열려요</p></div>
-        <div class="field fold" id="f-photo-wrap"><label>사진 <small>(선택, 최대 10장 · 고르기 투표는 6장까지)</small></label>
+        <div class="field fold" id="f-photo-wrap"><div class="fhead"><label>사진 <small>(선택, 최대 10장 · 고르기 투표는 6장까지)</small></label><button type="button" class="foldx" data-clear="f-photo-wrap" aria-label="사진 전부 빼기">빼기</button></div>
           <div class="drop" id="drop" tabindex="0" role="button" aria-describedby="drop-hint">
             <span class="drop-ic" id="drop-ic"></span>
             <b>사진을 끌어다 놓거나 클릭해서 선택</b>
@@ -1214,7 +1223,7 @@ a.mine-it:hover{border-color:var(--muted)}
             <button type="button" data-ph="ask" aria-pressed="false"><span class="phi" data-i="images"></span><b>사진 보여주고 묻기</b><small>OX·보기로 투표</small></button>
           </div>
           <p class="hint">예고편·뉴스·방송 캡처도 올릴 수 있어요. 2장 이상이면 사진 중에서 고르거나, 사진을 보여 주고 OX로 물을 수 있어요. 사람 얼굴은 본인 동의가 있을 때만, 아이 그림은 이름·학교가 보이지 않게 올려 주세요.</p></div>
-        <div class="field fold" id="f-link-wrap"><label for="f-link">링크 <small>(선택 · 유튜브 예고편, 뉴스 기사)</small></label>
+        <div class="field fold" id="f-link-wrap"><div class="fhead"><label for="f-link">링크 <small>(선택 · 유튜브 예고편, 뉴스 기사)</small></label><button type="button" class="foldx" data-clear="f-link-wrap" aria-label="링크 빼기">빼기</button></div>
           <input id="f-link" type="url" inputmode="url" maxlength="300" placeholder="https://youtu.be/… 또는 기사 주소">
           <p class="linkprev" id="linkprev" hidden></p>
           <p class="hint">유튜브 주소는 카드 안에서 바로 재생돼요. 캡처를 올렸다면 원본 기사·영상 주소를 같이 넣어 주세요.</p></div>
@@ -2840,8 +2849,9 @@ a.mine-it:hover{border-color:var(--muted)}
   function optInputs(){ return [].slice.call(optlist.querySelectorAll('input')); }
   function setOptCount(n){
     var ins=optInputs();
-    for(var k=ins.length;k<n;k++){ var inp=document.createElement('input'); inp.id='f-o'+(k+1); inp.maxLength=30; optlist.appendChild(inp); }
-    ins=optInputs(); for(var j=ins.length-1;j>=n;j--) ins[j].remove();
+    for(var k=ins.length;k<n;k++){ var row=document.createElement('div'); row.className='optrow'; var inp=document.createElement('input'); inp.id='f-o'+(k+1); inp.maxLength=30; row.appendChild(inp); var x=document.createElement('button'); x.type='button'; x.className='optx'; x.dataset.ox=''; x.innerHTML=ic('x'); row.appendChild(x); optlist.appendChild(row); }
+    ins=optInputs(); for(var j=ins.length-1;j>=n;j--) (ins[j].closest('.optrow')||ins[j]).remove();
+    optInputs().forEach(function(inp,i){ inp.id='f-o'+(i+1); var b=inp.parentNode.querySelector('.optx'); if(b) b.setAttribute('aria-label','보기 '+(i+1)+' 빼기'); });
   }
   add.onclick=function(){ var n=optInputs().length; if(n>=6) return; setOptCount(n+1); var last=optInputs()[n]; last.placeholder='보기 '+(n+1); last.focus(); sync(); };
   document.getElementById('quick').innerHTML=quickHTML();
@@ -2851,6 +2861,23 @@ a.mine-it:hover{border-color:var(--muted)}
     var on=b.getAttribute('aria-pressed')==='true', v=b.dataset.q.split('|'); setOptCount(2); var ins=optInputs(); ins[0].value=on?'':v[0]; ins[1].value=on?'':v[1]; sync();
   });
   optlist.addEventListener('input',sync);
+  optlist.addEventListener('click',function(e){
+    var x=e.target.closest('[data-ox]'); if(!x||optInputs().length<=2) return;
+    var row=x.closest('.optrow'), i=optInputs().indexOf(row.querySelector('input')); row.remove();
+    optInputs().forEach(function(inp,k){ inp.id='f-o'+(k+1); if(k>=2&&!inp.value) inp.placeholder='보기 '+(k+1); var b=inp.parentNode.querySelector('.optx'); if(b) b.setAttribute('aria-label','보기 '+(k+1)+' 빼기'); });
+    var ins=optInputs(); (ins[Math.min(i,ins.length-1)]||add).focus(); sync();
+  });
+  // 내용·사진·링크 빼기: 입력한 것을 지우고 접기
+  [].forEach.call(document.querySelectorAll('.foldx'),function(b){ b.innerHTML=ic('x')+'빼기'; });
+  form.addEventListener('click',function(e){
+    var b=e.target.closest('[data-clear]'); if(!b) return;
+    var id=b.dataset.clear;
+    if(id==='f-story-wrap'){ storyIn.value=''; document.getElementById('f-story-n').textContent='0'; }
+    else if(id==='f-photo-wrap'){ upImgs=[]; photoAsk=false; photoIn.value=''; drawThumbs(); }
+    else if(id==='f-link-wrap'){ linkIn.value=''; }
+    openFold(id,false); sync();
+    var t=document.querySelector('[data-fold="'+id+'"]'); if(t) t.focus();
+  });
   qIn.addEventListener('input',sync);
   linkIn.addEventListener('input',sync);
   storyIn.addEventListener('input',function(){ document.getElementById('f-story-n').textContent=storyIn.value.length; sync(); });
@@ -2929,7 +2956,7 @@ a.mine-it:hover{border-color:var(--muted)}
     [].forEach.call(phow.querySelectorAll('button'),function(b){ b.setAttribute('aria-pressed',String((b.dataset.ph==='ask')===photoAsk)); });
     if(sync.pm!==undefined&&sync.pm!==photoMode&&!sync.filling){ optInputs().forEach(function(inp){inp.value=''}); setOptCount(photoMode?upImgs.length:2); }
     sync.pm=photoMode;
-    document.getElementById('quick').hidden=photoMode;
+    document.getElementById('quick').hidden=photoMode; optlist.classList.toggle('pm',photoMode);
     add.hidden=photoMode||optInputs().length>=6;
     document.getElementById('f-opt-label').innerHTML=photoMode?'사진 이름 <small>(비워 두면 A, B…)</small>':'보기';
     if(photoMode){ setOptCount(upImgs.length); optInputs().forEach(function(inp,i){ inp.placeholder=String.fromCharCode(65+i)+' 사진 이름'; }); }
