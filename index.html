@@ -2532,7 +2532,7 @@ a.mine-it:hover{border-color:var(--muted)}
   // ===== 내가 만든 투표 (시안: 브라우저에만 저장) =====
   var MKEY='neaniyo-mine';
   try{(JSON.parse(localStorage.getItem(MKEY)||'[]')||[]).forEach(function(x){ if(!polls.some(function(p){return p.id===x.id})){ x.t=Math.max(0,(Date.now()-x.created)/36e5); x.h=ago(x.t); x.own=true; polls.push(x);} })}catch(e){}
-  function saveMine(){try{localStorage.setItem(MKEY,JSON.stringify(polls.filter(function(p){return p.own}).map(function(p){var c={};for(var k in p){if(k!=='t'&&k!=='h'&&k!=='_dv'&&k!=='boost')c[k]=p[k]} if(p._dv&&Array.isArray(p.v)) c.v=p.v.map(function(x,i){return Math.max(0,x-(p._dv[i]||0))}); return c})))}catch(e){}}
+  function saveMine(){try{localStorage.setItem(MKEY,JSON.stringify(polls.filter(function(p){return p.own}).map(function(p){var c={};for(var k in p){if(k!=='t'&&k!=='h'&&k!=='_dv'&&k!=='_dc'&&k!=='_dp'&&k!=='boost')c[k]=p[k]} if(p._dv&&Array.isArray(p.v)) c.v=p.v.map(function(x,i){return Math.max(0,x-(p._dv[i]||0))}); return c})))}catch(e){}}
   function pwHash(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return 'h'+(h>>>0).toString(36)}
 
   function shareUrl(p){return SITE+'?p='+p.id}
@@ -3389,30 +3389,53 @@ a.mine-it:hover{border-color:var(--muted)}
   // 정식 오픈 전까지 새 투표에 시험용 참여를 얹어 보여 준다. 실제 표(p.v의 실제 몫, 서버 ny_votes)에는 저장하지 않는다.
   // 끄기: Vercel 환경 변수 DEMO_VOTES=off (또는 주소에 ?demo=0). 투표마다 시간에 따라 같은 값이 나오므로 누가 봐도 숫자가 같다.
   var DEMO=(function(){
-    var on=params.get('demo')!=='0', o={};
+    var on=params.get('demo')!=='0', o={}, BK=15000, WIN=240; // 15초 단위 칸, 최근 60분(240칸)은 들쭉날쭉하게
+    var REAL=/^(f\d{10}|d\d{6}-\d+|u[a-z0-9]{5,})$/;
     function base(p){ if(p.at) return Date.parse(p.at); if(p.created) return p.created; return Date.now()-(p.t||0)*36e5; }
-    function target(p){
-      var m=(Date.now()-base(p))/6e4; if(m<=0) return 0;
-      var r=rnd(String(p.id)+'|demo'), sp=0.75+r()*0.5, first=1+Math.floor(r()*10), hundred=85+Math.floor(r()*35), g=30+r()*35;
-      m*=sp;
-      if(m<1) return Math.max(1,Math.round(first*m));
-      if(m<8){ var k=(m-1)/7, e=k*k*(3-2*k); return Math.round(first+(hundred-first)*e); }
-      return Math.round(hundred+g*Math.log(1+(m-8)/20));
+    function par(p){
+      if(p._dp) return p._dp;
+      var r=rnd(String(p.id)+'|demo');
+      return p._dp={sp:0.6+r()*0.8, first:1+Math.floor(r()*10), hundred:70+Math.floor(r()*60), g:25+r()*45, ph:Math.floor(r()*BK),
+        w:p.o.map(function(){ return Math.pow(r(),1.3)+0.25; })};
     }
-    function split(p,n){
-      var r=rnd(String(p.id)+'|demo-w'), w=p.o.map(function(){ return Math.pow(r(),1.3)+0.3; }), t=w.reduce(function(a,b){return a+b},0);
-      var out=w.map(function(x){return Math.floor(n*x/t)}), d=n-out.reduce(function(a,b){return a+b},0);
-      for(var i=0;d>0;i=(i+1)%out.length,d--) out[i]++;
+    // 매끈한 기본 곡선(분 단위): 1분 안 1~10명 → 5~10분 100명 안팎 → 이후 완만히
+    function curve(P,m){
+      m*=P.sp; if(m<=0) return 0;
+      if(m<1) return P.first*m;
+      if(m<8){ var k=(m-1)/7, e=k*k*(3-2*k); return P.first+(P.hundred-P.first)*e; }
+      return P.hundred+P.g*Math.log(1+(m-8)/20);
+    }
+    // 칸마다 들어오는 수: 기대값에 잠잠함·몰림을 섞음 (같은 투표·같은 칸이면 누가 봐도 같은 값)
+    function inc(p,P,bi,t0){
+      var r=rnd(p.id+'|b'+bi), m1=((bi*BK+P.ph)-t0)/6e4, m0=m1-BK/6e4, ex=Math.max(0,curve(P,m1)-curve(P,m0)), x=r();
+      var mult=x<0.28?0:x<0.88?0.4+r()*1.4:2.2+r()*2.6; // 28% 잠잠, 12% 몰림
+      var k=Math.floor(ex*mult+r()), out=P.w.map(function(){return 0});
+      if(!k) return out;
+      // 칸마다 기울기가 조금씩 흔들림 → 비율이 살아 움직임
+      var w=P.w.map(function(v){ return Math.max(0.05,v*(0.55+r()*0.9)); }), t=w.reduce(function(a,c){return a+c},0);
+      for(var i=0;i<k;i++){ var y=r()*t, j=0; while(j<w.length-1&&y>w[j]){ y-=w[j]; j++; } out[j]++; }
       return out;
     }
-    function eligible(p){ return on&&p&&!p.ex&&!p.closed&&p.type!=='relay'&&!p.multiSel&&Array.isArray(p.o)&&Array.isArray(p.v)&&/^(f\d{10}|d\d{6}-\d+|u[a-z0-9]{5,})$/.test(String(p.id)); }
+    function counts(p){
+      var P=par(p), t0=base(p), now=Date.now(), cur=Math.floor((now-P.ph)/BK), start=Math.floor((t0-P.ph)/BK);
+      if(cur<=start) return P.w.map(function(){return 0});
+      var c=p._dc;
+      if(!c||c.cur>cur){
+        var from=Math.max(start+1,cur-WIN), mFrom=((from*BK+P.ph)-t0)/6e4, n=Math.round(curve(P,mFrom-BK/6e4)), tw=P.w.reduce(function(a,b){return a+b},0);
+        c={cur:from-1,v:P.w.map(function(x){return Math.floor(n*x/tw)})};
+      }
+      for(var bi=c.cur+1;bi<=cur;bi++){ var d=inc(p,P,bi,t0); c.v=c.v.map(function(x,i){return x+d[i]}); }
+      c.cur=cur; p._dc=c;
+      return c.v.slice();
+    }
+    function eligible(p){ return on&&p&&!p.ex&&!p.closed&&p.type!=='relay'&&!p.multiSel&&Array.isArray(p.o)&&Array.isArray(p.v)&&REAL.test(String(p.id)); }
     o.tick=function(silent){
       var changed=[];
       polls.forEach(function(p){
         if(!eligible(p)) return;
-        var dv=split(p,target(p)), old=p._dv||p.o.map(function(){return 0});
+        var dv=counts(p), old=p._dv||p.o.map(function(){return 0});
         if(dv.join()===old.join()) return;
-        p.v=p.v.map(function(x,i){ return Math.max(0,x-(old[i]||0))+dv[i]; }); p._dv=dv; changed.push(p);
+        p.v=p.v.map(function(x,i){ return Math.max(0,x-(old[i]||0))+(dv[i]||0); }); p._dv=dv; changed.push(p);
       });
       if(!silent&&started&&changed.length){
         changed.forEach(function(p){ var a=document.querySelector('.poll[data-id="'+p.id+'"]'); if(a&&!a.querySelector('input:focus,textarea:focus')) rerender(a,p); });
@@ -3421,7 +3444,8 @@ a.mine-it:hover{border-color:var(--muted)}
     };
     o.off=function(){ on=false; polls.forEach(function(p){ if(p._dv){ p.v=p.v.map(function(x,i){return Math.max(0,x-(p._dv[i]||0))}); p._dv=null; } }); };
     o.isOn=function(){ return on; };
-    setInterval(function(){ if(!document.hidden) o.tick(false); },20000);
+    // 5초마다 확인. 투표마다 칸 시작 시각이 달라서 동시에 오르지 않고 제각각 오름
+    setInterval(function(){ if(!document.hidden) o.tick(false); },5000);
     return o;
   })();
   var started=false;
