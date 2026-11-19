@@ -129,3 +129,32 @@ $$;
 
 revoke all on function public.ny_poll_counts(text[]) from anon, authenticated;
 revoke all on function public.ny_bump_comment(uuid, int, int) from anon, authenticated;
+
+-- 8. 그룹별(성별·연령·지역·시간대) 실제 통계 (2026-11-19 추가)
+-- 반환: {"gender":{"남성":{"n":12,"c":{"0":7,"1":5}}, ...}, "age":{...}, "region":{...}, "time":{...}}
+-- n=그 그룹 투표자 수, c=보기별 선택 수(여러 개 고르기는 보기마다 셈). 30명 미만 숨기기는 /api/stats 에서 한다.
+create or replace function public.ny_poll_breakdown(pid text)
+returns jsonb language sql stable security definer set search_path = public as $$
+  with v as (
+    select choice, gender, age_band, region,
+      case when extract(hour from created_at at time zone 'Asia/Seoul') between 6 and 11 then '오전 6~12시'
+           when extract(hour from created_at at time zone 'Asia/Seoul') between 12 and 17 then '오후 12~18시'
+           when extract(hour from created_at at time zone 'Asia/Seoul') between 18 and 23 then '저녁 18~24시'
+           else '심야 0~6시' end as tband
+    from ny_votes where poll_id = pid and not relay
+  ), u as (
+    select 'gender' dim, gender g, choice from v where gender is not null
+    union all select 'age', age_band, choice from v where age_band is not null
+    union all select 'region', region, choice from v where region is not null
+    union all select 'time', tband, choice from v
+  ), n as (select dim, g, count(*) n from u group by 1, 2),
+  c as (select dim, g, o, count(*) k from u, unnest(choice) o group by 1, 2, 3),
+  gj as (
+    select n.dim, n.g, jsonb_build_object('n', n.n, 'c',
+      coalesce((select jsonb_object_agg(c.o::text, c.k) from c where c.dim = n.dim and c.g = n.g), '{}'::jsonb)) j
+    from n
+  )
+  select coalesce((select jsonb_object_agg(dim, groups) from (
+    select dim, jsonb_object_agg(g, j) groups from gj group by dim) s), '{}'::jsonb);
+$$;
+revoke all on function public.ny_poll_breakdown(text) from public, anon, authenticated;

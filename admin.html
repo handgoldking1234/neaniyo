@@ -149,6 +149,7 @@ dialog::backdrop{background:rgba(10,12,20,.45)}
 .issues .e{color:var(--bad)} .issues .w{color:var(--warn)}
 .savebar{position:sticky;bottom:12px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--ink);color:var(--surface);padding:10px 12px 10px 16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.2);flex-wrap:wrap}
 .savebar .btn{background:var(--surface);color:var(--ink);border-color:transparent}
+td .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
 .toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;font-weight:600;z-index:60;max-width:calc(100vw - 32px)}
 /* mobile */
 .mtabs{display:none}
@@ -211,7 +212,7 @@ var VIEWS=[
   {id:'device',name:'기기·환경',grp:'분석',tag:'연결 필요'},
   {id:'members',name:'회원 관리',grp:'커뮤니티',tag:'연결 필요'},
   {id:'rules',name:'운영 규칙',grp:'커뮤니티'},
-  {id:'reports',name:'신고·댓글',grp:'커뮤니티',tag:'연결 필요'},
+  {id:'reports',name:'검토·신고',grp:'커뮤니티'},
   {id:'settings',name:'설정',grp:'시스템'}
 ];
 var S={main:[],feed:[],sha:null,loaded:0,err:'',dirty:{},deleted:{},sample:{},mod:null,modSrc:'',modEdit:null,modTest:''};
@@ -522,12 +523,71 @@ function vMembers(){
     '<div class="filters" style="margin-top:14px"><input type="search" placeholder="닉네임·이메일 검색 (예시)" disabled><select disabled><option>전체 가입 경로</option></select><select disabled><option>전체 상태</option></select></div>'+
     '<div class="tbl-wrap"><table><thead><tr><th>닉네임</th><th>가입일</th><th>가입 경로</th><th class="num">투표</th><th class="num">작성 투표</th><th>상태</th><th>관리</th></tr></thead><tbody>'+rows.map(function(x){return '<tr><td class="q">'+x.n+'</td><td>'+x.d+'</td><td>'+x.v+'</td><td class="num">'+x.c+'</td><td class="num">'+x.p+'</td><td>'+(x.s==='정상'?'<span class="chip live">정상</span>':'<span class="chip bad">정지</span>')+'</td><td><button class="btn" type="button" disabled>상세</button></td></tr>'}).join('')+'</tbody></table></div>';
 }
+// ===== 검토·신고 (Supabase 로그인 + /api/admin) =====
+// 로그인은 사이트(/)에서 한 세션을 그대로 쓴다 (같은 출처의 supabase-js 저장소). ny_profiles.is_admin=true 계정만 열림
+var AD={state:'idle',err:'',data:null,sb:null,token:'',busy:{},tab:'polls'};
+function adCall(method,body){
+  return fetch('/api/admin',{method:method,headers:{'Content-Type':'application/json',Authorization:'Bearer '+AD.token},body:body?JSON.stringify(body):undefined,cache:'no-store'})
+    .then(function(r){return r.json().catch(function(){return {}}).then(function(j){if(!r.ok){var e=new Error(j.error||('HTTP '+r.status));e.status=r.status;throw e}return j})});
+}
+function adLoad(){
+  AD.state='loading'; AD.err='';
+  fetch('/api/config',{cache:'no-store'}).then(function(r){return r.json()}).then(function(cfg){
+    if(!cfg.enabled) throw new Error('backend-off');
+    if(AD.sb) return AD.sb;
+    return new Promise(function(ok,no){var sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';sc.onload=ok;sc.onerror=no;document.head.appendChild(sc)})
+      .then(function(){AD.sb=window.supabase.createClient(cfg.url,cfg.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});return AD.sb});
+  }).then(function(sb){return sb.auth.getSession()}).then(function(r){
+    var ses=r&&r.data&&r.data.session; if(!ses) throw new Error('login');
+    AD.token=ses.access_token; return adCall('GET');
+  }).then(function(j){AD.data=j;AD.state='ok'}).catch(function(e){AD.state='err';AD.err=e.message||String(e)}).then(function(){if(cur()==='reports')render()});
+}
+function adAct(act,id,reason){
+  AD.busy[id]=1; render();
+  return adCall('POST',{act:act,id:id,reason:reason||''}).then(function(){
+    var d=AD.data;
+    if(act==='approve'||act==='reject'){ d.polls=d.polls.filter(function(x){return x.id!==id}); if(act==='reject') d.recent=d.recent.filter(function(x){return x.id!==id}); }
+    else { ['review','reported'].forEach(function(k){ d[k]=d[k].filter(function(x){return x.id!==id||(act==='show'&&k==='reported'&&(x.status='visible',true))}); }); }
+    toast({approve:'공개했습니다.',reject:'내렸습니다.',show:'다시 보이게 했습니다.',hide:'숨겼습니다.',delete:'삭제했습니다.'}[act]);
+  }).catch(function(e){toast('처리 실패: '+e.message)}).then(function(){delete AD.busy[id];render()});
+}
+function adWhen(t){var ms=Date.parse(t);return isNaN(ms)?'-':when(ms)}
+function adPollRow(r,kind){
+  var d=r.data||{}, b=AD.busy[r.id]?' disabled':'';
+  var vis={public:'공개',link:'링크',secret:'비밀방'}[r.vis]||r.vis;
+  return '<tr><td style="white-space:nowrap">'+adWhen(r.created_at)+'</td><td><span class="chip mute">'+esc(d.cat||'-')+'</span> <span class="chip '+(r.vis==='public'?'live':'wait')+'">'+vis+'</span></td>'+
+    '<td><a href="/?p='+encodeURIComponent(r.id)+'" target="_blank" rel="noopener"><b>'+esc(d.q||'(제목 없음)')+'</b></a><div class="sub">'+esc((d.o||[]).join(' / '))+'</div>'+(d.story?'<div class="sub">'+esc(String(d.story).slice(0,120))+'</div>':'')+'</td>'+
+    '<td style="white-space:nowrap">'+(kind==='pending'?'<button class="btn pri" type="button" data-act="ad" data-op="approve" data-id="'+esc(r.id)+'"'+b+'>공개</button> ':'')+
+    '<button class="btn dng" type="button" data-act="ad" data-op="reject" data-id="'+esc(r.id)+'"'+b+'>'+(kind==='pending'?'반려':'내리기')+'</button></td></tr>';
+}
+function adCmtRow(c){
+  var b=AD.busy[c.id]?' disabled':'';
+  var st={visible:'<span class="chip live">보임</span>',review:'<span class="chip warn">검토 대기</span>',hidden:'<span class="chip mute">숨김</span>'}[c.status]||'';
+  return '<tr><td style="white-space:nowrap">'+adWhen(c.created_at)+'</td><td>'+st+(c.reports?' <span class="chip bad">신고 '+c.reports+'</span>':'')+(c.rule?' <span class="chip mute">'+esc(c.rule)+'</span>':'')+'</td>'+
+    '<td>'+esc(c.body)+'<div class="sub"><a href="/?p='+encodeURIComponent(c.poll_id)+'" target="_blank" rel="noopener">'+esc(c.poll_id)+'</a></div></td>'+
+    '<td style="white-space:nowrap">'+(c.status!=='visible'?'<button class="btn pri" type="button" data-act="ad" data-op="show" data-id="'+c.id+'"'+b+'>보이기</button> ':'')+
+    (c.status!=='hidden'?'<button class="btn" type="button" data-act="ad" data-op="hide" data-id="'+c.id+'"'+b+'>숨김</button> ':'')+
+    '<button class="btn dng" type="button" data-act="ad" data-op="delete" data-id="'+c.id+'"'+b+'>삭제</button></td></tr>';
+}
+function adTable(head,rows,empty){
+  if(!rows.length) return '<div class="empty"><b>'+empty+'</b>처리할 항목이 없습니다.</div>';
+  return '<div class="tbl-wrap"><table><thead><tr>'+head.map(function(h){return '<th>'+h+'</th>'}).join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table></div>';
+}
 function vReports(){
-  var h=needs('reports','댓글과 사용자 투표(사연·그림 등)는 지금 작성자 브라우저에만 저장돼, 다른 사람이 쓴 글을 여기서 볼 수 없습니다.','댓글·사용자 투표를 DB에 저장하고 신고 버튼을 연결하면, 신고 접수 → 검토 → 숨김/삭제/작성자 정지 흐름을 여기서 처리할 수 있습니다. 금칙어 자동 숨김도 같은 자리에 붙일 수 있습니다.');
-  if(!S.sample.reports) return h;
-  var q=[['욕설·비하','댓글','“…” (가려진 내용)',5],['개인정보 노출','사연 투표','실명과 학교가 적힌 사연',3],['도배','댓글','같은 링크 반복',8],['허위 사실','투표 설명','출처 없는 주장',2]];
-  return h+'<div class="grid kpis">'+kpi('대기 중 신고 (예시)','18','평균 처리 3시간')+kpi('오늘 처리 (예시)','42','숨김 30 · 반려 12')+kpi('자동 숨김 (예시)','9','금칙어 필터')+'</div>'+
-    '<div class="tbl-wrap" style="margin-top:14px"><table><thead><tr><th>사유</th><th>대상</th><th>내용</th><th class="num">신고 수</th><th>처리</th></tr></thead><tbody>'+q.map(function(x){return '<tr><td><span class="chip warn">'+x[0]+'</span></td><td>'+x[1]+'</td><td>'+x[2]+'</td><td class="num">'+x[3]+'</td><td style="white-space:nowrap"><button class="btn" type="button" disabled>숨김</button> <button class="btn" type="button" disabled>반려</button></td></tr>'}).join('')+'</tbody></table></div>';
+  if(AD.state==='idle'){ adLoad(); }
+  if(AD.state==='idle'||AD.state==='loading') return '<div class="empty"><b>불러오는 중…</b>관리자 계정을 확인하고 있습니다.</div>';
+  if(AD.state==='err'){
+    var m=AD.err==='login'?['로그인이 필요합니다','<a href="/" target="_blank" rel="noopener">사이트</a>에서 관리자 계정으로 로그인한 뒤 다시 불러오세요.']:
+      AD.err==='admin-only'?['관리자 계정이 아닙니다','Supabase Table Editor → ny_profiles 에서 내 행의 is_admin 을 true 로 바꾸세요.']:
+      AD.err==='backend-off'?['서버가 연결되지 않았습니다','/api/config 가 enabled:false 입니다. Vercel 환경 변수(SUPABASE_*)를 확인하고 다시 배포하세요.']:['불러오지 못했습니다',esc(AD.err)];
+    return '<div class="empty"><b>'+m[0]+'</b>'+m[1]+'<div style="margin-top:12px"><button class="btn pri" type="button" data-act="adreload">다시 불러오기</button></div></div>';
+  }
+  var d=AD.data, T=[['polls','승인 대기 투표',d.polls.length],['recent','최근 공개 투표',d.recent.length],['review','검토 대기 한줄평',d.review.length],['reported','신고된 한줄평',d.reported.length]];
+  var tabs='<div class="filters" style="margin-bottom:12px">'+T.map(function(t){return '<button class="btn'+(AD.tab===t[0]?' pri':'')+'" type="button" data-act="adtab" data-tab="'+t[0]+'">'+t[1]+' '+t[2]+'</button>'}).join('')+'<button class="btn" type="button" data-act="adreload">새로 받기</button></div>';
+  var body=AD.tab==='polls'?adTable(['만든 시각','분류','투표','처리'],d.polls.map(function(r){return adPollRow(r,'pending')}),'승인 대기 투표 없음'):
+    AD.tab==='recent'?'<p class="desc">공개 투표는 올리는 즉시 노출됩니다. 문제가 있으면 내리세요(작성자가 고쳐 올리면 다시 승인 대기로 옵니다).</p>'+adTable(['만든 시각','분류','투표','처리'],d.recent.map(function(r){return adPollRow(r,'recent')}),'최근 공개 투표 없음'):
+    adTable(['쓴 시각','상태','한줄평','처리'],d[AD.tab].map(adCmtRow),AD.tab==='review'?'검토 대기 한줄평 없음':'신고된 한줄평 없음');
+  return tabs+body;
 }
 function vSettings(){
   var t=token();
@@ -684,6 +744,12 @@ function bind(view){
     else if(a==='dprev'){SD.days--;render()} else if(a==='dnext'){SD.days++;render()} else if(a==='dnow'){SD.days=0;render()}
     else if(a==='discard'){if(confirm('저장하지 않은 변경을 모두 버릴까요?')){S.dirty={};S.deleted={};render()}}
     else if(a==='commit') commit();
+    else if(a==='ad'){var op=t.dataset.op,id=t.dataset.id,why='';
+      if(op==='reject'){why=prompt('작성자에게 보일 사유 (비워도 됩니다)','');if(why===null)return}
+      if(op==='delete'&&!confirm('이 한줄평을 지울까요? 되돌릴 수 없습니다.'))return;
+      adAct(op,id,why)}
+    else if(a==='adtab'){AD.tab=t.dataset.tab;render()}
+    else if(a==='adreload'){AD.state='idle';render()}
     else if(a==='modedit'){S.modEdit=JSON.stringify(S.mod,null,2);render()}
     else if(a==='modcancel'){S.modEdit=null;render()}
     else if(a==='modsave') saveMod();

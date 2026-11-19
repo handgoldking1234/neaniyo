@@ -48,3 +48,12 @@
 
 - 작업 끝나면 main에 바로 올려 배포하길 원함.
 - 응답은 한국어, 순서대로 짧게.
+
+## 2026-11-19 작업 (Claude)
+
+- **그룹별 실제 통계**: Supabase 함수 `ny_poll_breakdown(pid)` (iux-cloud에 적용 완료, `schema.sql` 8장) + `GET /api/stats?id=` (로그인 필요, 30명 미만 그룹은 수치 비공개). 화면은 서버 연결·실제 투표·DEMO 꺼짐일 때만 실제 집계를 쓰고, 그 밖에는 예시 분포. 학력은 투표에 저장하지 않아 실제 통계에서 뺌.
+- **관리자 검토 화면**: `admin.html#reports` (검토·신고). 사이트에서 로그인한 세션을 그대로 써서 `/api/admin` 호출 → 승인 대기·최근 공개 투표 공개/반려/내리기, 한줄평 보이기/숨김/삭제.
+- **투표별 공유 미리보기**: 공유 링크가 `/p/<id>` 로 바뀜 → `api/share.js`가 og 태그 페이지를 주고 바로 `/?p=<id>`로 이동. 이미지는 `/api/share?id=&img=1` (`@vercel/og`, 글꼴은 Google Fonts Noto Sans KR). 비밀방·예약 전 투표는 제목 비공개. 실패하면 `assets/og.jpg`.
+- **개인정보처리방침·이용약관**: `/privacy`, `/terms`. 보호책임자 성명·이메일은 `privacy.html`의 `data-fill` 칸을 채워야 함.
+- **회원 탈퇴**: 내 정보 → 회원 탈퇴 (`DELETE /api/profile`). 투표는 계정·프로필과 끊어 집계에만 남김.
+- Vercel 함수 수: 11개 (Hobby 한도 12).

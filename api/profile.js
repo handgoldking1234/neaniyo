@@ -1,5 +1,5 @@
-// GET /api/profile → 내 프로필, POST /api/profile → 저장
-import { handler, send, fail, db, authUser, body } from './_lib.js';
+// GET /api/profile → 내 프로필, POST /api/profile → 저장, DELETE /api/profile → 회원 탈퇴
+import { handler, send, fail, db, authUser, body, hash } from './_lib.js';
 const G = ['남성', '여성', '응답 안 함'];
 const R = ['서울', '경기·인천', '부산·울산·경남', '대구·경북', '광주·전라', '대전·세종·충청', '강원', '제주'];
 const E = ['', '고졸 이하', '대학 재학', '대졸', '대학원 이상'];
@@ -12,6 +12,14 @@ export default handler(async (req, res) => {
     const r = await db(`ny_profiles?select=${COLS}&id=eq.${user.id}`);
     const votes = await db(`ny_votes?select=poll_id,choice,created_at&user_id=eq.${user.id}&order=created_at.desc&limit=1000`);
     return send(res, 200, { email: user.email, provider: user.app_metadata?.provider || 'email', profile: r[0] || null, votes });
+  }
+  if (req.method === 'DELETE') {
+    // 탈퇴: 투표 기록은 집계에 남기되 계정과 끊고(프로필 정보도 지움), 계정을 지우면 프로필·한줄평·만든 투표는 함께 삭제된다
+    await db(`ny_votes?user_id=eq.${user.id}`, { method: 'PATCH', body: { voter: `x:${hash(user.id)}`, user_id: null, gender: null, age_band: null, region: null }, prefer: 'return=minimal' });
+    const URL_ = (process.env.SUPABASE_URL || '').replace(/\/$/, ''), KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+    const r = await fetch(`${URL_}/auth/v1/admin/users/${user.id}`, { method: 'DELETE', headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
+    if (!r.ok) return fail(res, 500, 'delete-failed');
+    return send(res, 200, { ok: true });
   }
   if (req.method !== 'POST') return fail(res, 405, 'method');
   const b = body(req), y = new Date().getFullYear();

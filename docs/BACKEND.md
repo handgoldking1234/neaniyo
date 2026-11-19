@@ -63,6 +63,5 @@
 
 ## 아직 남은 것
 
-- 관리자 화면(`/admin`)에 승인·검토 탭 붙이기. 그 전에는 `ny_user_polls.status`를 Table Editor에서 `approved`로 바꾸면 됩니다.
 - 사진 투표의 이미지를 Supabase Storage로 옮기기 (지금은 1.5MB까지 DB에 그대로 저장).
-- 그룹별(성별·연령·지역) 실제 통계 API. 투표 때 프로필은 이미 함께 저장하고 있습니다.
+

@@ -2111,8 +2111,8 @@ a.mine-it:hover{border-color:var(--muted)}
       '<div class="field"><label for="pf-e">학력 <small>(선택)</small></label><select id="pf-e"><option value="">응답 안 함</option>'+EDU.map(function(r){return '<option>'+r+'</option>'}).join('')+'</select></div>'+
       '<div class="consent full">'+
       '<label class="all"><input type="checkbox" id="pf-all"><span><b>전체 동의</b> <small>(선택 항목 포함)</small></span></label>'+
-      '<label><input type="checkbox" id="pf-c1"><span>[필수] 이용약관 동의</span></label>'+
-      '<label><input type="checkbox" id="pf-c2"><span>[필수] 개인정보 수집·이용 동의 <small>(성별·출생연도·지역·학력)</small></span></label>'+
+      '<label><input type="checkbox" id="pf-c1"><span>[필수] 이용약관 동의 <a href="terms" target="_blank" rel="noopener">보기</a></span></label>'+
+      '<label><input type="checkbox" id="pf-c2"><span>[필수] 개인정보 수집·이용 동의 <small>(성별·출생연도·지역·학력)</small> <a href="privacy" target="_blank" rel="noopener">보기</a></span></label>'+
       '<label><input type="checkbox" id="pf-c3"><span>[필수] 만 14세 이상입니다</span></label>'+
       '<label><input type="checkbox" id="pf-c4"><span>[선택] 집계 통계 활용 동의 <small>(개인 단위 응답은 제공하지 않음)</small></span></label>'+
       '</div>'+
@@ -2138,7 +2138,8 @@ a.mine-it:hover{border-color:var(--muted)}
       '<h2 id="authTitle">내 정보 '+(user.pro?'<span class="pbadge">프리미엄 체험 중</span>':'')+'</h2>'+
       '<div class="me"><div><span>로그인</span><b>'+viaName(user.via)+'</b></div><div><span>성별</span><b>'+esc(user.gender)+'</b></div><div><span>연령대</span><b>'+age+'</b></div><div><span>지역</span><b>'+esc(user.region)+'</b></div><div><span>학력</span><b>'+(esc(user.edu)||'응답 안 함')+'</b></div><div><span>참여한 투표</span><b>'+Object.keys(voted).length+'개</b></div></div>'+
       '<p style="font-size:calc(12px * var(--fs))">프로필은 30일에 한 번만 바꿀 수 있습니다.</p>'+
-      '<div class="row">'+(user.pro?'<button class="btn" type="button" data-me="unpro">체험 종료</button>':'<button class="btn gold" type="button" data-me="pro">프리미엄 7일 체험</button>')+'<button class="btn" type="button" data-me="logout">로그아웃</button></div>';
+      '<div class="row">'+(user.pro?'<button class="btn" type="button" data-me="unpro">체험 종료</button>':'<button class="btn gold" type="button" data-me="pro">프리미엄 7일 체험</button>')+'<button class="btn" type="button" data-me="logout">로그아웃</button></div>'+
+      '<p class="hint" style="margin-top:14px"><a href="privacy">개인정보처리방침</a> · <a href="terms">이용약관</a> · <button type="button" data-me="withdraw" style="background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit">회원 탈퇴</button></p>';
     openDialog();
   }
   function val(id){return document.getElementById(id).value}
@@ -2148,6 +2149,13 @@ a.mine-it:hover{border-color:var(--muted)}
     if(t.closest('[data-close]')) return closeDialog();
     var sso=t.closest('[data-sso]'); if(sso){ auth.dataset.via=sso.dataset.sso; return showProfile(); }
     var me=t.closest('[data-me]'); if(!me) return;
+    if(me.dataset.me==='withdraw'){
+      if(!confirm('탈퇴하면 프로필·한줄평·내가 만든 투표가 삭제되고 되돌릴 수 없어요. 탈퇴할까요?')) return;
+      if(!NY||!NY.withdraw) return toast('지금은 탈퇴를 처리할 수 없어요.');
+      NY.withdraw().then(function(){ user=null; voted={}; saveUser(); try{localStorage.removeItem(KEY)}catch(e){} authUI(); closeDialog(); toast('탈퇴했습니다. 그동안 고마웠어요.'); reRenderKeep(); })
+        .catch(function(){ toast('탈퇴하지 못했어요. 잠시 후 다시 시도해 주세요.'); });
+      return;
+    }
     if(me.dataset.me==='logout'){ if(NY) NY.signOut(); user=null; saveUser(); authUI(); closeDialog(); toast('로그아웃했습니다.'); reRenderKeep(); }
     if(me.dataset.me==='pro'){ startTrial(); closeDialog(); }
     if(me.dataset.me==='unpro'){ user.pro=false; saveUser(); authUI(); closeDialog(); toast('프리미엄 체험을 종료했습니다.'); refreshOpenStats(); }
@@ -2197,8 +2205,8 @@ a.mine-it:hover{border-color:var(--muted)}
     email:'',       // 이메일
     privacyOfficer:'', // 개인정보 보호책임자
     hosting:'',     // 호스팅 제공자
-    termsUrl:'',    // 이용약관 주소
-    privacyUrl:''   // 개인정보처리방침 주소
+    termsUrl:'terms',    // 이용약관 주소
+    privacyUrl:'privacy'   // 개인정보처리방침 주소
   };
   (function(){
     var y=document.getElementById('sfYear'); if(y) y.textContent=new Date().getFullYear();
@@ -2311,11 +2319,32 @@ a.mine-it:hover{border-color:var(--muted)}
       return resize();
     }
     var d=DIMS.filter(function(x){return x.k===dimKey})[0]||DIMS[0];
+    // 서버 연결 + 실제 투표 + 시험 참여(DEMO) 꺼짐 → ny_votes 실제 집계 (학력은 투표에 저장하지 않아 제외)
+    var real=!!(NY&&NY.on&&NY.token&&NY.isReal(p.id)&&!DEMO.isOn());
+    if(real&&d.k==='edu') d=DIMS[0];
     var tabs='<div class="dims" role="group" aria-label="통계 기준">'+DIMS.map(function(x){
       var lock=x.tier==='pro'&&!user.pro;
       return '<button type="button" data-act="dim" data-dim="'+x.k+'" aria-pressed="'+(x.k===d.k)+'">'+x.label+(lock?' <span class="lk" aria-label="프리미엄">'+ic('lock')+'</span>':'')+'</button>';
     }).join('')+'</div>';
-    var rows=breakdown(p,d), locked=d.tier==='pro'&&!user.pro;
+    var rows; // real이 아니면(시안·예시 투표·DEMO 중) 예시 분포
+    if(real){
+      var rs=NY.statsFor(p.id);
+      if(!rs){
+        el.innerHTML=head+'<p class="hint">통계를 불러오는 중…</p>'; resize();
+        NY.loadStats(p.id,function(got){ if(openStats[p.id]!==dimKey||el.hidden) return; if(got) statsPanel(p,el,dimKey); else { el.innerHTML=head+'<p class="hint">통계를 불러오지 못했어요. 잠시 후 다시 열어 주세요.</p>'; resize(); } });
+        return;
+      }
+      var gs=rs[d.k]||{};
+      rows=d.g.map(function(gname){
+        var x=gs[gname]||{n:0,hidden:true};
+        if(x.hidden||!x.c) return {g:gname,n:x.n||0,sh:[]};
+        var c=p.o.map(function(_,i){return x.c[i]||0}), t=c.reduce(function(a,b){return a+b},0)||1;
+        return {g:gname,n:x.n,sh:c.map(function(v){return Math.round(v/t*1000)/10})};
+      });
+      tabs=tabs.replace(/<button type="button" data-act="dim" data-dim="edu"[\s\S]*?<\/button>/,'');
+    } else rows=breakdown(p,d);
+    var locked=d.tier==='pro'&&!user.pro;
+    if(locked&&real) rows=breakdown(p,d); // 잠긴 표는 흐리게만 보이므로 실제 수치를 화면에 싣지 않는다
     var tbl=locked?'<div class="locked">'+xtable(p,d,rows)+'<div class="lockmsg"><b>'+d.label+'별 결과는 프리미엄 기능입니다</b><button class="btn gold" data-act="upgrade">'+ic('crown')+'프리미엄 알아보기</button></div></div>':xtable(p,d,rows);
     var foot='<div class="foot2"><span>참여자 기준 · 표본 조사 아님 · '+MIN_N+'명 미만 그룹 비공개</span>'+
       (user.pro?'<span class="dl"><a class="btn dark" href="?report='+p.id+'" target="_blank" rel="noopener">'+ic('download')+'PDF 리포트</a><button class="btn" data-act="csv">'+ic('download')+'CSV</button></span>':'<span><span class="pbadge">PRO</span> 지역·학력·시간대 · PDF 리포트 · CSV</span>')+'</div>';
@@ -2535,7 +2564,7 @@ a.mine-it:hover{border-color:var(--muted)}
   function saveMine(){try{localStorage.setItem(MKEY,JSON.stringify(polls.filter(function(p){return p.own}).map(function(p){var c={};for(var k in p){if(k!=='t'&&k!=='h'&&k!=='_dv'&&k!=='_dc'&&k!=='_dp'&&k!=='boost')c[k]=p[k]} if(p._dv&&Array.isArray(p.v)) c.v=p.v.map(function(x,i){return Math.max(0,x-(p._dv[i]||0))}); return c})))}catch(e){}}
   function pwHash(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return 'h'+(h>>>0).toString(36)}
 
-  function shareUrl(p){return SITE+'?p='+p.id}
+  function shareUrl(p){return SITE+'p/'+encodeURIComponent(p.id)} // /p/<id>: 투표별 카톡·SNS 미리보기 (api/share.js) → /?p=<id> 로 이동
   // 휴대폰: 공유 버튼은 기기 공유창(카톡 등)으로 링크만 보냄. 임베드 코드는 블로그용이라 메신저로 가지 않게
   // 임베드 안 로고: 누르면 네아니요 사이트(이 투표 페이지)가 새 탭으로 열림
   function embedBrand(p){
@@ -3342,6 +3371,17 @@ a.mine-it:hover{border-color:var(--muted)}
         if(want&&/^u/.test(want)&&!polls.some(function(p){return p.id===want})) jobs.push(call('polls?id='+encodeURIComponent(want)).then(function(j){ addUserPoll(j.poll); }).catch(function(){}));
         Promise.all(jobs).catch(function(){}).then(function(){ api.syncCounts(done); });
       },function(){ done(); });
+    };
+    // ---- 그룹별 실제 통계 (/api/stats, 1분 캐시) ----
+    var statC={};
+    api.statsFor=function(id){ var c=statC[id]; return c&&Date.now()-c.t<60000?c.s:null; };
+    api.loadStats=function(id,cb){
+      if(!api.on||!api.token) return cb(null);
+      call('stats?id='+encodeURIComponent(id)).then(function(j){ statC[id]={t:Date.now(),s:j.stats||{}}; cb(statC[id].s); }).catch(function(){ cb(null); });
+    };
+    api.withdraw=function(){
+      if(!api.on||!api.token) return Promise.reject(new Error('login'));
+      return call('profile',{method:'DELETE'}).then(function(){ return api.signOut&&api.signOut(); });
     };
     api.submitPoll=function(np){
       if(!api.on) return;
