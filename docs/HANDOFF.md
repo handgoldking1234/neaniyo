@@ -56,4 +56,5 @@
 - **투표별 공유 미리보기**: 공유 링크가 `/p/<id>` 로 바뀜 → `api/share.js`가 og 태그 페이지를 주고 바로 `/?p=<id>`로 이동. 이미지는 `/api/share?id=&img=1` (`@vercel/og`, 글꼴은 Google Fonts Noto Sans KR). 비밀방·예약 전 투표는 제목 비공개. 실패하면 `assets/og.jpg`.
 - **개인정보처리방침·이용약관**: `/privacy`, `/terms`. 보호책임자 성명·이메일은 `privacy.html`의 `data-fill` 칸을 채워야 함.
 - **회원 탈퇴**: 내 정보 → 회원 탈퇴 (`DELETE /api/profile`). 투표는 계정·프로필과 끊어 집계에만 남김.
+- **사진 → Storage**: 사용자 투표 사진(img·gal·imgs의 data URL)을 저장할 때 Supabase Storage 공개 버킷 `ny-poll-images`(iux-cloud에 생성 완료)에 올리고 주소만 DB에 남김.
 - Vercel 함수 수: 11개 (Hobby 한도 12).

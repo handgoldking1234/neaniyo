@@ -3,8 +3,27 @@
 // GET  /api/polls?mine=1     → 내가 만든 투표 (로그인)
 // POST /api/polls {poll}     → 만들기·수정 (로그인). 공개 투표는 바로 노출(사후 관리). 운영 규칙에 걸리면 승인 대기, 금지어면 거절
 //                               POLL_REVIEW=pre 로 두면 예전처럼 공개 투표 전부 승인 후 노출
+import crypto from 'node:crypto';
 import { handler, send, fail, db, authUser, body, mailAdmin, SITE, moderation, judge } from './_lib.js';
-const MAX = 1_500_000; // data(jsonb) 최대 크기. 사진은 나중에 Supabase Storage로 옮길 것
+const MAX = 1_500_000; // data(jsonb) 최대 크기 (사진은 Storage로 옮긴 뒤 주소만 남으므로 실제로는 작음)
+const BUCKET = 'ny-poll-images'; // Supabase Storage 공개 버킷 (3MB/장, jpeg·png·webp·gif)
+const SB = (process.env.SUPABASE_URL || '').replace(/\/$/, ''), SKEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+// data:image/...;base64 사진을 Storage에 올리고 공개 주소로 바꾼다. 실패하면 원래 값을 그대로 둔다
+async function toStorage(id, v, tag) {
+  const m = typeof v === 'string' && v.match(/^data:(image\/(jpeg|png|webp|gif));base64,(.+)$/);
+  if (!m) return v;
+  const buf = Buffer.from(m[3], 'base64');
+  const path = `${id}/${tag}-${crypto.randomUUID().slice(0, 8)}.${m[2] === 'jpeg' ? 'jpg' : m[2]}`;
+  const r = await fetch(`${SB}/storage/v1/object/${BUCKET}/${path}`, {
+    method: 'POST', headers: { apikey: SKEY, Authorization: `Bearer ${SKEY}`, 'Content-Type': m[1], 'x-upsert': 'true', 'Cache-Control': 'max-age=31536000' }, body: buf
+  });
+  if (!r.ok) { console.error('storage', r.status, await r.text().catch(() => '')); return v; }
+  return `${SB}/storage/v1/object/public/${BUCKET}/${path}`;
+}
+async function moveImages(id, data) {
+  if (data.img) data.img = await toStorage(id, data.img, 'img');
+  for (const k of ['gal', 'imgs']) if (Array.isArray(data[k])) data[k] = await Promise.all(data[k].map((v, i) => toStorage(id, v, `${k}${i}`)));
+}
 const KEEP = ['id', 'cat', 'sub', 'q', 'o', 'type', 'qs', 'n', 'vis', 'comments', 'story', 'img', 'gal', 'imgs', 'link', 'multiSel', 'pw', 'created'];
 const out = r => ({ ...r.data, id: r.id, vis: r.vis, status: r.status, created: Date.parse(r.created_at) });
 
@@ -30,6 +49,7 @@ export default handler(async (req, res) => {
   if (!/^u[\w-]{1,39}$/.test(p.id || '') || !p.q || !Array.isArray(p.o) || p.o.length < 2) return fail(res, 400, 'poll');
   const data = {}; KEEP.forEach(k => { if (p[k] !== undefined) data[k] = p[k]; });
   if (Array.isArray(data.qs)) data.qs = data.qs.map(x => ({ q: x.q, o: x.o }));
+  await moveImages(p.id, data);
   if (JSON.stringify(data).length > MAX) return fail(res, 413, 'too-large');
   const vis = ['public', 'link', 'secret'].includes(p.vis) ? p.vis : 'public';
   const prev = await db(`ny_user_polls?select=user_id,status&id=eq.${p.id}`);
