@@ -4,10 +4,10 @@
 // POST /api/polls {poll}     → 만들기·수정 (로그인). 공개 투표는 바로 노출(사후 관리). 운영 규칙에 걸리면 승인 대기, 금지어면 거절
 //                               POLL_REVIEW=pre 로 두면 예전처럼 공개 투표 전부 승인 후 노출
 import crypto from 'node:crypto';
-import { handler, send, fail, db, authUser, body, mailAdmin, SITE, moderation, judge } from './_lib.js';
+import { handler, send, fail, db, authUser, body, mailAdmin, SITE, moderation, judge, SUPA_URL } from './_lib.js';
 const MAX = 1_500_000; // data(jsonb) 최대 크기 (사진은 Storage로 옮긴 뒤 주소만 남으므로 실제로는 작음)
 const BUCKET = 'ny-poll-images'; // Supabase Storage 공개 버킷 (3MB/장, jpeg·png·webp·gif)
-const SB = (process.env.SUPABASE_URL || '').replace(/\/$/, ''), SKEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const SB = SUPA_URL, SKEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 // data:image/...;base64 사진을 Storage에 올리고 공개 주소로 바꾼다. 실패하면 원래 값을 그대로 둔다
 async function toStorage(id, v, tag) {
   const m = typeof v === 'string' && v.match(/^data:(image\/(jpeg|png|webp|gif));base64,(.+)$/);

@@ -1,7 +1,9 @@
 // 공용 도우미: Supabase REST(service_role), 로그인 확인, 메일, 운영 규칙
 import crypto from 'node:crypto';
 
-const URL_ = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
+// SUPABASE_URL 에 /rest/v1/ 까지 붙여 넣어도 프로젝트 주소만 쓴다
+export const SUPA_URL = (process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '').replace(/\/(rest|auth|storage)\/v1$/, '');
+const URL_ = SUPA_URL;
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const ANON = process.env.SUPABASE_ANON_KEY || '';
 export const SITE = (process.env.SITE_URL || 'https://neaniyo.iux.kr').replace(/\/$/, '');
