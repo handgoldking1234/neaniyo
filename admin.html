@@ -644,6 +644,7 @@ function adTable(head,rows,empty){
   return '<div class="tbl-wrap"><table><thead><tr>'+head.map(function(h){return '<th>'+h+'</th>'}).join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table></div>';
 }
 function vReports(){
+  if(AD.state==='idle'&&window.NY_ADMIN&&window.NY_ADMIN.data&&window.NY_ADMIN.data.polls){ AD.data=window.NY_ADMIN.data; window.NY_ADMIN.data=null; AD.sb=window.NY_ADMIN.sb; AD.sb.auth.getSession().then(function(r){AD.token=r.data.session.access_token}); AD.state='ok'; }
   if(AD.state==='idle'){ adLoad(); }
   if(AD.state==='idle'||AD.state==='loading') return '<div class="empty"><b>불러오는 중…</b>관리자 계정을 확인하고 있습니다.</div>';
   if(AD.state==='err'){
