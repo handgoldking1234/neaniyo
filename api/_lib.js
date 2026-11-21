@@ -78,8 +78,9 @@ export function ageBand(y) {
 // MAIL_PROVIDER: resend(기본) | sendgrid | postmark | webhook
 // MAIL_FROM 예: "네아니요 <no-reply@iux.kr>"
 export async function mail({ to, subject, html, text }) {
-  const from = process.env.MAIL_FROM;
-  const key = process.env.MAIL_API_KEY;
+  // 키는 MAIL_API_KEY, 없으면 iux-art와 같은 이름의 RESEND_API_KEY(팀 공용 변수로 두 프로젝트가 같이 써도 됨)
+  const key = process.env.MAIL_API_KEY || process.env.RESEND_API_KEY;
+  const from = process.env.MAIL_FROM || (key ? '네아니요 <noreply@iux.kr>' : '');
   const p = (process.env.MAIL_PROVIDER || 'resend').toLowerCase();
   if (!to || !from || (!key && p !== 'webhook')) return { skipped: true };
   let r;
@@ -113,7 +114,7 @@ export async function mail({ to, subject, html, text }) {
   return { ok: r.ok };
 }
 export async function mailAdmin(subject, lines) {
-  const to = (process.env.ADMIN_EMAIL || '').split(',').map(s => s.trim()).filter(Boolean);
+  const to = (process.env.ADMIN_EMAIL || 'handgoldking@gmail.com').split(',').map(s => s.trim()).filter(Boolean);
   if (!to.length) return;
   const text = lines.join('\n');
   await mail({ to, subject: `[네아니요 관리] ${subject}`, text, html: `<div style="font-family:sans-serif;line-height:1.6">${lines.map(esc).join('<br>')}<br><br><a href="${SITE}/admin">관리 화면 열기</a></div>` }).catch(e => console.error(e));
