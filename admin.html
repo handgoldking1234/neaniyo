@@ -163,9 +163,25 @@ td .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
   .kpi .v{font-size:24px}
   .hbar{grid-template-columns:64px minmax(0,1fr) auto;font-size:12.5px}
 }
+/* ===== 관리자 로그인 관문 ===== */
+body.locked .app,body.locked .mtabs{display:none}
+.gate{min-height:100vh;display:grid;place-items:center;padding:24px}
+.gate[hidden]{display:none}
+.gate-box{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px 24px}
+.gate-box h1{font-size:20px;margin:14px 0 6px}
+.gate-box p{color:var(--muted);margin:0 0 16px;font-size:14px;line-height:1.6}
+.gate-box input{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:var(--bg);color:var(--ink);margin-bottom:10px}
+.gate-box .btn{width:100%;justify-content:center}
+.gate-msg{margin-top:12px;font-size:13.5px;color:var(--muted)}
 </style>
 </head>
-<body>
+<body class="locked">
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <div class="brand"><i aria-hidden="true"></i>네아니요 <small>관리자</small></div>
+    <div id="gateBody"><p>확인하는 중…</p></div>
+  </div>
+</div>
 <nav class="mtabs" id="mtabs" aria-label="관리 메뉴"></nav>
 <div class="app">
   <aside class="side">
@@ -179,6 +195,7 @@ td .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
         <span class="chip mute" id="tokChip">읽기 전용</span>
         <button class="btn" id="reload" type="button">새로 고침</button>
         <a class="btn" href="/" style="text-decoration:none;color:inherit">사이트 보기</a>
+        <button class="btn" id="logout" type="button" title="">로그아웃</button>
       </div>
     </div>
     <div id="view"></div>
@@ -194,6 +211,58 @@ td .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
 </dialog>
 <div class="tip" id="tip" hidden></div>
 
+<script>
+// ===== 관리자 로그인 관문 =====
+// 사이트와 같은 Supabase 세션을 쓴다(같은 출처). 로그인 → /api/admin 이 200 이면(ny_profiles.is_admin=true) 화면을 연다.
+// 실제 데이터 읽기·쓰기는 서버(/api/admin)가 다시 관리자인지 확인한다.
+window.NY_GATE=(function(){
+  var box=document.getElementById('gateBody');
+  function esc(t){return String(t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function show(h){box.innerHTML=h}
+  var sb=null;
+  function loginForm(msg){
+    show('<h1>관리자 로그인</h1><p>관리자 계정 이메일로 로그인 링크를 보내 드립니다.</p>'+
+      '<form id="gForm"><input id="gEmail" type="email" required autocomplete="email" placeholder="이메일 주소"><button class="btn pri" type="submit">로그인 링크 받기</button></form>'+
+      '<div class="gate-msg" id="gMsg">'+(msg||'')+'</div>');
+    document.getElementById('gForm').onsubmit=function(e){
+      e.preventDefault(); var em=document.getElementById('gEmail').value.trim(), m=document.getElementById('gMsg');
+      m.textContent='보내는 중…';
+      sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:location.origin+'/admin',shouldCreateUser:false}}).then(function(r){
+        if(r.error) throw r.error;
+        m.innerHTML='<b>'+esc(em)+'</b> 로 로그인 링크를 보냈습니다. 이 브라우저에서 메일의 링크를 열어 주세요.';
+      }).catch(function(err){
+        var t=String(err&&err.message||err);
+        m.textContent=/rate|limit|seconds/i.test(t)?'메일을 너무 자주 요청했습니다. 잠시 후 다시 시도해 주세요.':/signups not allowed|not found/i.test(t)?'가입된 계정이 아닙니다. 사이트에서 먼저 가입해 주세요.':'보내지 못했습니다: '+t;
+      });
+    };
+  }
+  return new Promise(function(resolve){
+    fetch('/api/config',{cache:'no-store'}).then(function(r){return r.json()}).then(function(cfg){
+      if(!cfg.enabled) throw new Error('서버가 연결되지 않았습니다 (/api/config).');
+      return new Promise(function(ok,no){var sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';sc.onload=ok;sc.onerror=function(){no(new Error('로그인 모듈을 불러오지 못했습니다.'))};document.head.appendChild(sc)})
+        .then(function(){ sb=window.supabase.createClient(cfg.url,cfg.anonKey,{auth:{flowType:'pkce',persistSession:true,detectSessionInUrl:true,autoRefreshToken:true}}); return sb.auth.getSession(); });
+    }).then(function(r){
+      var ses=r&&r.data&&r.data.session;
+      if(/[?&]code=/.test(location.search)) history.replaceState(null,'',location.pathname+location.hash);
+      if(!ses) return loginForm();
+      return fetch('/api/admin',{headers:{Authorization:'Bearer '+ses.access_token},cache:'no-store'}).then(function(res){
+        return res.json().catch(function(){return {}}).then(function(j){
+          if(res.ok){
+            window.NY_ADMIN={sb:sb,email:ses.user&&ses.user.email,data:j};
+            document.getElementById('gate').hidden=true; document.body.classList.remove('locked');
+            var lo=document.getElementById('logout'); lo.title=(ses.user&&ses.user.email)||'';
+            lo.onclick=function(){sb.auth.signOut().then(function(){location.reload()})};
+            resolve(window.NY_ADMIN); return;
+          }
+          if(res.status===401) return sb.auth.signOut().then(function(){loginForm('로그인이 만료됐습니다. 다시 로그인해 주세요.')});
+          show('<h1>관리자 계정이 아닙니다</h1><p><b>'+esc(ses.user&&ses.user.email||'')+'</b> 계정에는 관리자 권한이 없습니다.</p><button class="btn" type="button" id="gOut">다른 계정으로 로그인</button>');
+          document.getElementById('gOut').onclick=function(){sb.auth.signOut().then(function(){loginForm()})};
+        });
+      });
+    }).catch(function(e){ show('<h1>열 수 없습니다</h1><p>'+esc(e.message||e)+'</p><button class="btn" type="button" onclick="location.reload()">다시 시도</button>'); });
+  });
+})();
+</script>
 <script>
 (function(){
 'use strict';
@@ -534,6 +603,7 @@ function adLoad(){
   AD.state='loading'; AD.err='';
   fetch('/api/config',{cache:'no-store'}).then(function(r){return r.json()}).then(function(cfg){
     if(!cfg.enabled) throw new Error('backend-off');
+    if(window.NY_ADMIN&&window.NY_ADMIN.sb) AD.sb=window.NY_ADMIN.sb;
     if(AD.sb) return AD.sb;
     return new Promise(function(ok,no){var sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';sc.onload=ok;sc.onerror=no;document.head.appendChild(sc)})
       .then(function(){AD.sb=window.supabase.createClient(cfg.url,cfg.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});return AD.sb});
@@ -770,7 +840,7 @@ function bind(view){
 $('#reload').onclick=function(){if(Object.keys(S.dirty).length+Object.keys(S.deleted).length&&!confirm('저장하지 않은 변경이 있습니다. 새로 고치면 화면의 변경은 그대로 두고 원본만 다시 받습니다. 계속할까요?'))return;load()};
 window.addEventListener('beforeunload',function(e){if(Object.keys(S.dirty).length+Object.keys(S.deleted).length){e.preventDefault();e.returnValue=''}});
 setInterval(function(){if(!document.hidden&&!dlg.open&&(cur()==='dash'||cur()==='sched'))render()},60000);
-navs(); load();
+window.NY_GATE.then(function(){ navs(); load(); });
 })();
 </script>
 </body>
