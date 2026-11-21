@@ -663,6 +663,8 @@ function vReports(){
 function vSettings(){
   var t=token();
   return '<div class="grid half">'+
+  '<section class="card"><h2>메일 발송 시험</h2><p class="desc">관리자 알림·결과 알림 메일이 나가는지 확인합니다. 로그인한 관리자 메일로 시험 메일 한 통을 보냅니다.</p>'+
+    '<div class="filters" style="margin-top:10px"><button class="btn pri" type="button" data-act="testmail">시험 메일 보내기</button></div><div class="note" id="tmOut">'+(window.TM_OUT||'')+'</div></section>'+
   '<section class="card"><h2>GitHub 연결</h2><p class="desc">피드 투표를 고치려면 이 저장소의 feed 브랜치에 쓸 수 있는 토큰이 필요합니다. 토큰은 이 브라우저에만 저장되고 GitHub 외 다른 곳으로 보내지 않습니다.</p>'+
     '<div class="field"><label for="tok">Fine-grained personal access token</label><input id="tok" type="password" autocomplete="off" placeholder="github_pat_…" value="'+(t?'••••••••••••':'')+'"></div>'+
     '<div class="filters" style="margin-top:10px"><button class="btn pri" type="button" data-act="tsave">저장하고 확인</button>'+(t?'<button class="btn dng" type="button" data-act="tdel">토큰 지우기</button>':'')+'</div>'+
@@ -819,6 +821,11 @@ function bind(view){
       if(op==='reject'){why=prompt('작성자에게 보일 사유 (비워도 됩니다)','');if(why===null)return}
       if(op==='delete'&&!confirm('이 한줄평을 지울까요? 되돌릴 수 없습니다.'))return;
       adAct(op,id,why)}
+    else if(a==='testmail'){var o=document.getElementById('tmOut');o.textContent='보내는 중…';
+      var go=function(tk){return fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tk},body:JSON.stringify({act:'testmail'})}).then(function(r){return r.json()})};
+      (window.NY_ADMIN&&window.NY_ADMIN.sb?window.NY_ADMIN.sb.auth.getSession().then(function(r){return go(r.data.session.access_token)}):Promise.reject(new Error('login')))
+        .then(function(j){window.TM_OUT=j.ok?'보냈습니다 → <b>'+esc(j.to)+'</b> (보낸 사람: '+esc(j.from)+'). 1~2분 안에 메일함(스팸함 포함)을 확인하세요.':'실패: '+esc(j.error||('HTTP '+(j.status||'')))+(j.status?' (Resend '+j.status+')':'');o.innerHTML=window.TM_OUT})
+        .catch(function(e){o.textContent='실패: '+e.message})}
     else if(a==='adtab'){AD.tab=t.dataset.tab;render()}
     else if(a==='adreload'){AD.state='idle';render()}
     else if(a==='modedit'){S.modEdit=JSON.stringify(S.mod,null,2);render()}

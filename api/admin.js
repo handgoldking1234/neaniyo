@@ -1,7 +1,7 @@
 // 관리자 전용 (profiles.is_admin = true 인 계정)
 // GET  /api/admin                     → 승인 대기 투표, 최근 공개 투표, 검토 대기·신고 한줄평
 // POST /api/admin {act, id, reason}   → approve | reject (투표), show | hide | delete (한줄평)
-import { handler, send, fail, db, authUser, body } from './_lib.js';
+import { handler, send, fail, db, authUser, body, mail } from './_lib.js';
 export default handler(async (req, res) => {
   const user = await authUser(req); if (!user) return fail(res, 401, 'login');
   const me = await db(`ny_profiles?select=is_admin&id=eq.${user.id}`);
@@ -24,6 +24,12 @@ export default handler(async (req, res) => {
     case 'show': await db(`ny_comments?id=eq.${encodeURIComponent(id)}`, { method: 'PATCH', body: { status: 'visible' } }); break;
     case 'hide': await db(`ny_comments?id=eq.${encodeURIComponent(id)}`, { method: 'PATCH', body: { status: 'hidden' } }); break;
     case 'delete': await db(`ny_comments?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE' }); break;
+    case 'testmail': { // 메일 연결 시험: 로그인한 관리자 메일로 한 통 보내고 결과(실패 이유 포함)를 돌려준다
+      const key = process.env.MAIL_API_KEY || process.env.RESEND_API_KEY;
+      if (!key) return send(res, 200, { ok: false, error: 'Vercel에 RESEND_API_KEY(또는 MAIL_API_KEY)가 없습니다.' });
+      const r = await mail({ to: user.email, subject: '[네아니요] 메일 연결 시험', text: '이 메일이 보이면 네아니요 메일 발송이 정상입니다.', html: '<p>이 메일이 보이면 <b>네아니요 메일 발송이 정상</b>입니다.</p>' });
+      return send(res, 200, { ...r, to: user.email, from: process.env.MAIL_FROM || '네아니요 <noreply@iux.kr>' });
+    }
     default: return fail(res, 400, 'act');
   }
   send(res, 200, { ok: true });

@@ -110,8 +110,8 @@ export async function mail({ to, subject, html, text }) {
       body: JSON.stringify({ from, to: [].concat(to), subject, html, text })
     });
   }
-  if (!r.ok) console.error('mail failed', p, r.status, await r.text().catch(() => ''));
-  return { ok: r.ok };
+  if (!r.ok) { const t = await r.text().catch(() => ''); console.error('mail failed', p, r.status, t); return { ok: false, status: r.status, error: t.slice(0, 300) }; }
+  return { ok: true };
 }
 export async function mailAdmin(subject, lines) {
   const to = (process.env.ADMIN_EMAIL || 'handgoldking@gmail.com').split(',').map(s => s.trim()).filter(Boolean);
