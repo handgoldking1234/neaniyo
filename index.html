@@ -643,6 +643,8 @@ body.embedded .side-hot{display:none!important}
 .relay.done .opt{cursor:default}
 .rres h4{font-size:calc(14.5px * var(--fs));margin-bottom:8px}
 .rres .opt{padding:9px 12px;font-size:calc(14px * var(--fs))}
+.rres .opt.ans{border-color:var(--ok)}.rres .opt.ans .fill{background:color-mix(in srgb,var(--ok) 18%,transparent)}.rres .opt.wrong{opacity:.75}
+.ans-tag{display:inline-block;margin-inline:6px;padding:1px 7px;border-radius:999px;background:var(--ok);color:#fff;font-size:calc(11px * var(--fs));font-weight:700;vertical-align:1px}
 .rsum{margin:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:color-mix(in srgb,var(--e) 12%,transparent);border-radius:10px;padding:10px 12px;font-size:calc(14px * var(--fs))}
 .rsum .i{width:16px;height:16px;color:var(--e)}
 .rsum b{color:var(--e)}
@@ -1478,6 +1480,17 @@ a.mine-it:hover{border-color:var(--muted)}
       {q:'주식 계좌, 지금 어떤 상태?',o:['수익 중','본전 근처','손실 중','안 한다'],v:[240,310,420,210]},
       {q:'월급에서 저축 비율은?',o:['10% 미만','10~30%','30% 이상'],v:[380,520,280]},
       {q:'연말까지 목표는?',o:['더 모으기','빚 줄이기','버티기'],v:[430,350,400]}]},
+    {id:'sci5',ex:true,cat:'사회',sub:'교육·입시',type:'relay',q:'5학년 과학 총정리 퀴즈 릴레이 10문항',n:1360,h:'오늘',qs:[
+      {q:'[온도와 열] 금속 숟가락 한쪽을 뜨거운 물에 넣으면 손잡이까지 뜨거워져요. 이렇게 고체에서 열이 이동하는 방법은?',o:['대류','전도','단열'],a:1,v:[310,960,90]},
+      {q:'[온도와 열] 난방기를 방의 낮은 곳에 두는 까닭은?',o:['차가운 공기가 위로 올라가서','바닥이 열을 잘 전달해서','데워진 공기가 위로 올라가서'],a:2,v:[150,240,970]},
+      {q:'[용해와 용액] 설탕 10g을 물 100g에 모두 녹이면 설탕물의 무게는?',o:['100g','110g','100g보다 가볍다'],a:1,v:[330,880,150]},
+      {q:'[용해와 용액] 물의 온도를 높이면 백반이 녹는 양은?',o:['많아진다','적어진다','변하지 않는다'],a:0,v:[1080,120,160]},
+      {q:'[지층과 화석] 지층이 뒤집히지 않았다면, 보통 먼저 쌓인 층은?',o:['위층','아래층','가운데층'],a:1,v:[260,1010,90]},
+      {q:'[지층과 화석] 주로 모래가 굳어져 만들어진 퇴적암은?',o:['이암','역암','사암'],a:2,v:[290,240,830]},
+      {q:'[날씨와 우리 생활] 건습구 습도계에서 두 온도의 차이가 클수록 습도는?',o:['높다','낮다','차이와 상관없다'],a:1,v:[540,690,130]},
+      {q:'[날씨와 우리 생활] 맑은 날 낮, 바닷가에서 부는 바람의 방향은?',o:['바다 → 육지','육지 → 바다','위 → 아래'],a:0,v:[820,470,70]},
+      {q:'[물체의 운동] 100m를 20초에 달렸다면 속력은?',o:['20m/s','5m/s','2000m/s'],a:1,v:[180,1110,70]},
+      {q:'[산과 염기] 붉은색 리트머스 종이를 푸른색으로 바꾸는 용액은?',o:['산성 용액','염기성 용액','어떤 용액도 못 바꾼다'],a:1,v:[420,880,60]}]},
     // 패션·쇼핑 사진 투표 예시
     {id:'ph1',ex:true,comments:true,cat:'패션·쇼핑',sub:'패션',type:'vs',q:'올겨울 롱패딩, 이거 산다 vs 안 산다',o:['산다','안 산다'],v:[1840,2260],h:'1시간 전',img:'assets/sample/long-padding.jpg',imgFit:'contain'},
     {id:'ph2',ex:true,cat:'패션·쇼핑',type:'photo',q:'올겨울 패딩 코디, 어떤 스타일이 제일 나아요?',o:['모노톤 패딩','시티 나이트룩','스카프 데일리룩','퍼 후드 패딩','볼캡 캐주얼룩'],v:[1420,2380,960,1110,740],h:'3시간 전',imgs:['px:15639609|black','px:19426409|charcoal','px:14469824|beige','px:11274805|black','px:19714681|navy'],credit:'Farshad Sheikhzadeh · Caner Kokcu · Jean-Daniel 외'},
@@ -1804,15 +1817,16 @@ a.mine-it:hover{border-color:var(--muted)}
           return '<button class="opt" data-ri="'+i+'"><span class="fill"></span><span>'+esc(o)+'</span><span class="pct"></span></button>';
         }).join('')+'</div></div></div>';
     }
-    var same=0;
+    var same=0, right=0, quiz=false;
     var html=p.qs.map(function(qq,k){
-      var t=sum(qq.v)||1, mx=Math.max.apply(null,qq.v), my=Array.isArray(mine)?mine[k]:undefined; if(my!==undefined&&qq.v[my]===mx) same++;
+      var t=sum(qq.v)||1, mx=Math.max.apply(null,qq.v), my=Array.isArray(mine)?mine[k]:undefined, hasA=typeof qq.a==='number';
+      if(hasA){ quiz=true; if(my===qq.a) right++; } if(my!==undefined&&qq.v[my]===mx) same++;
       return '<div class="rres"><h4>Q'+(k+1)+'. '+esc(qq.q)+'</h4><div class="opts">'+qq.o.map(function(o,i){
-        var pc=Math.round(qq.v[i]*1000/t)/10;
-        return '<div class="opt'+(qq.v[i]===mx?' top':'')+(my===i?' mine':'')+'"><span class="fill" style="width:'+pc+'%"></span><span>'+esc(o)+(my===i?'<span class="mine-ck">'+ic('check')+'</span>':'')+'</span><span class="pct">'+pc+'%</span></div>';
+        var pc=Math.round(qq.v[i]*1000/t)/10, isA=hasA&&qq.a===i;
+        return '<div class="opt'+(hasA?(isA?' ans':''):(qq.v[i]===mx?' top':''))+(my===i?' mine':'')+(hasA&&my===i&&!isA?' wrong':'')+'"><span class="fill" style="width:'+pc+'%"></span><span>'+esc(o)+(isA?'<span class="ans-tag">정답</span>':'')+(my===i?'<span class="mine-ck">'+ic('check')+'</span>':'')+'</span><span class="pct">'+pc+'%</span></div>';
       }).join('')+'</div></div>';
     }).join('');
-    var sumLine=Array.isArray(mine)?'<p class="rsum">'+ic('check')+'내 답 '+total+'개 중 <b>'+same+'개</b>가 다수 의견과 같아요'+(same===total?' · 완벽한 대세파!':same===0?' · 나만의 길을 가는 소수파':'')+'</p>':'';
+    var sumLine=Array.isArray(mine)&&quiz?'<p class="rsum">'+ic('check')+'<b>'+total+'문제 중 '+right+'개</b> 맞혔어요'+(right===total?' · 만점!':right>=total*0.7?' · 잘했어요!':' · 정답을 확인해 보세요')+'</p>':Array.isArray(mine)?'<p class="rsum">'+ic('check')+'내 답 '+total+'개 중 <b>'+same+'개</b>가 다수 의견과 같아요'+(same===total?' · 완벽한 대세파!':same===0?' · 나만의 길을 가는 소수파':'')+'</p>':'';
     return '<div class="relay done">'+sumLine+html+'</div>';
   }
   function card(p){
