@@ -77,7 +77,29 @@ async function image(p) {
   return Buffer.from(await img.arrayBuffer());
 }
 
+// GET /sitemap.xml → (vercel.json 재작성) /api/share?sitemap=1 : 검색 등록용 사이트맵 (공개된 투표만)
+async function sitemap(res) {
+  const now = Date.now(), urls = [{ loc: `${SITE}/`, at: new Date().toISOString() }];
+  for (const p of await sitePolls().catch(() => [])) {
+    if (!/^(f\d{10}|d\d{6}-\d+)$/.test(p.id)) continue;
+    const at = Date.parse(p.at || ''); if (!isNaN(at) && at > now) continue;
+    urls.push({ loc: `${SITE}/p/${encodeURIComponent(p.id)}`, at: isNaN(at) ? null : new Date(at).toISOString() });
+  }
+  if (configured()) {
+    const r = await db('ny_user_polls?select=id,created_at&status=eq.approved&vis=eq.public&order=created_at.desc&limit=2000').catch(() => []);
+    for (const x of r) urls.push({ loc: `${SITE}/p/${encodeURIComponent(x.id)}`, at: x.created_at });
+  }
+  urls.push({ loc: `${SITE}/privacy` }, { loc: `${SITE}/terms` });
+  const seen = new Set();
+  const body = urls.filter(u => !seen.has(u.loc) && seen.add(u.loc)).map(u => `<url><loc>${esc(u.loc)}</loc>${u.at ? `<lastmod>${u.at.slice(0, 10)}</lastmod>` : ''}</url>`).join('');
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=3600');
+  return res.end(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</urlset>`);
+}
+
 export default async function (req, res) {
+  if (req.query.sitemap) return sitemap(res);
   const id = String(req.query.id || '');
   const ok = /^[\w-]{1,40}$/.test(id);
   const p = ok ? await findPoll(id).catch(() => null) : null;

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Allow: /api/share
+
+Sitemap: https://neaniyo.iux.kr/sitemap.xml
