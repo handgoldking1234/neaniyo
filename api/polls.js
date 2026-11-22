@@ -24,7 +24,7 @@ async function moveImages(id, data) {
   if (data.img) data.img = await toStorage(id, data.img, 'img');
   for (const k of ['gal', 'imgs']) if (Array.isArray(data[k])) data[k] = await Promise.all(data[k].map((v, i) => toStorage(id, v, `${k}${i}`)));
 }
-const KEEP = ['id', 'cat', 'sub', 'q', 'o', 'type', 'qs', 'n', 'vis', 'comments', 'story', 'img', 'gal', 'imgs', 'link', 'multiSel', 'pw', 'created'];
+const KEEP = ['id', 'cat', 'sub', 'q', 'o', 'type', 'qs', 'a', 'n', 'vis', 'comments', 'story', 'img', 'gal', 'imgs', 'link', 'multiSel', 'pw', 'created'];
 const out = r => ({ ...r.data, id: r.id, vis: r.vis, status: r.status, created: Date.parse(r.created_at) });
 
 export default handler(async (req, res) => {
@@ -48,7 +48,9 @@ export default handler(async (req, res) => {
   const p = body(req).poll || {};
   if (!/^u[\w-]{1,39}$/.test(p.id || '') || !p.q || !Array.isArray(p.o) || p.o.length < 2) return fail(res, 400, 'poll');
   const data = {}; KEEP.forEach(k => { if (p[k] !== undefined) data[k] = p[k]; });
-  if (Array.isArray(data.qs)) data.qs = data.qs.map(x => ({ q: x.q, o: x.o }));
+  const okA = (a, o) => Number.isInteger(a) && a >= 0 && Array.isArray(o) && a < o.length;
+  if (Array.isArray(data.qs)) data.qs = data.qs.map(x => okA(x.a, x.o) ? { q: x.q, o: x.o, a: x.a } : { q: x.q, o: x.o });
+  if ('a' in data && !okA(data.a, data.o)) delete data.a;
   await moveImages(p.id, data);
   if (JSON.stringify(data).length > MAX) return fail(res, 413, 'too-large');
   const vis = ['public', 'link', 'secret'].includes(p.vis) ? p.vis : 'public';
