@@ -1816,6 +1816,8 @@ a.mine-it:hover{border-color:var(--muted)}
   function fmt(n){return n.toLocaleString('ko-KR')}
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 
+  function newAt(p){ if(p.created) return p.created; if(p.at){ var a=Date.parse(p.at); if(!isNaN(a)) return a; } return LOAD_AT-(p.t||0)*36e5-(p.ex?6e5:0); }
+  var LOAD_AT=Date.now();
   function isPublic(p){return !p.vis||p.vis==='public'}
   var unlocked={}; try{unlocked=JSON.parse(sessionStorage.getItem('neaniyo-open')||'{}')||{}}catch(e){}
   function lockCard(p){
@@ -1957,6 +1959,8 @@ a.mine-it:hover{border-color:var(--muted)}
     var only=embedded?embedId:shareId;
     var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return isPublic(p)&&!p.closed&&(searchQ?matchQ(p):(filter==='all'||filter==='new'||p.cat===filter)&&(!subFilter||p.sub===subFilter))});
     if(!only&&!searchQ&&filter!=='new') list=recommend(list);
+    // 최신: 만든 시각 기준 최신순 (나중에 불러온 사용자 투표도 제자리로)
+    if(!only&&!searchQ&&filter==='new') list=list.map(function(p,i){return {p:p,i:i,at:newAt(p)}}).sort(function(a,b){return b.at-a.at||a.i-b.i}).map(function(x){return x.p});
     var sr=document.getElementById('srchRes'); if(sr){ sr.hidden=!searchQ||!!only; if(searchQ&&!only) sr.innerHTML='<span><b>\''+esc(searchQ)+'\'</b> 검색 결과 '+list.length+'개</span><button type="button" data-srch-clear>검색 지우기</button>'; }
     if(pinId&&!only&&!searchQ){ var pi=list.findIndex(function(p){return p.id===pinId}); if(pi>0) list.splice(0,0,list.splice(pi,1)[0]); }
     feedList=list;
