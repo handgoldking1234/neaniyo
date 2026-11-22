@@ -2806,11 +2806,11 @@ a.mine-it:hover{border-color:var(--muted)}
         var right=0,tot=0,mine=voted[p.id];
         p.qs.slice(0,6).forEach(function(qq,k){ var t=sum(qq.v)||1,mx=Math.max.apply(null,qq.v),ti=qq.v.indexOf(mx),hasA=typeof qq.a==='number',si=hasA?qq.a:ti; rows.push({lab:'Q'+(k+1)+'. '+(hasA?'정답률':qq.o[si]),pc:Math.round(qq.v[si]*1000/t)/10,hl:true,ok:hasA}); });
         if(Array.isArray(mine)) p.qs.forEach(function(qq,k){ if(typeof qq.a==='number'){ tot++; if(mine[k]===qq.a) right++; } });
-        if(tot){ g.fillStyle=OK; font('800',40); g.fillText('나는 '+tot+'문제 중 '+right+'개 맞혔어요',110,y); y+=64; }
+        if(tot){ g.fillStyle=OK; font('800',40); g.fillText('저는 '+tot+'문제 중 '+right+'개 맞혔어요',110,y); y+=64; }
       } else {
         var ps=pct(p),mx2=Math.max.apply(null,ps),hasA2=typeof p.a==='number';
         // 문제는 친구가 풀 수 있게 정답과 비율을 가린다
-        if(hasA2){ var mi2=myIdx(p); if(typeof mi2==='number'){ g.fillStyle=mi2===p.a?OK:'#555'; font('800',40); g.fillText(mi2===p.a?'나는 맞혔어요! 당신도 풀어 보세요':'나는 틀렸어요… 당신은 맞힐 수 있을까요?',110,y); y+=64; } }
+        if(hasA2){ var mi2=myIdx(p); if(typeof mi2==='number'){ g.fillStyle=mi2===p.a?OK:'#555'; font('800',40); g.fillText(mi2===p.a?'저는 맞혔어요! 한번 풀어 보세요':'저는 틀렸어요… 맞힐 수 있으세요?',110,y); y+=64; } }
         p.o.forEach(function(o,i){ rows.push(hasA2?{lab:String.fromCharCode(9312+i)+' '+o,pc:null,hl:false}:{lab:o,pc:ps[i],hl:ps[i]===mx2,mine:isMine(p,i)}); });
         rows=rows.slice(0,6);
       }
@@ -2931,7 +2931,7 @@ a.mine-it:hover{border-color:var(--muted)}
         saveC(); rerender(art,p); return;
       }
       if(act==='askfriend'){
-        var myTxt=(function(){ if(isQuiz(p)) return p.q+' 나는 풀어봤어. 너도 풀어봐!'; var mi=myIdx(p); return (typeof mi==='number'&&p.o[mi]?'나는 「'+p.o[mi]+'」 골랐어. ':'')+p.q+' 너는?'; })();
+        var myTxt=(function(){ if(isQuiz(p)) return p.q+' 저는 풀어 봤어요. 한번 풀어 보세요!'; var mi=myIdx(p); return (typeof mi==='number'&&p.o[mi]?'저는 「'+p.o[mi]+'」 골랐어요. ':'')+p.q+' 어떻게 생각하세요?'; })();
         if(navigator.share){ navigator.share({title:'네아니요 · '+p.q,text:myTxt,url:shareUrl(p)}).catch(function(err){ if(err&&err.name!=='AbortError') copy(myTxt+' '+shareUrl(p),'메시지와 링크를 복사했어요. 카톡에 붙여 넣어 보세요.'); }); }
         else copy(myTxt+' '+shareUrl(p),'메시지와 링크를 복사했어요. 카톡에 붙여 넣어 보세요.');
         return;
