@@ -48,10 +48,10 @@ const h = (type, style, children) => ({ type, props: { style: { display: 'flex',
 const clip = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
 
 async function image(p) {
-  const q = p ? (p.secret ? '비밀방 투표에 초대받았어요' : clip(p.q, 70)) : '너는 어느 쪽?';
+  const q = p ? (p.secret ? '비밀방 투표에 초대받았어요' : clip(p.q, 70)) : '당신은 어느 쪽?';
   const opts = p && !p.secret ? p.o.slice(0, 4).map(o => clip(o, 16)) : ['네', '아니요'];
   const cat = p && !p.secret && p.cat ? p.cat : '';
-  const text = '네아니요너는어느쪽?투표하기→ VS…' + q + opts.join('') + cat + '0123456789';
+  const text = '네아니요당신은어느쪽?투표하기→ VS…' + q + opts.join('') + cat + '0123456789';
   const [bold, mid] = await Promise.all([font(800, text), font(500, text)]);
   const qSize = q.length > 44 ? 54 : q.length > 26 ? 64 : 76;
   const vs = opts.length === 2;
@@ -71,7 +71,7 @@ async function image(p) {
     ]),
     h('div', { flex: 1, alignItems: 'center', fontSize: qSize, fontWeight: 800, lineHeight: 1.25, letterSpacing: -1 }, q),
     optRow,
-    h('div', { marginTop: 26, justifyContent: 'flex-end', width: '100%', fontSize: 26, fontWeight: 500, color: MUTED }, '너는 어느 쪽? 투표하기 →')
+    h('div', { marginTop: 26, justifyContent: 'flex-end', width: '100%', fontSize: 26, fontWeight: 500, color: MUTED }, '당신은 어느 쪽? 투표하기 →')
   ]);
   const img = new ImageResponse(tree, { width: 1200, height: 630, fonts: [{ name: 'NotoKR', data: bold, weight: 800 }, { name: 'NotoKR', data: mid, weight: 500 }] });
   return Buffer.from(await img.arrayBuffer());
@@ -118,8 +118,8 @@ export default async function (req, res) {
   }
 
   const target = ok ? `/?p=${encodeURIComponent(id)}` : '/';
-  const title = p && !p.secret && p.q ? `${p.q} · 네아니요` : p && p.secret ? '비밀방 투표 · 네아니요' : '네아니요 · 너는 어느 쪽?';
-  const desc = p && !p.secret && p.o.length ? `${p.o.slice(0, 4).join(' vs ')} — 너는 어느 쪽? 투표하고 결과를 바로 확인하세요.` : '지금 뜨는 이슈, 한 번에 투표하고 결과를 바로 확인하세요.';
+  const title = p && !p.secret && p.q ? `${p.q} · 네아니요` : p && p.secret ? '비밀방 투표 · 네아니요' : '네아니요 · 당신은 어느 쪽?';
+  const desc = p && !p.secret && p.o.length ? `${p.o.slice(0, 4).join(' vs ')} — 당신은 어느 쪽? 투표하고 결과를 바로 확인해보세요.` : '지금 뜨는 이슈, 한 번에 투표하고 결과를 바로 확인해보세요.';
   const img = p ? `${SITE}/api/share?id=${encodeURIComponent(id)}&img=1&v=${Buffer.from(String(p.q || 's')).toString('base64url').slice(0, 10)}` : `${SITE}/assets/og.jpg`;
   const url = ok ? `${SITE}/p/${encodeURIComponent(id)}` : SITE;
   const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8">

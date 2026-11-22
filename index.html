@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>네아니요</title>
-<meta name="description" content="지금 뜨는 연예·사회·경제 이슈, 너는 어느 쪽? 한 번에 투표하고 결과를 바로 확인하세요.">
+<meta name="description" content="지금 뜨는 연예·사회·경제 이슈, 당신은 어느 쪽? 한 번에 투표하고 결과를 바로 확인해보세요.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="네아니요">
-<meta property="og:title" content="네아니요 · 너는 어느 쪽?">
-<meta property="og:description" content="지금 뜨는 이슈, 한 번에 투표하고 결과를 바로 확인하세요.">
+<meta property="og:title" content="네아니요 · 당신은 어느 쪽?">
+<meta property="og:description" content="지금 뜨는 이슈, 한 번에 투표하고 결과를 바로 확인해보세요.">
 <meta property="og:url" content="https://neaniyo.iux.kr/">
 <meta property="og:image" content="https://neaniyo.iux.kr/assets/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="네아니요 — 너는 어느 쪽? 네 VS 아니요">
+<meta property="og:image:alt" content="네아니요 — 당신은 어느 쪽? 네 VS 아니요">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://neaniyo.iux.kr/assets/og.jpg">
@@ -2810,7 +2810,7 @@ a.mine-it:hover{border-color:var(--muted)}
       } else {
         var ps=pct(p),mx2=Math.max.apply(null,ps),hasA2=typeof p.a==='number';
         // 문제는 친구가 풀 수 있게 정답과 비율을 가린다
-        if(hasA2){ var mi2=myIdx(p); if(typeof mi2==='number'){ g.fillStyle=mi2===p.a?OK:'#555'; font('800',40); g.fillText(mi2===p.a?'나는 맞혔어요! 너도 풀어 봐':'나는 틀렸어요… 너는 맞힐 수 있을까?',110,y); y+=64; } }
+        if(hasA2){ var mi2=myIdx(p); if(typeof mi2==='number'){ g.fillStyle=mi2===p.a?OK:'#555'; font('800',40); g.fillText(mi2===p.a?'나는 맞혔어요! 당신도 풀어 보세요':'나는 틀렸어요… 당신은 맞힐 수 있을까요?',110,y); y+=64; } }
         p.o.forEach(function(o,i){ rows.push(hasA2?{lab:String.fromCharCode(9312+i)+' '+o,pc:null,hl:false}:{lab:o,pc:ps[i],hl:ps[i]===mx2,mine:isMine(p,i)}); });
         rows=rows.slice(0,6);
       }
@@ -2829,13 +2829,13 @@ a.mine-it:hover{border-color:var(--muted)}
       if(gl){ y+=10; g.fillStyle='#444'; font('700',30); g.fillText(wrap(gl,W-220,1)[0],110,y+30); y+=60; }
       // 바닥
       g.fillStyle='#888'; font('600',30); g.fillText(fmt(voters(p))+'명 참여'+(p.ex?' · 예시 투표':''),110,H-170);
-      g.fillStyle=A; font('800',36); g.fillText(isQuiz(p)?'너도 풀어 봐 →':'너는? 투표하러 가기 →',110,H-118);
+      g.fillStyle=A; font('800',36); g.fillText(isQuiz(p)?'당신도 풀어 보세요 →':'당신은? 투표하러 가기 →',110,H-118);
       g.fillStyle='#aaa'; font('600',26); g.textAlign='right'; g.fillText('neaniyo.iux.kr',W-110,H-118); g.textAlign='left';
       cv.toBlob(function(b){
         if(!b) return toast('이미지를 만들지 못했어요.');
         var name='neaniyo-'+p.id+'.png', file=null; try{ file=new File([b],name,{type:'image/png'}); }catch(e){}
         if(file&&navigator.canShare&&navigator.canShare({files:[file]})&&canShare){
-          navigator.share({files:[file],title:'네아니요 · '+p.q,text:p.q+' 너는? '+shareUrl(p)}).catch(function(err){ if(err&&err.name!=='AbortError') dl(b,name); });
+          navigator.share({files:[file],title:'네아니요 · '+p.q,text:p.q+' 당신은? '+shareUrl(p)}).catch(function(err){ if(err&&err.name!=='AbortError') dl(b,name); });
         } else dl(b,name);
       },'image/png');
     });
@@ -2938,7 +2938,7 @@ a.mine-it:hover{border-color:var(--muted)}
       }
       if(act==='card'){ resultCard(p); return; }
       if(act==='copy'){
-        if(canShare){ navigator.share({title:'네아니요 · '+p.q,text:p.q+' 너는 어느 쪽?',url:shareUrl(p)}).catch(function(err){ if(err&&err.name!=='AbortError') copy(shareUrl(p),'투표 링크를 복사했습니다.'); }); }
+        if(canShare){ navigator.share({title:'네아니요 · '+p.q,text:p.q+' 당신은 어느 쪽?',url:shareUrl(p)}).catch(function(err){ if(err&&err.name!=='AbortError') copy(shareUrl(p),'투표 링크를 복사했습니다.'); }); }
         else copy(shareUrl(p),'투표 링크를 복사했습니다.');
       }
       if(act==='edit'&&p.own){ startEdit(p); return; }
