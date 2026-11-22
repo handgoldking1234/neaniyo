@@ -964,13 +964,12 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
 #catchips .chip[aria-pressed="true"]{background:none;box-shadow:none;color:var(--ink);font-weight:700}
 #catchips .chip[aria-pressed="true"]::after{content:"";position:absolute;left:8px;right:8px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--cc,var(--ink))}
 #catchips .chip.intset::after{display:none}
-/* 세부 분류: 헤더 안 두 번째 줄, 위 탭과 같은 글자형(선택 = 진한 글자 + 얇은 카테고리 색 밑줄) */
-.hd-cats #subchips{margin:0;padding:0 2px;gap:2px;border-top:1px solid var(--line)}
-.hd-cats #subchips .chip{position:relative;font-size:calc(13px * var(--fs));padding:9px 10px 9px;border:0;border-radius:0;background:none;box-shadow:none;color:var(--muted);font-weight:500}
-.hd-cats #subchips .chip:hover{color:var(--ink)}
-.hd-cats #subchips .chip[aria-pressed="true"]{background:none;color:var(--ink);font-weight:700;border:0}
-.hd-cats #subchips .chip[aria-pressed="true"]::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:2px;border-radius:2px 2px 0 0;background:var(--sc,var(--ink))}
-@media (max-width:720px){.hd-cats #subchips{margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:0 max(10px,env(safe-area-inset-left,0px))}.hd-cats #subchips .chip{padding:9px 10px}}
+/* 세부 분류: 헤더 안 두 번째 줄, 예전처럼 동그란 태그 (선택 = 진한 배경) */
+.hd-cats #subchips{margin:0;padding:2px 2px 12px;gap:6px}
+.hd-cats #subchips .chip{font-size:calc(13px * var(--fs));padding:4px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);box-shadow:none;color:var(--muted);font-weight:500}
+.hd-cats #subchips .chip:hover{color:var(--ink);border-color:var(--muted)}
+.hd-cats #subchips .chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink);font-weight:700}
+@media (max-width:720px){.hd-cats #subchips{margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:8px max(16px,env(safe-area-inset-left,0px)) 10px}}
 .meta .cat{display:inline-flex;align-items:center;gap:4px}
 .meta .cat > .cic{width:20px;height:20px;margin-right:1px}
 .meta .cat > .cic .i{width:12px;height:12px}
