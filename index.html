@@ -3398,10 +3398,41 @@ a.mine-it:hover{border-color:var(--muted)}
       }).catch(function(e){ toast(e.message==='too-large'?'사진 용량이 커서 서버에 올리지 못했어요.':e.status===422?'올릴 수 없는 표현이 있어요. 제목·보기를 고쳐 주세요.':'투표를 서버에 저장하지 못했어요.'); });
     };
 
+    // ---- 방문 기록 (IUX Cloud pageviews, site 'neaniyo') ----
+    // 개인을 알아볼 수 있는 값은 보내지 않는다: 탭마다 새로 만드는 임의 방문 ID, 본 화면, 들어온 사이트 이름, 기기·OS·브라우저 종류, 화면 크기
+    function trackVisit(cfg){
+      try{
+        if(navigator.webdriver||/bot|crawl|spider|preview/i.test(navigator.userAgent)) return;
+        var ss=window.sessionStorage, sid=ss&&ss.getItem('ny_sid');
+        if(!sid){ sid=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()); try{ss.setItem('ny_sid',sid)}catch(e){} }
+        var ua=navigator.userAgent, q=new URLSearchParams(location.search);
+        var ref=''; try{ var rh=document.referrer?new URL(document.referrer).hostname:''; if(rh&&rh!==location.hostname) ref=rh.replace(/^www\./,''); }catch(e){}
+        var src=(q.get('utm_source')||'').toLowerCase().slice(0,30);
+        if(!src){
+          var M=[[/kakao/i,'kakao',1],[/naver/i,'naver'],[/google\./,'google'],[/daum|kakao\.com/,'daum'],[/bing\./,'bing'],[/instagram/,'instagram'],[/facebook|fb\.com/,'facebook'],[/youtube|youtu\.be/,'youtube'],[/^t\.co$|twitter|x\.com/,'x'],[/threads/,'threads'],[/blog|tistory|brunch/,'blog']];
+          for(var i=0;i<M.length&&!src;i++){ if(M[i][2]?M[i][0].test(ua):(ref&&M[i][0].test(ref))) src=M[i][1]; }
+          if(!src) src=ref?'other':'direct';
+        }
+        var device=/iPad|Tablet|SM-T|Tab/i.test(ua)?'tablet':/Mobi|Android|iPhone/i.test(ua)?'mobile':'pc'; // IUX Cloud 통계와 같은 값(pc·mobile·tablet)
+        var os=/iPhone|iPad|iPod/.test(ua)?'iOS':/Android/.test(ua)?'Android':/Windows/.test(ua)?'Windows':/Mac OS X/.test(ua)?'macOS':/Linux/.test(ua)?'Linux':'기타';
+        var br=/KAKAOTALK/i.test(ua)?'카카오톡 인앱':/NAVER\(inapp|NAVER/.test(ua)?'네이버 앱':/Instagram/.test(ua)?'인스타그램 인앱':/FBAN|FBAV/.test(ua)?'페이스북 인앱':/SamsungBrowser/.test(ua)?'삼성 인터넷':/Whale/.test(ua)?'웨일':/Edg\//.test(ua)?'Edge':/CriOS|Chrome/.test(ua)?'Chrome':/Firefox|FxiOS/.test(ua)?'Firefox':/Safari/.test(ua)?'Safari':'기타';
+        var p=q.get('p'), path=p?'/p/'+p.slice(0,40):(location.pathname||'/');
+        var H={apikey:cfg.anonKey,Authorization:'Bearer '+cfg.anonKey,'Content-Type':'application/json'}, base=cfg.url.replace(/\/+$/,'')+'/rest/v1/rpc/';
+        var t0=Date.now(), id=null;
+        fetch(base+'track',{method:'POST',headers:H,body:JSON.stringify({p:{site:'neaniyo',sid:sid,path:path,title:document.title.slice(0,200),ref:ref,source:src,kw:(q.get('utm_term')||'').slice(0,100),device:device,os:os,browser:br,screen:screen.width+'x'+screen.height}})})
+          .then(function(r){return r.ok?r.json():null}).then(function(v){ id=v; }).catch(function(){});
+        document.addEventListener('visibilitychange',function(){
+          if(document.visibilityState!=='hidden'||!id) return;
+          fetch(base+'track_time',{method:'POST',headers:H,keepalive:true,body:JSON.stringify({p_id:id,p_sid:sid,p_ms:Date.now()-t0})}).catch(function(){});
+        });
+      }catch(e){}
+    }
+
     // ---- 시작 ----
     var ready=fetch('/api/config',{cache:'no-store'}).then(function(r){return r.ok?r.json():{}}).then(function(cfg){
       if(!cfg||!cfg.enabled) return;
       api.providers=cfg.providers||['email']; api.on=true; if(cfg.demo===false){ DEMO.off(); document.documentElement.classList.add('no-beta'); }
+      trackVisit(cfg);
       // 로그인 라이브러리는 투표 표시를 막지 않도록 따로 불러온다
       api.authReady=load(SUPA_JS).then(function(){
         api.sb=window.supabase.createClient(cfg.url,cfg.anonKey,{auth:{flowType:'pkce',persistSession:true,detectSessionInUrl:true,autoRefreshToken:true}});

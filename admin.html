@@ -276,10 +276,10 @@ var VIEWS=[
   {id:'dash',name:'대시보드',grp:'운영'},
   {id:'content',name:'콘텐츠 관리',grp:'운영'},
   {id:'sched',name:'예약 편성표',grp:'운영'},
-  {id:'stats',name:'방문·참여 통계',grp:'분석',tag:'연결 필요'},
-  {id:'traffic',name:'유입 경로',grp:'분석',tag:'연결 필요'},
-  {id:'device',name:'기기·환경',grp:'분석',tag:'연결 필요'},
-  {id:'members',name:'회원 관리',grp:'커뮤니티',tag:'연결 필요'},
+  {id:'stats',name:'방문·참여 통계',grp:'분석'},
+  {id:'traffic',name:'유입 경로',grp:'분석'},
+  {id:'device',name:'기기·환경',grp:'분석'},
+  {id:'members',name:'회원 관리',grp:'커뮤니티'},
   {id:'rules',name:'운영 규칙',grp:'커뮤니티'},
   {id:'reports',name:'검토·신고',grp:'커뮤니티'},
   {id:'settings',name:'설정',grp:'시스템'}
@@ -559,38 +559,64 @@ function needs(id,what,how){
     (on?'<div class="ribbon">예시 데이터 · 실제 수치가 아닙니다. 연결 후 보일 화면의 모양만 보여 줍니다.</div>':'');
 }
 function rnd(seed){return function(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646}}
+// ===== 분석·회원 (실제 데이터: /api/admin?view=stats|members) =====
+// 방문은 IUX Cloud pageviews(site 'neaniyo', 사이트의 trackVisit)로, 투표·가입·한줄평은 ny_* 테이블로 집계한다
+var AN={days:14,st:'idle',err:'',data:null,mst:'idle',merr:'',members:null,q:'',busy:{}};
+var SRC={direct:'직접 방문',naver:'네이버',google:'구글',daum:'다음',bing:'Bing',kakao:'카카오톡',instagram:'인스타그램',facebook:'페이스북',youtube:'유튜브',x:'X(트위터)',threads:'스레드',blog:'블로그',other:'기타 사이트'};
+var DEV={pc:'PC',mobile:'모바일',tablet:'태블릿'};
+function anTok(){return window.NY_ADMIN&&window.NY_ADMIN.sb?window.NY_ADMIN.sb.auth.getSession().then(function(r){return r.data.session.access_token}):Promise.reject(new Error('login'))}
+function anGet(qs){return anTok().then(function(t){return fetch('/api/admin?'+qs,{headers:{Authorization:'Bearer '+t},cache:'no-store'})}).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j})})}
+function anPost(b){return anTok().then(function(t){return fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify(b)})}).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j})})}
+function anLoad(){AN.st='loading';anGet('view=stats&days='+AN.days).then(function(j){AN.data=j.stats;AN.st='ok'},function(e){AN.st='err';AN.err=e.message}).then(function(){if(['stats','traffic','device'].indexOf(cur())>-1)render()})}
+function anNeed(){
+  if(AN.st==='idle')anLoad();
+  if(AN.st==='idle'||AN.st==='loading')return '<div class="empty"><b>불러오는 중…</b>집계하고 있습니다.</div>';
+  if(AN.st==='err')return '<div class="empty"><b>불러오지 못했습니다</b>'+esc(AN.err)+'<div style="margin-top:12px"><button class="btn pri" type="button" data-act="anreload">다시 불러오기</button></div></div>';
+  return '';
+}
+function anBar(){return '<div class="filters" style="margin-bottom:12px">'+[7,14,30,90].map(function(d){return '<button class="btn'+(AN.days===d?' pri':'')+'" type="button" data-act="andays" data-days="'+d+'">최근 '+d+'일</button>'}).join('')+'<button class="btn" type="button" data-act="anreload">새로 받기</button></div>'}
+function nf(n){return (+n||0).toLocaleString()}
+function pct(a,b){return b?Math.round(a/b*1000)/10:0}
+function dur(ms){ms=+ms||0;var s=Math.round(ms/1000);return s<60?s+'초':Math.floor(s/60)+'분 '+(s%60)+'초'}
+function shareBars(rows,label){var t=rows.reduce(function(a,r){return a+r.v},0);if(!t)return '<p class="desc">아직 기록이 없습니다.</p>';return hbars(rows.map(function(r){var l=label?label(r.k):r.k;return {l:l,v:r.v,vl:pct(r.v,t)+'% · '+nf(r.v),tip:l+' · '+nf(r.v)+' ('+pct(r.v,t)+'%)'}}))}
+function pollQ(id){var x=all().filter(function(y){return y.p.id===id})[0];return x?x.p.q:id}
+function noVisits(d){return d.visitors?'':'<div class="note" style="margin-bottom:12px">방문 기록은 2026-11-22부터 모읍니다. 쌓이는 대로 채워집니다.</div>'}
 function vStats(){
-  var h=needs('stats','방문자 수, 투표 참여 수, 참여율은 서버가 있어야 모을 수 있습니다. 지금 투표 결과는 방문자 브라우저에만 남습니다.','투표 저장용 DB(예: Supabase)와 방문 분석 도구(예: Vercel Web Analytics)를 붙이면 이 화면이 실제 수치로 채워집니다.');
-  if(!S.sample.stats) return h;
-  var r=rnd(7),days=[],now=Date.now();for(var i=13;i>=0;i--){var m=now-i*864e5;days.push({l:md(m),v:Math.round(1800+i*-40+r()*600)})}
-  var top=all().filter(function(x){return tms(x.p)<=now}).sort(function(a,b){return tms(b.p)-tms(a.p)}).slice(0,6);
-  return h+'<div class="grid kpis">'+kpi('일 방문자 (예시)','2,431','어제 대비 +8%')+kpi('투표 참여 (예시)','9,812','방문자 1명당 4.0회')+kpi('참여율 (예시)','63%','카드를 본 사람 중 투표한 비율')+kpi('신규 가입 (예시)','57','오늘')+'</div>'+
-    '<div class="grid two" style="margin-top:14px"><section class="card"><h2>일 방문자 (최근 14일, 예시)</h2><p class="desc">하루 단위 순 방문자</p>'+line(days,'일 방문자 예시')+'</section>'+
-    '<section class="card"><h2>참여가 많은 투표 (예시)</h2><p class="desc">최근 공개 투표에 예시 숫자를 붙였습니다</p>'+hbars(top.map(function(x,i){var v=Math.round(900-i*110+r()*80);return {l:(x.p.q||'').slice(0,6)+'…',v:v,vl:v.toLocaleString(),tip:x.p.q+' · '+v+'표 (예시)'}}))+'</section></div>';
+  var w=anNeed();if(w)return anBar()+w;var d=AN.data,dl=d.daily||[];
+  var per=d.visitors?Math.round(d.votes/d.visitors*10)/10:0;
+  return anBar()+noVisits(d)+'<div class="grid kpis">'+kpi('방문자',nf(d.visitors),'최근 '+d.days+'일 · 페이지 '+nf(d.pageviews)+'회')+kpi('투표 참여',nf(d.votes),'투표한 사람 '+nf(d.voters)+'명'+(d.visitors?' · 방문자 1명당 '+per+'회':''))+kpi('평균 머문 시간',dur(d.avg_ms),'한 화면만 보고 나감 '+d.bounce+'%')+kpi('신규 가입',nf(d.signups),'전체 회원 '+nf(d.members)+'명')+'</div>'+
+    '<div class="grid two" style="margin-top:14px"><section class="card"><h2>일 방문자</h2><p class="desc">하루 단위 방문 수 (같은 탭에서 이어 본 것은 1회)</p>'+(dl.length>1?line(dl.map(function(x){return {l:x.d.slice(5).replace('-','/'),v:x.visitors}}),'일 방문자'):'<p class="desc">기록 없음</p>')+'</section>'+
+    '<section class="card"><h2>일 투표 참여</h2><p class="desc">하루 단위 투표 수</p>'+(dl.length>1?line(dl.map(function(x){return {l:x.d.slice(5).replace('-','/'),v:x.votes}}),'일 투표'):'<p class="desc">기록 없음</p>')+'</section></div>'+
+    '<div class="grid two" style="margin-top:14px"><section class="card"><h2>참여가 많은 투표</h2><p class="desc">최근 '+d.days+'일 투표 수</p>'+((d.top_polls||[]).length?hbars(d.top_polls.map(function(x){var q=pollQ(x.id);return {l:q.length>14?q.slice(0,14)+'…':q,v:x.v,vl:nf(x.v),tip:q+' · '+nf(x.v)+'표'}})):'<p class="desc">아직 투표가 없습니다.</p>')+'</section>'+
+    '<section class="card"><h2>참여 요약</h2><div class="tbl-wrap"><table style="min-width:0"><tbody>'+
+      [['로그인하고 투표한 회원',nf(d.member_voters)+'명'],['새 한줄평',nf(d.comments)+'개'],['회원이 만든 투표',nf(d.user_polls)+'개'],['페이지 보기',nf(d.pageviews)+'회']].map(function(r){return '<tr><td>'+r[0]+'</td><td class="num">'+r[1]+'</td></tr>'}).join('')+'</tbody></table></div></section></div>';
 }
 function vTraffic(){
-  var h=needs('traffic','어디서 들어왔는지(검색, SNS, 커뮤니티, 임베드)는 방문 기록을 모아야 알 수 있습니다.','Vercel Web Analytics를 켜면 Vercel 대시보드에서 바로 볼 수 있고, 이 화면에 불러오려면 분석 도구의 API 키가 필요합니다. 공유 링크에 utm 태그를 붙이면 캠페인별로도 나눠 볼 수 있습니다.');
-  if(!S.sample.traffic) return h;
-  var ch=[['검색',38],['SNS·메신저',27],['직접 방문',18],['커뮤니티',11],['임베드',6]];
-  var ref=[['google.com','검색',1204],['m.search.naver.com','검색',988],['t.co (X)','SNS',512],['kakaotalk','메신저',433],['theqoo.net','커뮤니티',210],['blog.naver.com','임베드',96]];
-  return h+'<div class="grid half"><section class="card"><h2>유입 채널 (예시)</h2><p class="desc">최근 7일 방문 비율</p>'+hbars(ch.map(function(c){return {l:c[0],v:c[1],vl:c[1]+'%'}}))+'</section>'+
-    '<section class="card"><h2>상위 유입 사이트 (예시)</h2><p class="desc">리퍼러 기준 방문 수</p><div class="tbl-wrap"><table style="min-width:0"><thead><tr><th>사이트</th><th>채널</th><th class="num">방문</th></tr></thead><tbody>'+ref.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td class="num">'+r[2].toLocaleString()+'</td></tr>'}).join('')+'</tbody></table></div></section></div>';
+  var w=anNeed();if(w)return anBar()+w;var d=AN.data;
+  return anBar()+noVisits(d)+'<div class="grid half"><section class="card"><h2>유입 채널</h2><p class="desc">방문의 첫 화면 기준 · 공유 링크에 utm_source를 붙이면 그 이름으로 나뉩니다</p>'+shareBars(d.sources||[],function(k){return SRC[k]||k})+'</section>'+
+    '<section class="card"><h2>상위 유입 사이트</h2><p class="desc">들어온 사이트별 방문 수</p>'+((d.refs||[]).length?'<div class="tbl-wrap"><table style="min-width:0"><thead><tr><th>사이트</th><th class="num">방문</th></tr></thead><tbody>'+d.refs.map(function(r){return '<tr><td>'+esc(r.k)+'</td><td class="num">'+nf(r.v)+'</td></tr>'}).join('')+'</tbody></table></div>':'<p class="desc">아직 다른 사이트에서 들어온 방문이 없습니다.</p>')+'</section></div>'+
+    '<section class="card" style="margin-top:14px"><h2>많이 열린 화면</h2><p class="desc">/p/… 는 공유 링크로 열린 투표입니다</p>'+((d.paths||[]).length?hbars(d.paths.map(function(r){var l=r.k.indexOf('/p/')===0?'공유: '+pollQ(r.k.slice(3)):r.k==='/'?'첫 화면':r.k;return {l:l.length>18?l.slice(0,18)+'…':l,v:r.v,vl:nf(r.v),tip:l+' · '+nf(r.v)}})):'<p class="desc">기록 없음</p>')+'</section>';
 }
 function vDevice(){
-  var h=needs('device','모바일·PC 비율, 운영체제, 브라우저, 화면 크기는 방문 분석 도구가 자동으로 모읍니다.','Vercel Web Analytics나 GA4 같은 도구를 사이트에 붙이면 별도 개발 없이 수집됩니다.');
-  if(!S.sample.device) return h;
-  var d=[['모바일',78],['데스크톱',19],['태블릿',3]],os=[['iOS',44],['Android',34],['Windows',15],['macOS',6],['기타',1]],br=[['Safari',41],['Chrome',36],['삼성 인터넷',12],['카카오톡 인앱',8],['기타',3]];
-  var f=function(a){return hbars(a.map(function(c){return {l:c[0],v:c[1],vl:c[1]+'%'}}))};
-  return h+'<div class="grid kpis" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"><section class="card"><h2>기기 (예시)</h2>'+f(d)+'</section><section class="card"><h2>운영체제 (예시)</h2>'+f(os)+'</section><section class="card"><h2>브라우저 (예시)</h2>'+f(br)+'</section></div>';
+  var w=anNeed();if(w)return anBar()+w;var d=AN.data;
+  return anBar()+noVisits(d)+'<div class="grid kpis" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"><section class="card"><h2>기기</h2>'+shareBars(d.device||[],function(k){return DEV[k]||k})+'</section><section class="card"><h2>운영체제</h2>'+shareBars(d.os||[])+'</section><section class="card"><h2>브라우저</h2>'+shareBars(d.browser||[])+'</section><section class="card"><h2>화면 폭</h2>'+shareBars(d.screen||[])+'</section></div>';
 }
+function mLoad(){AN.mst='loading';anGet('view=members&q='+encodeURIComponent(AN.q)).then(function(j){AN.members=j.members||[];AN.mst='ok'},function(e){AN.mst='err';AN.merr=e.message}).then(function(){if(cur()==='members')render()})}
 function vMembers(){
-  var h=needs('members','지금 로그인은 방문자 브라우저 안에서만 동작하는 시안이라, 가입자 목록이 서버에 없습니다.','회원 DB와 인증(예: Supabase Auth, 카카오·네이버 로그인)을 붙이면 가입자 검색, 활동 내역, 이용 정지, 탈퇴 처리를 여기서 할 수 있습니다.');
-  if(!S.sample.members) return h;
-  var r=rnd(3),names=['투표요정','네네','아니요파','밸런스왕','새벽감성','출근러','커피두잔','야구보는곰'],via=['카카오','네이버','구글','이메일'];
-  var rows=names.map(function(n,i){return {n:n,d:md(Date.now()-Math.round(r()*40)*864e5),v:via[i%4],c:Math.round(r()*300),p:Math.round(r()*12),s:i===5?'정지':'정상'}});
-  return h+'<div class="grid kpis">'+kpi('전체 회원 (예시)','3,208','이번 주 +241')+kpi('7일 활동 (예시)','1,145','최근 7일 1회 이상 투표')+kpi('정지 회원 (예시)','4','신고 누적')+'</div>'+
-    '<div class="filters" style="margin-top:14px"><input type="search" placeholder="닉네임·이메일 검색 (예시)" disabled><select disabled><option>전체 가입 경로</option></select><select disabled><option>전체 상태</option></select></div>'+
-    '<div class="tbl-wrap"><table><thead><tr><th>닉네임</th><th>가입일</th><th>가입 경로</th><th class="num">투표</th><th class="num">작성 투표</th><th>상태</th><th>관리</th></tr></thead><tbody>'+rows.map(function(x){return '<tr><td class="q">'+x.n+'</td><td>'+x.d+'</td><td>'+x.v+'</td><td class="num">'+x.c+'</td><td class="num">'+x.p+'</td><td>'+(x.s==='정상'?'<span class="chip live">정상</span>':'<span class="chip bad">정지</span>')+'</td><td><button class="btn" type="button" disabled>상세</button></td></tr>'}).join('')+'</tbody></table></div>';
+  if(AN.mst==='idle')mLoad();
+  var bar='<div class="filters" style="margin-bottom:12px"><input type="search" id="mq" placeholder="이메일·지역 검색" value="'+esc(AN.q)+'"><button class="btn pri" type="button" data-act="msearch">검색</button><button class="btn" type="button" data-act="mreload">새로 받기</button></div>';
+  if(AN.mst==='loading'||AN.mst==='idle')return bar+'<div class="empty"><b>불러오는 중…</b></div>';
+  if(AN.mst==='err')return bar+'<div class="empty"><b>불러오지 못했습니다</b>'+esc(AN.merr)+'</div>';
+  var m=AN.members,me=(window.NY_ADMIN&&window.NY_ADMIN.email)||'',wk=m.filter(function(x){return x.votes7>0}).length,ban=m.filter(function(x){return x.banned}).length,yr=new Date().getFullYear();
+  var day=function(t){return t?String(t).slice(0,10).replace(/-/g,'.'):'-'};
+  return bar+'<div class="grid kpis">'+kpi('회원',nf(m.length),AN.q?'검색 결과':'전체')+kpi('7일 활동',nf(wk),'최근 7일 1회 이상 투표')+kpi('정지',nf(ban),'로그인·투표 저장 막힘')+'</div>'+
+    (m.length?'<div class="tbl-wrap" style="margin-top:14px"><table><thead><tr><th>이메일</th><th>가입일</th><th>최근 로그인</th><th>프로필</th><th class="num">투표</th><th class="num">한줄평</th><th class="num">만든 투표</th><th>상태</th><th>관리</th></tr></thead><tbody>'+m.map(function(x){
+      var b=AN.busy[x.id]?' disabled':'',self=x.email===me;
+      var prof=[x.gender,x.birth_year?(yr-x.birth_year+1)+'세':'',x.region].filter(Boolean).join(' · ');
+      var st=x.banned?'<span class="chip bad">정지</span>':'<span class="chip live">정상</span>';if(x.is_admin)st+=' <span class="chip wait">관리자</span>';
+      return '<tr><td class="q">'+esc(x.email||'-')+'<div class="sub">'+esc(x.via==='email'?'이메일':x.via)+'</div></td><td>'+day(x.created_at)+'</td><td>'+day(x.last_sign_in)+'</td><td>'+esc(prof||'-')+'</td><td class="num">'+nf(x.votes)+'</td><td class="num">'+nf(x.comments)+'</td><td class="num">'+nf(x.polls)+'</td><td style="white-space:nowrap">'+st+'</td><td style="white-space:nowrap">'+
+        (self?'<span class="sub">나</span>':(x.banned?'<button class="btn" type="button" data-act="mact" data-op="unban" data-id="'+x.id+'"'+b+'>정지 해제</button> ':'<button class="btn dng" type="button" data-act="mact" data-op="ban" data-id="'+x.id+'"'+b+'>정지</button> ')+
+        (x.is_admin?'<button class="btn" type="button" data-act="mact" data-op="unadmin" data-id="'+x.id+'"'+b+'>관리자 해제</button>':'<button class="btn" type="button" data-act="mact" data-op="setadmin" data-id="'+x.id+'"'+b+'>관리자 지정</button>'))+'</td></tr>'}).join('')+'</tbody></table></div>':'<div class="empty" style="margin-top:14px"><b>회원이 없습니다</b>'+(AN.q?'검색어를 바꿔 보세요.':'')+'</div>');
 }
 // ===== 검토·신고 (Supabase 로그인 + /api/admin) =====
 // 로그인은 사이트(/)에서 한 세션을 그대로 쓴다 (같은 출처의 supabase-js 저장소). ny_profiles.is_admin=true 계정만 열림
@@ -673,8 +699,8 @@ function vSettings(){
     '<tr><td>기본 투표</td><td class="mono">main / '+PATH+'</td><td>읽기</td></tr><tr><td>피드 투표</td><td class="mono">feed / '+PATH+'</td><td>읽기·쓰기</td></tr></tbody></table></div>'+
     '<h2 style="margin-top:16px">자동 수집 목표 비율</h2><p class="desc">data/README.md 기준</p>'+hbars(Object.keys(TARGET).map(function(c){return {l:c,v:TARGET[c],vl:TARGET[c]+'%'}}))+'</section>'+
   '</div>'+
-  '<section class="card" style="margin-top:14px"><h2>분석·회원 기능을 켜려면</h2><p class="desc">“연결 필요” 메뉴를 실제 데이터로 채우는 순서</p><div class="list">'+
-    [['1','방문 분석','Vercel 프로젝트에서 Web Analytics를 켜고 사이트에 스크립트 한 줄 추가 → 방문자·유입 경로·기기'],['2','투표 저장','투표 결과를 DB(예: Supabase)에 저장 → 실제 득표 수, 참여율, 인기 투표 순위'],['3','회원','카카오·네이버·구글 로그인을 DB 인증에 연결 → 회원 목록, 정지·탈퇴 처리'],['4','신고·댓글','댓글과 사용자 투표를 DB로 옮기고 신고 버튼 연결 → 신고 처리 대기열'],['5','관리자 잠금','관리자 계정으로 로그인한 사람만 이 화면을 열도록 제한']].map(function(x){return '<div class="it" style="cursor:default"><span class="chip wait">'+x[0]+'단계</span><span><span class="q">'+x[1]+'</span><br><span class="dim" style="font-size:12.5px">'+x[2]+'</span></span><span></span></div>'}).join('')+'</div></section>';
+  '<section class="card" style="margin-top:14px"><h2>연결 상태</h2><p class="desc">관리 화면이 읽는 실제 데이터</p><div class="list">'+
+    [['방문·유입·기기','IUX Cloud 방문 기록 (site: neaniyo) — 2026-11-22부터'],['투표·가입·한줄평','Supabase ny_* 테이블'],['회원 정지','Supabase 로그인 차단 (회원 관리에서)'],['메일','Resend · noreply@iux.kr']].map(function(x){return '<div class="it" style="cursor:default"><span class="chip live">연결됨</span><span><span class="q">'+x[0]+'</span><br><span class="dim" style="font-size:12.5px">'+x[1]+'</span></span><span></span></div>'}).join('')+'</div></section>';
 }
 
 
@@ -826,6 +852,13 @@ function bind(view){
       (window.NY_ADMIN&&window.NY_ADMIN.sb?window.NY_ADMIN.sb.auth.getSession().then(function(r){return go(r.data.session.access_token)}):Promise.reject(new Error('login')))
         .then(function(j){window.TM_OUT=j.ok?'보냈습니다 → <b>'+esc(j.to)+'</b> (보낸 사람: '+esc(j.from)+'). 1~2분 안에 메일함(스팸함 포함)을 확인하세요.':'실패: '+esc(j.error||('HTTP '+(j.status||'')))+(j.status?' (Resend '+j.status+')':'');o.innerHTML=window.TM_OUT})
         .catch(function(e){o.textContent='실패: '+e.message})}
+    else if(a==='andays'){AN.days=+t.dataset.days;AN.st='idle';render()}
+    else if(a==='anreload'){AN.st='idle';render()}
+    else if(a==='msearch'){var mq=document.getElementById('mq');AN.q=mq?mq.value.trim():'';AN.mst='idle';render()}
+    else if(a==='mreload'){AN.mst='idle';render()}
+    else if(a==='mact'){var op=t.dataset.op,id=t.dataset.id,lbl={ban:'이 회원을 정지할까요? 로그인과 투표 저장이 막힙니다.',unban:'정지를 풀까요?',setadmin:'이 회원을 관리자로 지정할까요? 검토·회원 관리를 할 수 있게 됩니다.',unadmin:'관리자 권한을 해제할까요?'}[op];
+      if(!confirm(lbl))return; AN.busy[id]=1;render();
+      anPost({act:op,id:id}).then(function(){var x=AN.members.filter(function(y){return y.id===id})[0];if(x){if(op==='ban')x.banned=true;if(op==='unban')x.banned=false;if(op==='setadmin')x.is_admin=true;if(op==='unadmin')x.is_admin=false}toast('처리했습니다.')},function(e){toast('처리 실패: '+e.message)}).then(function(){delete AN.busy[id];render()})}
     else if(a==='adtab'){AD.tab=t.dataset.tab;render()}
     else if(a==='adreload'){AD.state='idle';render()}
     else if(a==='modedit'){S.modEdit=JSON.stringify(S.mod,null,2);render()}

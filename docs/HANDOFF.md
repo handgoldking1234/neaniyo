@@ -58,3 +58,11 @@
 - **회원 탈퇴**: 내 정보 → 회원 탈퇴 (`DELETE /api/profile`). 투표는 계정·프로필과 끊어 집계에만 남김.
 - **사진 → Storage**: 사용자 투표 사진(img·gal·imgs의 data URL)을 저장할 때 Supabase Storage 공개 버킷 `ny-poll-images`(iux-cloud에 생성 완료)에 올리고 주소만 DB에 남김.
 - Vercel 함수 수: 11개 (Hobby 한도 12).
+
+## 2026-11-22 작업 (Claude)
+
+- **관리자 분석·회원 실제 데이터**: 방문·참여 통계, 유입 경로, 기기·환경, 회원 관리 4개 메뉴가 예시 숫자 대신 실제 값을 보여줌.
+  - 방문 기록: IUX Cloud 공용 `public.pageviews` (site_id `neaniyo`, `public.sites`에 등록함). 사이트 `index.html`의 `trackVisit()`이 `rpc/track`·`rpc/track_time` 호출. 탭마다 새 임의 ID, 개인정보 없음. 개인정보처리방침 1항에 '방문 기록' 줄 추가.
+  - 집계: `ny_admin_stats(days)`, 회원 목록: `ny_admin_members(q, lim)` (schema.sql 9장, iux-cloud에 적용 완료, service role만 호출).
+  - API: `GET /api/admin?view=stats&days=` · `?view=members&q=`, `POST {act: ban|unban|setadmin|unadmin, id}` (정지는 Supabase Auth ban).
+  - studio 관리자에도 '네아니요' 사이트가 생겨 같은 방문 통계를 볼 수 있음.

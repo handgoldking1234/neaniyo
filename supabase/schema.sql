@@ -158,3 +158,72 @@ returns jsonb language sql stable security definer set search_path = public as $
     select dim, jsonb_object_agg(g, j) groups from gj group by dim) s), '{}'::jsonb);
 $$;
 revoke all on function public.ny_poll_breakdown(text) from public, anon, authenticated;
+
+-- 9. 관리자 통계 (2026-11-22 추가) — /api/admin?view=stats|members 에서 service role로만 호출
+-- 방문은 IUX Cloud 공용 테이블 public.pageviews (site_id='neaniyo', index.html의 trackVisit) 를 읽는다
+create or replace function public.ny_admin_stats(days int default 14)
+returns jsonb language sql stable security definer set search_path = public as $$
+  with rng as (select (date_trunc('day', now() at time zone 'Asia/Seoul') - make_interval(days => greatest(1, least(days, 90)) - 1)) at time zone 'Asia/Seoul' as t0),
+  pv as (select * from pageviews, rng where site_id = 'neaniyo' and created_at >= rng.t0),
+  ses as (select sid, count(*) n, sum(duration) dur, min(created_at) t, (array_agg(source order by created_at))[1] src,
+                 (array_agg(device order by created_at))[1] device, (array_agg(os order by created_at))[1] os,
+                 (array_agg(browser order by created_at))[1] browser, (array_agg(screen order by created_at))[1] screen
+          from pv group by sid),
+  v as (select * from ny_votes, rng where created_at >= rng.t0),
+  dd as (select to_char(g at time zone 'Asia/Seoul', 'YYYY-MM-DD') d from rng, generate_series(rng.t0, now(), interval '1 day') g),
+  agg as (select k, count(*) v from (select coalesce(nullif(src,''),'direct') k from ses) x group by 1)
+  select jsonb_build_object(
+    'days', greatest(1, least(days, 90)),
+    'visitors', (select count(*) from ses),
+    'pageviews', (select count(*) from pv),
+    'avg_ms', coalesce((select avg(dur)::bigint from ses where dur is not null), 0),
+    'bounce', coalesce((select round(100.0 * count(*) filter (where n = 1) / nullif(count(*), 0), 1) from ses), 0),
+    'votes', (select count(*) from v),
+    'voters', (select count(distinct voter) from v),
+    'member_voters', (select count(distinct user_id) from v where user_id is not null),
+    'signups', (select count(*) from ny_profiles, rng where created_at >= rng.t0),
+    'members', (select count(*) from ny_profiles),
+    'comments', (select count(*) from ny_comments, rng where created_at >= rng.t0),
+    'user_polls', (select count(*) from ny_user_polls, rng where created_at >= rng.t0),
+    'daily', (select coalesce(jsonb_agg(jsonb_build_object('d', dd.d,
+        'visitors', (select count(*) from ses where to_char(ses.t at time zone 'Asia/Seoul','YYYY-MM-DD') = dd.d),
+        'pageviews', (select count(*) from pv where to_char(pv.created_at at time zone 'Asia/Seoul','YYYY-MM-DD') = dd.d),
+        'votes', (select count(*) from v where to_char(v.created_at at time zone 'Asia/Seoul','YYYY-MM-DD') = dd.d),
+        'signups', (select count(*) from ny_profiles p where to_char(p.created_at at time zone 'Asia/Seoul','YYYY-MM-DD') = dd.d)
+      ) order by dd.d), '[]') from dd),
+    'top_polls', (select coalesce(jsonb_agg(jsonb_build_object('id', poll_id, 'v', n) order by n desc), '[]') from
+        (select poll_id, count(*) n from v where not relay group by 1 order by 2 desc limit 8) x),
+    'sources', (select coalesce(jsonb_agg(jsonb_build_object('k', k, 'v', agg.v) order by agg.v desc), '[]') from agg),
+    'refs', (select coalesce(jsonb_agg(jsonb_build_object('k', k, 'v', n) order by n desc), '[]') from
+        (select ref_host k, count(distinct sid) n from pv where coalesce(ref_host,'') <> '' group by 1 order by 2 desc limit 10) x),
+    'paths', (select coalesce(jsonb_agg(jsonb_build_object('k', k, 'v', n) order by n desc), '[]') from
+        (select path k, count(*) n from pv group by 1 order by 2 desc limit 10) x),
+    'device', (select coalesce(jsonb_agg(jsonb_build_object('k', k, 'v', n) order by n desc), '[]') from (select coalesce(device,'기타') k, count(*) n from ses group by 1) x),
+    'os', (select coalesce(jsonb_agg(jsonb_build_object('k', k, 'v', n) order by n desc), '[]') from (select coalesce(os,'기타') k, count(*) n from ses group by 1) x),
+    'browser', (select coalesce(jsonb_agg(jsonb_build_object('k', k, 'v', n) order by n desc), '[]') from (select coalesce(browser,'기타') k, count(*) n from ses group by 1) x),
+    'screen', (select coalesce(jsonb_agg(jsonb_build_object('k', k, 'v', n) order by n desc), '[]') from (
+        select case when w is null then '알 수 없음' when w < 400 then '작은 폰 (~399)' when w < 768 then '폰 (400~767)' when w < 1280 then '태블릿·작은 PC (768~1279)' else 'PC (1280~)' end k, count(*) n
+        from (select nullif(split_part(screen,'x',1),'')::int w from ses where screen ~ '^[0-9]+x[0-9]+$' or screen is null) s group by 1) x)
+  );
+$$;
+revoke all on function public.ny_admin_stats(int) from public, anon, authenticated;
+
+create or replace function public.ny_admin_members(q text default '', lim int default 200)
+returns jsonb language sql stable security definer set search_path = public, auth as $$
+  select coalesce(jsonb_agg(m order by (m->>'created_at') desc), '[]') from (
+    select jsonb_build_object(
+      'id', p.id, 'email', u.email, 'created_at', p.created_at, 'last_sign_in', u.last_sign_in_at,
+      'gender', p.gender, 'birth_year', p.birth_year, 'region', p.region, 'is_admin', p.is_admin,
+      'via', coalesce(u.raw_app_meta_data->>'provider', 'email'),
+      'votes', (select count(*) from ny_votes v where v.user_id = p.id),
+      'votes7', (select count(*) from ny_votes v where v.user_id = p.id and v.created_at > now() - interval '7 days'),
+      'comments', (select count(*) from ny_comments c where c.user_id = p.id),
+      'polls', (select count(*) from ny_user_polls up where up.user_id = p.id),
+      'banned', u.banned_until is not null and u.banned_until > now()
+    ) m
+    from ny_profiles p join auth.users u on u.id = p.id
+    where coalesce(q,'') = '' or u.email ilike '%' || q || '%' or p.region ilike '%' || q || '%'
+    order by p.created_at desc limit greatest(1, least(lim, 500))
+  ) x;
+$$;
+revoke all on function public.ny_admin_members(text, int) from public, anon, authenticated;
