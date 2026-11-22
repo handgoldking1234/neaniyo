@@ -999,7 +999,8 @@ body.v-vote:not(.shared):not(.embedded) .hd-cats{display:block}
 .pgal-nav.l{left:10px}.pgal-nav.r{right:10px}
 @media (hover:hover){.pgal:hover .pgal-nav{display:grid}}
 /* 내 투표 수정·삭제 */
-.own-acts{margin-left:auto;display:inline-flex;gap:4px}
+.meta .when{margin-left:auto;display:inline-flex;align-items:center;gap:8px;white-space:nowrap} /* 시간·진행 상태는 오른쪽 끝 */
+.own-acts{display:inline-flex;gap:4px}
 .own-acts button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:999px;border:1px solid var(--line);font-size:calc(12px * var(--fs));color:var(--muted)}
 .own-acts button:hover{color:var(--ink);border-color:var(--muted)}
 .own-acts button svg{width:13px;height:13px}
@@ -1857,7 +1858,7 @@ a.mine-it:hover{border-color:var(--muted)}
     var credit=p.credit?'<p class="credit">사진: '+esc(p.credit)+' · <a href="https://www.pexels.com" target="_blank" rel="noopener">Pexels</a></p>':'';
     return '<article class="poll'+(done?' done':'')+'" data-id="'+p.id+'">'+
       (embedded?embedBrand(p):'')+
-      '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+catIc(p.cat)+catLabel(p.cat)+(p.sub?' <span class="sub">› '+esc(p.sub)+'</span>':'')+'</span>'+(p.type==='relay'?'<span class="ex rl">릴레이 '+p.qs.length+'문항</span>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+'<span>·</span><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+(p.own&&!embedded?'<span class="own-acts"><button type="button" data-act="edit">'+ic('pencil')+'수정</button><button type="button" data-act="del">'+ic('trash-2')+'삭제</button></span>':'')+'</div>'+
+      '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+catIc(p.cat)+catLabel(p.cat)+(p.sub?' <span class="sub">› '+esc(p.sub)+'</span>':'')+'</span>'+(p.type==='relay'?'<span class="ex rl">릴레이 '+p.qs.length+'문항</span>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'<span class="when"><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+'</span>'+(p.own&&!embedded?'<span class="own-acts"><button type="button" data-act="edit">'+ic('pencil')+'수정</button><button type="button" data-act="del">'+ic('trash-2')+'삭제</button></span>':'')+'</div>'+
       '<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+credit+aiBlock(p,done)+
       (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
       '<div class="foot"><span class="n">'+(voters(p)?fmt(voters(p))+'명 참여':'첫 투표자가 되어 보세요')+(p.closed?' · 마감된 투표':done?'':' · 투표하면 결과 공개')+'</span>'+
