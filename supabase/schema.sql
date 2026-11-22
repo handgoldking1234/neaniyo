@@ -227,3 +227,29 @@ returns jsonb language sql stable security definer set search_path = public, aut
   ) x;
 $$;
 revoke all on function public.ny_admin_members(text, int) from public, anon, authenticated;
+
+-- 10. 투표왕 랭킹: 닉네임(선택)과 공개 동의. 동의한 사람만 닉네임이 보이고 나머지는 '익명'
+alter table public.ny_profiles add column if not exists nickname text check (nickname is null or char_length(nickname) between 2 and 10);
+alter table public.ny_profiles add column if not exists rank_public boolean not null default false;
+create unique index if not exists ny_profiles_nick on public.ny_profiles (lower(nickname)) where nickname is not null;
+
+create or replace function public.ny_top_voters(days int default 7, lim int default 30, me uuid default null)
+returns jsonb language sql stable security definer set search_path = public as $$
+  with c as (
+    select v.user_id, count(*)::int n, max(v.created_at) last_at
+    from ny_votes v
+    where v.user_id is not null and (days <= 0 or v.created_at >= now() - make_interval(days => days))
+    group by v.user_id
+  ), r as (
+    select c.user_id, c.n, rank() over (order by c.n desc)::int rk,
+           row_number() over (order by c.n desc, c.last_at asc) rn,
+           case when p.rank_public then p.nickname end nick
+    from c left join ny_profiles p on p.id = c.user_id
+  )
+  select jsonb_build_object(
+    'top', coalesce((select jsonb_agg(jsonb_build_object('r', rk, 'name', nick, 'n', n) order by rn) from r where rn <= lim), '[]'::jsonb),
+    'total', (select count(*) from r),
+    'me', (select jsonb_build_object('r', rk, 'n', n) from r where me is not null and user_id = me)
+  );
+$$;
+revoke all on function public.ny_top_voters(int, int, uuid) from public, anon, authenticated;

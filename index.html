@@ -149,6 +149,12 @@ pre.code{margin:0;background:var(--ink);color:var(--bg);border-radius:8px;paddin
 .rank li a:hover .t{color:var(--b)}
 .rank .go{color:var(--muted);font-size:calc(18px * var(--fs));line-height:1}
 .rank ol{list-style:none;margin:0;padding:0}
+.vseg{display:flex;gap:6px;margin:0 0 12px}
+.rank .vrow .vr{display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;padding:16px 18px}
+.rank .anon{color:var(--muted)}
+.rank .crown{display:inline-flex;vertical-align:-2px;color:var(--gold,#F59E0B)}.rank .crown .i{width:16px;height:16px}
+.vme{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--card,#fff)}
+.vme p{margin:0;flex:1 1 100%}.vme small{color:var(--muted)}.vme .btn{padding:8px 14px}
 .rk{font-family:var(--display);font-weight:800;font-size:calc(20px * var(--fs));color:var(--muted)}
 .rank li:nth-child(-n+3) .rk{color:var(--a)}
 .rank .t{font-weight:500;min-width:0}
@@ -1200,9 +1206,12 @@ a.mine-it:hover{border-color:var(--muted)}
         <button class="chip" data-r="week" aria-pressed="false">주간</button>
         <button class="chip" data-r="month" aria-pressed="false">월간</button>
         <button class="chip" data-r="best" aria-pressed="false">베스트</button>
+        <button class="chip" data-r="voters" aria-pressed="false">투표왕</button>
       </div>
       <p class="rank-cap" id="rankcap"></p>
+      <div class="vseg" id="vseg" hidden></div>
       <div class="rank"><ol id="rank"></ol></div>
+      <div id="vme"></div>
       <button type="button" class="btn morebtn" id="rankMore" hidden></button>
     </section>
 
@@ -2167,7 +2176,55 @@ a.mine-it:hover{border-color:var(--muted)}
     if(period==='live'&&!document.getElementById('v-ranking').hidden) renderRank();
   },8000);
   var prevRank={};
+  // ===== 투표왕: 투표를 가장 많이 한 사람 (로그인 사용자, 닉네임 공개 동의한 사람만 이름 표시) =====
+  var vDays=7, vCache={};
+  function renderVoters(){
+    var cap=document.getElementById('rankcap'), rl=document.getElementById('rank'), seg=document.getElementById('vseg'), me=document.getElementById('vme');
+    cap.textContent='로그인하고 투표를 가장 많이 한 사람이에요. 닉네임 공개에 동의한 사람만 이름이 보여요.';
+    seg.hidden=false; rankMore.hidden=true; rl.dataset.period='voters';
+    seg.innerHTML=[[7,'이번 주'],[30,'이번 달'],[0,'전체']].map(function(x){return '<button type="button" class="chip" data-vd="'+x[0]+'" aria-pressed="'+(vDays===x[0])+'">'+x[1]+'</button>'}).join('');
+    if(!NY||!NY.on){ rl.innerHTML='<li><p class="empty">투표왕 랭킹은 서버에 연결된 뒤 볼 수 있어요.</p></li>'; me.innerHTML=''; return; }
+    var key=vDays+'|'+(NY.uid||''), c=vCache[key];
+    if(c&&Date.now()-c.t<60000) return drawVoters(c.j);
+    if(!c) rl.innerHTML='<li><p class="empty">불러오는 중…</p></li>';
+    NY.call('stats?view=voters&days='+vDays).then(function(j){ vCache[key]={t:Date.now(),j:j}; if(period==='voters') drawVoters(j); })
+      .catch(function(){ if(period==='voters') rl.innerHTML='<li><p class="empty">랭킹을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</p></li>'; });
+  }
+  function drawVoters(j){
+    var rl=document.getElementById('rank'), me=document.getElementById('vme'), mine=j.me&&j.me.r;
+    rl.innerHTML=j.top.length?j.top.map(function(x,i){
+      return '<li class="vrow"><div class="vr"><span class="rkw"><span class="rk">'+x.r+'</span></span><span class="t">'+(x.name?esc(x.name):'<span class="anon">익명 투표러</span>')+(x.r<=3?' <span class="crown">'+ic('crown')+'</span>':'')+'</span><span class="v">'+fmt(x.n)+'<small>표</small></span></div></li>';
+    }).join(''):'<li><p class="empty">이 기간에 로그인하고 투표한 사람이 아직 없어요.</p></li>';
+    if(!user){ me.innerHTML='<div class="vme"><p>로그인하고 투표하면 내 순위가 여기에 보여요.</p><button type="button" class="btn dark" data-vlogin>로그인</button></div>'; return; }
+    me.innerHTML='<div class="vme"><p>'+(j.me?'내 순위 <b>'+j.me.r+'위</b> · '+fmt(j.me.n)+'표'+(j.total?' <small>(참여 '+fmt(j.total)+'명)</small>':''):'이 기간에 아직 투표하지 않았어요.')+'</p>'+
+      (user.nick&&user.rankPublic?'<small>랭킹에 <b>'+esc(user.nick)+'</b>(으)로 보여요.</small> ':'<small>지금은 랭킹에 익명으로 보여요.</small> ')+'<button type="button" class="btn" data-vnick>'+(user.nick&&user.rankPublic?'닉네임 바꾸기':'닉네임 공개하기')+'</button></div>';
+  }
+  function showNick(){
+    authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>'+
+      '<h2 id="authTitle">투표왕 닉네임</h2><p>투표왕 랭킹에 보일 이름이에요. 공개에 동의하지 않으면 랭킹에 \'익명 투표러\'로 보여요. 어떤 투표에 무엇을 골랐는지는 누구에게도 보이지 않아요.</p>'+
+      '<form class="pf" id="nickF" novalidate><div class="field full"><label for="nickIn">닉네임 <small>(2~10자, 한글·영문·숫자)</small></label><input id="nickIn" maxlength="10" autocomplete="off" value="'+esc(user.nick||'')+'"></div>'+
+      '<label class="full"><input type="checkbox" id="nickPub"'+(user.rankPublic||!user.nick?' checked':'')+'> <span>투표왕 랭킹에 닉네임 공개</span></label>'+
+      '<p class="msg err full" id="nickMsg" role="status"></p><button class="btn dark full" type="submit">저장</button></form>';
+    openDialog();
+    document.getElementById('nickF').addEventListener('submit',function(e){
+      e.preventDefault();
+      var n=document.getElementById('nickIn').value.trim(), pub=document.getElementById('nickPub').checked, m=document.getElementById('nickMsg');
+      if(n&&!/^[가-힣a-zA-Z0-9_ ]{2,10}$/.test(n)){ m.textContent='닉네임은 2~10자의 한글·영문·숫자로 써 주세요.'; return; }
+      if(pub&&!n){ m.textContent='공개하려면 닉네임을 입력해 주세요.'; return; }
+      m.textContent='';
+      NY.call('profile',{method:'POST',body:{only:'rank',nick:n,rankPublic:pub}}).then(function(j){
+        user.nick=j.nickname||''; user.rankPublic=!!j.rank_public; saveUser(); vCache={}; closeDialog(); toast(user.rankPublic?'랭킹에 닉네임이 보여요.':'랭킹에 익명으로 보여요.'); if(period==='voters') renderVoters();
+      }).catch(function(err){ m.textContent=err.message==='nick-taken'?'이미 쓰는 닉네임이에요. 다른 닉네임을 골라 주세요.':err.message==='nick'?'쓸 수 없는 닉네임이에요.':'저장하지 못했어요. 잠시 후 다시 시도해 주세요.'; });
+    });
+  }
+  document.getElementById('v-ranking').addEventListener('click',function(e){
+    var d=e.target.closest('[data-vd]'); if(d){ vDays=+d.dataset.vd; renderVoters(); return; }
+    if(e.target.closest('[data-vnick]')) return showNick();
+    if(e.target.closest('[data-vlogin]')) return openAuth();
+  });
   function renderRank(){
+    document.getElementById('vseg').hidden=period!=='voters'; if(period!=='voters') document.getElementById('vme').innerHTML='';
+    if(period==='voters') return renderVoters();
     var R=RANK[period];
     document.getElementById('rankcap').textContent=R.cap;
     var r=polls.filter(function(p){return isPublic(p)&&R.pick(p)}).map(function(p){return {p:p,s:R.score(p)}})
@@ -2294,7 +2351,7 @@ a.mine-it:hover{border-color:var(--muted)}
     authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>'+
       '<h2 id="authTitle">내 정보 '+(user.pro?'<span class="pbadge">프리미엄 체험 중</span>':'')+'</h2>'+
       '<div class="me"><div><span>로그인</span><b>'+viaName(user.via)+'</b></div><div><span>성별</span><b>'+esc(user.gender)+'</b></div><div><span>연령대</span><b>'+age+'</b></div><div><span>지역</span><b>'+esc(user.region)+'</b></div><div><span>학력</span><b>'+(esc(user.edu)||'응답 안 함')+'</b></div><div><span>참여한 투표</span><b>'+Object.keys(voted).length+'개</b></div></div>'+
-      '<p style="font-size:calc(12px * var(--fs))">프로필은 30일에 한 번만 바꿀 수 있습니다.</p>'+
+      (NY&&NY.on?'<div class="me"><div><span>투표왕 닉네임</span><b>'+(user.nick?esc(user.nick)+(user.rankPublic?'':' <small>(비공개)</small>'):'없음')+'</b> <button type="button" class="linkbtn" data-me="nick">'+(user.nick?'바꾸기':'정하기')+'</button></div></div>':'')+'<p style="font-size:calc(12px * var(--fs))">프로필은 30일에 한 번만 바꿀 수 있습니다.</p>'+
       '<div class="row">'+(user.pro?'<button class="btn" type="button" data-me="unpro">체험 종료</button>':'<button class="btn gold" type="button" data-me="pro">프리미엄 7일 체험</button>')+'<button class="btn" type="button" data-me="logout">로그아웃</button></div>'+
       '<p class="hint" style="margin-top:14px"><a href="privacy">개인정보처리방침</a> · <a href="terms">이용약관</a> · <button type="button" data-me="withdraw" style="background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit">회원 탈퇴</button></p>';
     openDialog();
@@ -2314,6 +2371,7 @@ a.mine-it:hover{border-color:var(--muted)}
       return;
     }
     if(me.dataset.me==='logout'){ if(NY) NY.signOut(); user=null; saveUser(); authUI(); closeDialog(); toast('로그아웃했습니다.'); reRenderKeep(); }
+    if(me.dataset.me==='nick') return showNick();
     if(me.dataset.me==='pro'){ startTrial(); closeDialog(); }
     if(me.dataset.me==='unpro'){ user.pro=false; saveUser(); authUI(); closeDialog(); toast('프리미엄 체험을 종료했습니다.'); refreshOpenStats(); }
   });
@@ -3509,7 +3567,7 @@ a.mine-it:hover{border-color:var(--muted)}
         var via=viaOf(session), pf=j.profile;
         if(pf){
           var pro=user&&user.pro;
-          user={via:via,sid:api.uid,email:j.email,gender:pf.gender,birth:pf.birth_year,region:pf.region,edu:pf.edu||'',stat:pf.stat_consent,notify:pf.notify_results,admin:pf.is_admin,pro:!!pro};
+          user={via:via,sid:api.uid,email:j.email,gender:pf.gender,birth:pf.birth_year,region:pf.region,edu:pf.edu||'',stat:pf.stat_consent,notify:pf.notify_results,admin:pf.is_admin,nick:pf.nickname||'',rankPublic:!!pf.rank_public,pro:!!pro};
           saveUser(); authUI(); if(started) reRenderKeep();
         }else{
           user=null; saveUser(); authUI();
@@ -3628,7 +3686,7 @@ a.mine-it:hover{border-color:var(--muted)}
         });
       }).catch(function(){ toast('로그인 기능을 불러오지 못했어요. 새로고침해 주세요.'); });
     }).catch(function(){ api.on=false; });
-    api.ready=ready;
+    api.ready=ready; api.call=call;
     return api;
   })();
   function viaName(v){ return v==='google'?'Google':v==='kakao'?'카카오':'이메일'; }

@@ -3,7 +3,8 @@ import { handler, send, fail, db, authUser, body, hash, SUPA_URL } from './_lib.
 const G = ['남성', '여성', '응답 안 함'];
 const R = ['서울', '경기·인천', '부산·울산·경남', '대구·경북', '광주·전라', '대전·세종·충청', '강원', '제주'];
 const E = ['', '고졸 이하', '대학 재학', '대졸', '대학원 이상'];
-const COLS = 'gender,birth_year,region,edu,stat_consent,notify_results,is_admin,created_at,updated_at';
+const COLS = 'gender,birth_year,region,edu,stat_consent,notify_results,is_admin,nickname,rank_public,created_at,updated_at';
+const BAD_NICK = /관리자|운영자|admin|네아니요|neaniyo|운영진/i;
 
 export default handler(async (req, res) => {
   const user = await authUser(req);
@@ -23,6 +24,19 @@ export default handler(async (req, res) => {
   }
   if (req.method !== 'POST') return fail(res, 405, 'method');
   const b = body(req), y = new Date().getFullYear();
+  // 투표왕 랭킹 닉네임·공개 여부만 바꾸기
+  if (b.only === 'rank') {
+    const nick = String(b.nick || '').trim().replace(/\s+/g, ' ');
+    if (nick && (!/^[가-힣a-zA-Z0-9_ ]{2,10}$/.test(nick) || BAD_NICK.test(nick))) return fail(res, 400, 'nick');
+    if (!nick && b.rankPublic) return fail(res, 400, 'nick-required');
+    if (nick) {
+      const dup = await db(`ny_profiles?select=id&nickname=ilike.${encodeURIComponent(nick.replace(/[%_]/g, '\\$&'))}&id=neq.${user.id}&limit=1`);
+      if (dup.length) return fail(res, 409, 'nick-taken');
+    }
+    const out = await db(`ny_profiles?id=eq.${user.id}`, { method: 'PATCH', body: { nickname: nick || null, rank_public: !!(nick && b.rankPublic), updated_at: new Date().toISOString() }, prefer: 'return=representation' });
+    if (!out.length) return fail(res, 400, 'profile');
+    return send(res, 200, { nickname: out[0].nickname, rank_public: out[0].rank_public });
+  }
   const row = {
     id: user.id,
     gender: G.includes(b.gender) ? b.gender : null,
