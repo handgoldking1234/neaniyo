@@ -113,14 +113,14 @@ export default async function (req, res) {
       return res.end(png);
     } catch (e) {
       console.error('og', e);
-      res.statusCode = 302; res.setHeader('Location', '/assets/og.jpg'); return res.end();
+      res.statusCode = 302; res.setHeader('Location', '/assets/og.jpg?v=2'); return res.end();
     }
   }
 
   const target = ok ? `/?p=${encodeURIComponent(id)}` : '/';
   const title = p && !p.secret && p.q ? `${p.q} · 네아니요` : p && p.secret ? '비밀방 투표 · 네아니요' : '네아니요 · 당신은 어느 쪽?';
   const desc = p && !p.secret && p.o.length ? `${p.o.slice(0, 4).join(' vs ')} — 당신은 어느 쪽? 투표하고 결과를 바로 확인해보세요.` : '지금 뜨는 이슈, 한 번에 투표하고 결과를 바로 확인해보세요.';
-  const img = p ? `${SITE}/api/share?id=${encodeURIComponent(id)}&img=1&v=${Buffer.from(String(p.q || 's')).toString('base64url').slice(0, 10)}` : `${SITE}/assets/og.jpg`;
+  const img = p ? `${SITE}/api/share?id=${encodeURIComponent(id)}&img=1&v=${Buffer.from(String(p.q || 's')).toString('base64url').slice(0, 10)}` : `${SITE}/assets/og.jpg?v=2`;
   const url = ok ? `${SITE}/p/${encodeURIComponent(id)}` : SITE;
   const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
