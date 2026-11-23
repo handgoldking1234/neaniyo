@@ -149,6 +149,8 @@ pre.code{margin:0;background:var(--ink);color:var(--bg);border-radius:8px;paddin
 .rank li a:hover .t{color:var(--b)}
 .rank .go{color:var(--muted);font-size:calc(18px * var(--fs));line-height:1}
 .rank ol{list-style:none;margin:0;padding:0}
+.moreafter{margin:28px 4px 12px}.moreafter h3{margin:0 0 4px;font-size:calc(18px * var(--fs))}.moreafter p{margin:0;color:var(--muted);font-size:calc(13px * var(--fs))}
+.moreall{display:flex;justify-content:center;gap:6px;margin:8px 0 24px;padding:14px}
 .sharecta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:14px 0 0;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--a) 7%,transparent)}
 .sharecta>span{display:inline-flex;align-items:center;gap:6px;flex:1 1 100%;font-weight:700;font-size:calc(14px * var(--fs))}.sharecta>span .i{width:16px;height:16px;color:var(--a)}
 .sharecta .btn{flex:1 1 0;justify-content:center;white-space:nowrap;gap:6px;min-width:0;padding:9px 12px;font-size:calc(13px * var(--fs))}.sharecta .btn .i{width:15px;height:15px}
@@ -2088,6 +2090,12 @@ a.mine-it:hover{border-color:var(--muted)}
     var cards=list.slice(0,feedShown).map(card); if(!only&&shouldAskInt()&&cards.length>3) cards.splice(3,0,intCard());
     var hidN=(!only&&!searchQ&&filter==='all'&&!subFilter)?Object.keys(recHide).length:0;
     if(hidN&&list.length<=feedShown) cards.push('<p class="feed-end">'+(list.length?'추천 투표를 다 봤어요. ':'')+'투표한 '+fmt(hidN)+'개는 <a href="./#mine">내 투표</a>에 있어요. <button type="button" class="linkbtn" data-c-new>최신 순으로 전체 보기</button></p>');
+    // 공유 링크로 들어온 화면: 받은 투표 아래에 다른 투표를 이어서 보여 준다 (같은 카테고리 먼저)
+    if(only&&!embedded&&list.length){
+      var sp0=list[0], more=recommend(polls.filter(function(p){ return p.id!==only&&isPublic(p)&&!p.closed&&p.vis!=='secret'&&!voted[p.id]; }));
+      more=more.filter(function(p){return p.cat===sp0.cat}).concat(more.filter(function(p){return p.cat!==sp0.cat})).slice(0,5);
+      if(more.length) cards.push('<div class="moreafter"><h3>다른 투표도 해 보세요</h3><p>'+(sp0.cat?esc(catLabel(sp0.cat))+' 투표부터 골랐어요':'지금 많이 참여하는 투표예요')+'</p></div>'+more.map(card).join('')+'<a class="btn dark moreall" href="./">전체 투표 보기 '+ic('arrow-right')+'</a>');
+    }
     feed.innerHTML=(list.length||hidN)?cards.join(''):(searchQ?'<p class="tag">검색 결과가 없습니다. 다른 단어로 찾아보세요.</p>':'<p class="tag">이 카테고리에 투표가 아직 없습니다.</p>');
     moreLabel(feedMore,feedShown,only?1:list.length,'feed');
     renderRank();
