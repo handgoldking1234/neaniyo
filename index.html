@@ -3803,6 +3803,13 @@ a.mine-it:hover{border-color:var(--muted)}
     var CFG_KEY='ny_cfg_v1', cfgCache=null; try{ cfgCache=JSON.parse(localStorage.getItem(CFG_KEY)||'null'); }catch(e){}
     var oauthBack=!!(params.get('code')||/access_token=/.test(location.hash));
     if(oauthBack) setTimeout(function(){ if(!api.uid) toast('로그인하는 중이에요…'); },0);
+    // 소셜 로그인 실패로 돌아온 경우: 이유를 알려 주고 주소의 오류 표시는 지운다
+    var oErr=params.get('error_code')||params.get('error');
+    if(oErr){
+      var oMsg={signup_disabled:'지금은 새 회원 가입이 잠시 막혀 있어요. 잠시 후 다시 시도해 주세요.',access_denied:'로그인이 취소됐어요.',bad_oauth_state:'로그인 시간이 지났어요. 다시 시도해 주세요.'}[oErr]||'로그인하지 못했어요. 다시 시도해 주세요.';
+      setTimeout(function(){ toast(oMsg); },300);
+      try{ var eu=new URL(location.href); ['error','error_code','error_description'].forEach(function(k){ eu.searchParams.delete(k); }); history.replaceState(null,'',eu.pathname+eu.search+eu.hash); }catch(e){}
+    }
     var libP=(cfgCache&&cfgCache.enabled)||oauthBack?load(SUPA_JS):null;
     var cfgFetch=fetch('/api/config',{cache:'no-store'}).then(function(r){return r.ok?r.json():{}}).then(function(cfg){ try{ localStorage.setItem(CFG_KEY,JSON.stringify(cfg||{})); }catch(e){} return cfg; });
     var ready=(cfgCache&&cfgCache.enabled?Promise.resolve(cfgCache):cfgFetch).then(function(cfg){
