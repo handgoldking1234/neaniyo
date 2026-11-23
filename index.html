@@ -149,6 +149,12 @@ pre.code{margin:0;background:var(--ink);color:var(--bg);border-radius:8px;paddin
 .rank li a:hover .t{color:var(--b)}
 .rank .go{color:var(--muted);font-size:calc(18px * var(--fs));line-height:1}
 .rank ol{list-style:none;margin:0;padding:0}
+.shq{margin:-4px 0 16px;color:var(--muted);font-size:calc(14px * var(--fs));line-height:1.5}
+.shgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:12px 8px;margin-bottom:18px}
+.shb{display:flex;flex-direction:column;align-items:center;gap:7px;border:0;background:none;cursor:pointer;font:inherit;font-size:calc(12.5px * var(--fs));color:var(--ink)}
+.shi{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--line)}.shi .i{width:24px;height:24px}
+.sh-kakao .shi{background:#FEE500}.sh-fb .shi{background:#1877F2}.sh-x .shi{background:#111}.sh-band .shi{background:#06C755}.sh-native .shi{background:color-mix(in srgb,var(--a) 14%,transparent);color:var(--a)}
+.shurl{display:flex;gap:8px}.shurl input{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:calc(13px * var(--fs));background:var(--surface);color:var(--muted)}
 .moreafter{margin:28px 4px 12px;padding-top:20px;border-top:1px dashed var(--line)}.moreafter h3{margin:0 0 4px;font-size:calc(18px * var(--fs))}.moreafter p{margin:0;color:var(--muted);font-size:calc(13px * var(--fs))}
 .moreall{display:flex;justify-content:center;gap:6px;margin:8px 0 24px;padding:14px}
 .sharecta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:14px 0 0;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--a) 7%,transparent)}
@@ -2016,10 +2022,9 @@ a.mine-it:hover{border-color:var(--muted)}
       '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+catIc(p.cat)+catLabel(p.cat)+(p.sub?' <span class="sub">› '+esc(p.sub)+'</span>':'')+'</span>'+(isQuiz(p)?'<span class="ex qz">문제</span>':'')+(p.type==='relay'?'<span class="ex rl">릴레이 '+p.qs.length+'문항</span>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'<span class="when"><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+'</span>'+(p.own&&!embedded?'<span class="own-acts"><button type="button" data-act="edit">'+ic('pencil')+'수정</button><button type="button" data-act="del">'+ic('trash-2')+'삭제</button></span>':'')+'</div>'+
       '<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+credit+aiBlock(p,done)+
       (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
-      (done&&!embedded&&p.vis!=='secret'?'<div class="sharecta"><span>'+ic('message-circle')+(isQuiz(p)?'내 친구는 몇 개 맞힐까?':'내 친구의 생각은?')+'</span><button type="button" class="btn dark" data-act="askfriend">'+ic('send')+'친구에게 공유하기</button></div>':'')+
       '<div class="foot"><span class="n">'+(voters(p)?fmt(voters(p))+'명 참여':'첫 투표자가 되어 보세요')+(p.closed?' · 마감된 투표':done?'':' · 투표하면 결과 공개')+'</span>'+
       (embedded?'<a class="egoto" href="'+SITE+'?p='+p.id+'" target="_blank" rel="noopener">'+(done?'다른 투표 보기':'네아니요에서 보기')+ic('external-link')+'</a>':'')+
-      '<span class="acts">'+(done&&p.type!=='relay'?'<button class="btn" data-act="stats">'+ic('chart-column')+'상세 통계</button>':'')+(done&&p.vis!=='secret'&&!embedded?'<button class="btn" data-act="card" aria-label="결과 이미지 저장" title="결과 이미지 저장">'+ic('image')+'결과 이미지</button>':'')+'<button class="btn" data-act="copy">'+ic(canShare?'share-2':'link')+(canShare?'공유':'링크 복사')+'</button>'+(p.vis==='secret'?'':'<button class="btn dark" data-act="embed">'+ic('code')+'임베드</button>')+'</span></div>'+
+      '<span class="acts">'+(done&&p.type!=='relay'?'<button class="btn" data-act="stats">'+ic('chart-column')+'상세 통계</button>':'')+(done&&p.vis!=='secret'&&!embedded?'<button class="btn" data-act="card" aria-label="결과 이미지 저장" title="결과 이미지 저장">'+ic('image')+'결과 이미지</button>':'')+'<button class="btn" data-act="copy">'+ic('share-2')+'공유</button>'+(p.vis==='secret'?'':'<button class="btn dark" data-act="embed">'+ic('code')+'임베드</button>')+'</span></div>'+
       '<div class="stats" hidden></div><div class="embed" hidden></div>'+(p.comments&&!embedded?cmtBlock(p,done):'')+'</article>';
   }
 
@@ -2799,6 +2804,37 @@ a.mine-it:hover{border-color:var(--muted)}
   function saveMine(){try{localStorage.setItem(MKEY,JSON.stringify(polls.filter(function(p){return p.own}).map(function(p){var c={};for(var k in p){if(k!=='t'&&k!=='h'&&k!=='_dv'&&k!=='_dc'&&k!=='_dp'&&k!=='boost')c[k]=p[k]} if(p._dv&&Array.isArray(p.v)) c.v=p.v.map(function(x,i){return Math.max(0,x-(p._dv[i]||0))}); return c})))}catch(e){}}
   function pwHash(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return 'h'+(h>>>0).toString(36)}
 
+  // ===== 공유하기: 카카오톡·다른 앱·페이스북·X·밴드·링크 복사 =====
+  var KAKAO_SDK='https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js';
+  function shareMsg(p){ var mi=myIdx(p); if(isQuiz(p)) return p.q+' 한번 풀어 보세요!'; return (typeof mi==='number'&&p.o[mi]?'저는 「'+p.o[mi]+'」 골랐어요. ':'')+p.q+' 어떻게 생각하세요?'; }
+  function kakaoShare(p){
+    var key=NY&&NY.kakaoKey; if(!key) return false;
+    var go=function(){ try{ if(!window.Kakao.isInitialized()) window.Kakao.init(key); window.Kakao.Share.sendScrap({requestUrl:shareUrl(p)}); }catch(e){ copy(shareMsg(p)+' '+shareUrl(p),'카카오톡을 열지 못해 링크를 복사했어요. 카톡에 붙여 넣어 주세요.'); } };
+    if(window.Kakao) go(); else { var sc=document.createElement('script'); sc.src=KAKAO_SDK; sc.onload=go; sc.onerror=function(){ copy(shareMsg(p)+' '+shareUrl(p),'카카오톡을 열지 못해 링크를 복사했어요.'); }; document.head.appendChild(sc); }
+    return true;
+  }
+  function shareSheet(p){
+    var u=shareUrl(p), t=shareMsg(p), e=encodeURIComponent, items=[];
+    if(NY&&NY.kakaoKey) items.push(['kakao','카카오톡','<svg viewBox="0 0 24 24" class="i"><path fill="#191919" d="M12 3.5C6.8 3.5 2.6 6.8 2.6 10.9c0 2.6 1.7 4.9 4.3 6.2l-1 3.7c-.1.3.3.6.6.4l4.3-2.9c.4 0 .8.1 1.2.1 5.2 0 9.4-3.3 9.4-7.4S17.2 3.5 12 3.5z"/></svg>']);
+    if(navigator.share) items.push(['native',NY&&NY.kakaoKey?'다른 앱':'카카오톡·다른 앱',ic('share-2')]);
+    items.push(['fb','페이스북','<svg viewBox="0 0 24 24" class="i"><path fill="#fff" d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.5V4.4c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.4H8v3h2.6V21z"/></svg>'],
+               ['x','X','<svg viewBox="0 0 24 24" class="i"><path fill="#fff" d="M17.8 3h3l-6.6 7.6L22 21h-6.1l-4.8-6.2L5.6 21h-3l7.1-8.1L2.2 3h6.2l4.3 5.7zm-1.1 16.2h1.7L7.4 4.7H5.6z"/></svg>'],
+               ['band','밴드','<svg viewBox="0 0 24 24" class="i"><text x="12" y="16.5" text-anchor="middle" font-size="12" font-weight="800" fill="#fff" font-family="Arial">b</text></svg>'],
+               ['copy','링크 복사',ic('link')]);
+    authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button><h2 id="authTitle">공유하기</h2><p class="shq">'+esc(p.q)+'</p>'+
+      '<div class="shgrid">'+items.map(function(x){ return '<button type="button" class="shb sh-'+x[0]+'" data-sh="'+x[0]+'"><span class="shi">'+x[2]+'</span><span>'+x[1]+'</span></button>'; }).join('')+'</div>'+
+      '<div class="shurl"><input readonly value="'+esc(u)+'" aria-label="투표 링크"><button type="button" class="btn dark" data-sh="copy">복사</button></div>';
+    openDialog();
+    authBody.querySelectorAll('[data-sh]').forEach(function(b){ b.onclick=function(){
+      var k=b.dataset.sh;
+      if(k==='kakao'){ kakaoShare(p); closeDialog(); }
+      else if(k==='native'){ navigator.share({title:'네아니요 · '+p.q,text:t,url:u}).catch(function(){}); closeDialog(); }
+      else if(k==='fb') window.open('https://www.facebook.com/sharer/sharer.php?u='+e(u),'_blank','noopener,width=600,height=640');
+      else if(k==='x') window.open('https://twitter.com/intent/tweet?text='+e(t)+'&url='+e(u),'_blank','noopener,width=600,height=520');
+      else if(k==='band') window.open('https://band.us/plugin/share?body='+e(t+'\n'+u)+'&route='+e(location.host),'_blank','noopener,width=600,height=640');
+      else if(k==='copy'){ copy(t+' '+u,'메시지와 링크를 복사했어요. 원하는 곳에 붙여 넣어 주세요.'); closeDialog(); }
+    }; });
+  }
   // ===== 결과 이미지 카드 (인스타·스레드·카톡용 1080×1350) =====
   function resultCard(p){
     var W=1080,H=1350,cv=document.createElement('canvas'); cv.width=W; cv.height=H; var g=cv.getContext('2d');
@@ -2955,10 +2991,7 @@ a.mine-it:hover{border-color:var(--muted)}
         return;
       }
       if(act==='card'){ resultCard(p); return; }
-      if(act==='copy'){
-        if(canShare){ navigator.share({title:'네아니요 · '+p.q,text:p.q+' 당신은 어느 쪽?',url:shareUrl(p)}).catch(function(err){ if(err&&err.name!=='AbortError') copy(shareUrl(p),'투표 링크를 복사했습니다.'); }); }
-        else copy(shareUrl(p),'투표 링크를 복사했습니다.');
-      }
+      if(act==='copy'){ shareSheet(p); return; }
       if(act==='edit'&&p.own){ startEdit(p); return; }
       if(act==='del'&&p.own){
         if(actBtn.classList.contains('sure')){ var di=polls.indexOf(p); if(di>=0) polls.splice(di,1); delete voted[p.id]; try{localStorage.setItem(KEY,JSON.stringify(voted))}catch(err){} saveMine(); art.remove(); toast('투표를 삭제했어요.'); return; }
@@ -3765,7 +3798,7 @@ a.mine-it:hover{border-color:var(--muted)}
     // ---- 시작 ----
     var ready=fetch('/api/config',{cache:'no-store'}).then(function(r){return r.ok?r.json():{}}).then(function(cfg){
       if(!cfg||!cfg.enabled) return;
-      api.providers=cfg.providers||['email']; api.on=true; if(cfg.demo===false){ DEMO.off(); document.documentElement.classList.add('no-beta'); }
+      api.providers=cfg.providers||['email']; api.on=true; api.kakaoKey=cfg.kakaoJs||''; if(cfg.demo===false){ DEMO.off(); document.documentElement.classList.add('no-beta'); }
       trackVisit(cfg);
       // 로그인 라이브러리는 투표 표시를 막지 않도록 따로 불러온다
       api.authReady=load(SUPA_JS).then(function(){
