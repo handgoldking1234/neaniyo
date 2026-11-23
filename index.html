@@ -19,6 +19,7 @@
 <meta name="twitter:image" content="https://neaniyo.iux.kr/assets/og.jpg?v=2">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2216%22%20height%3D%2232%22%20fill%3D%22%23E8336D%22/%3E%3Crect%20x%3D%2216%22%20width%3D%2216%22%20height%3D%2232%22%20fill%3D%22%232F5BEA%22/%3E%3Ccircle%20cx%3D%229%22%20cy%3D%2216%22%20r%3D%224.2%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.6%22/%3E%3Cpath%20d%3D%22M20%2012l7%208M27%2012l-7%208%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.6%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://flrdiplgoeyuvffwxvhq.supabase.co" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
 :root{--fs:1}
@@ -3687,6 +3688,7 @@ a.mine-it:hover{border-color:var(--muted)}
     };
     function loadMe(session){
       api.token=session.access_token; api.uid=session.user.id;
+      if(user&&user.sid===api.uid) authUI();
       call('profile').then(function(j){
         (j.votes||[]).forEach(function(v){ if(!vlog[v.poll_id]&&v.created_at){ vlog[v.poll_id]={t:Date.parse(v.created_at)}; } if(voted[v.poll_id]===undefined){ var p=polls.find(function(x){return x.id===v.poll_id}); voted[v.poll_id]=p&&p.type!=='relay'&&!p.multiSel?v.choice[0]:v.choice; } sent[v.poll_id]=1; });
         saveSent(); try{localStorage.setItem(KEY,JSON.stringify(voted))}catch(e){}
@@ -3797,12 +3799,19 @@ a.mine-it:hover{border-color:var(--muted)}
     }
 
     // ---- 시작 ----
-    var ready=fetch('/api/config',{cache:'no-store'}).then(function(r){return r.ok?r.json():{}}).then(function(cfg){
+    // 로그인 빠르게: ① 지난번 설정(공개 값)을 바로 쓰고 서버 설정은 뒤에서 갱신 ② 로그인 라이브러리는 처음부터 동시에 받는다
+    var CFG_KEY='ny_cfg_v1', cfgCache=null; try{ cfgCache=JSON.parse(localStorage.getItem(CFG_KEY)||'null'); }catch(e){}
+    var oauthBack=!!(params.get('code')||/access_token=/.test(location.hash));
+    if(oauthBack) setTimeout(function(){ if(!api.uid) toast('로그인하는 중이에요…'); },0);
+    var libP=(cfgCache&&cfgCache.enabled)||oauthBack?load(SUPA_JS):null;
+    var cfgFetch=fetch('/api/config',{cache:'no-store'}).then(function(r){return r.ok?r.json():{}}).then(function(cfg){ try{ localStorage.setItem(CFG_KEY,JSON.stringify(cfg||{})); }catch(e){} return cfg; });
+    var ready=(cfgCache&&cfgCache.enabled?Promise.resolve(cfgCache):cfgFetch).then(function(cfg){
       if(!cfg||!cfg.enabled) return;
+      if(cfg===cfgCache) cfgFetch.then(function(f){ if(f&&f.enabled){ api.providers=f.providers||api.providers; api.kakaoKey=f.kakaoJs||api.kakaoKey; } }).catch(function(){});
       api.providers=cfg.providers||['email']; api.on=true; api.kakaoKey=cfg.kakaoJs||''; if(cfg.demo===false){ DEMO.off(); document.documentElement.classList.add('no-beta'); }
       trackVisit(cfg);
       // 로그인 라이브러리는 투표 표시를 막지 않도록 따로 불러온다
-      api.authReady=load(SUPA_JS).then(function(){
+      api.authReady=(libP||load(SUPA_JS)).then(function(){
         api.sb=window.supabase.createClient(cfg.url,cfg.anonKey,{auth:{flowType:'pkce',persistSession:true,detectSessionInUrl:true,autoRefreshToken:true}});
         api.sb.auth.onAuthStateChange(function(ev,session){
           if(params.get('code')&&ev!=='TOKEN_REFRESHED'){ var cu=new URL(location.href); cu.searchParams.delete('code'); history.replaceState(null,'',cu.pathname+cu.search+cu.hash); }
