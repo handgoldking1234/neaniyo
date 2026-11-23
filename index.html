@@ -429,6 +429,7 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .sso{display:flex;flex-direction:column;gap:8px}
 .sso button{border:0;border-radius:10px;padding:13px;font-weight:700;font-size:calc(15px * var(--fs));cursor:pointer}
 .sso .kakao{background:#FEE500;color:#191600}
+.sso .naver{background:#03C75A;color:#fff}
 .sso .google{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
 .pf{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .pf .field{gap:4px}
@@ -2406,7 +2407,7 @@ a.mine-it:hover{border-color:var(--muted)}
   function openMenu(){
     if(!user){
       acctMenu.innerHTML='<div class="am-hd"><b>네아니요 시작하기</b><small>투표는 로그인 없이도 됩니다. 로그인하면 내 그룹별 결과와 투표 기록을 볼 수 있어요.</small></div>'+
-        (NY&&NY.on?'<div class="sso">'+NY.providers.filter(function(x){return x==='kakao'||x==='google'}).map(function(x){return '<button class="'+x+'" type="button" data-am="'+x+'">'+(x==='kakao'?'카카오로 시작하기':'Google로 시작하기')+'</button>'}).join('')+'<button class="btn dark" type="button" data-am="mail">'+ic('log-in')+'이메일로 시작하기</button></div>'
+        (NY&&NY.on?'<div class="sso">'+NY.providers.filter(function(x){return x==='kakao'||x==='naver'||x==='google'}).map(function(x){return '<button class="'+x+'" type="button" data-am="'+x+'">'+(x==='kakao'?'카카오로 시작하기':x==='naver'?'네이버로 시작하기':'Google로 시작하기')+'</button>'}).join('')+'<button class="btn dark" type="button" data-am="mail">'+ic('log-in')+'이메일로 시작하기</button></div>'
           :'<div class="sso"><button class="kakao" type="button" data-am="kakao">카카오로 시작하기</button><button class="google" type="button" data-am="google">Google로 시작하기</button></div>')+
         '<ul><li><a href="./#premium" data-am="link">'+ic('crown')+'프리미엄 알아보기</a></li></ul>';
     }else{
@@ -2423,7 +2424,7 @@ a.mine-it:hover{border-color:var(--muted)}
     var b=e.target.closest('[data-am]'); if(!b) return;
     var a=b.dataset.am; closeMenu();
     if(a==='mail') return NY.openLogin();
-    if(a==='kakao'||a==='google'){ if(NY&&NY.on) return NY.openLogin(a); auth.dataset.next=''; auth.dataset.via=a; return showProfile(); }
+    if(a==='kakao'||a==='naver'||a==='google'){ if(NY&&NY.on) return NY.openLogin(a); auth.dataset.next=''; auth.dataset.via=a; return showProfile(); }
     if(a==='me') return showMe();
     if(a==='pro') return startTrial();
     if(a==='unpro'){ user.pro=false; saveUser(); authUI(); toast('프리미엄 체험을 종료했습니다.'); return refreshOpenStats(); }
@@ -3650,14 +3651,14 @@ a.mine-it:hover{border-color:var(--muted)}
     };
 
     // ---- 로그인 ----
-    function viaOf(s){ var pv=s&&s.user&&s.user.app_metadata&&s.user.app_metadata.provider; return pv==='google'||pv==='kakao'?pv:'email'; }
+    function viaOf(s){ var pv=s&&s.user&&s.user.app_metadata&&s.user.app_metadata.provider; if(pv==='custom:naver') return 'naver'; return pv==='google'||pv==='kakao'?pv:'email'; }
     api.openLogin=function(prefer){
       if(!api.sb){ toast('로그인 준비 중이에요. 잠시 후 다시 눌러 주세요.'); return; }
       if(prefer&&api.providers.indexOf(prefer)>=0) return api.oauth(prefer);
-      var sso=api.providers.filter(function(x){return x==='kakao'||x==='google'});
+      var sso=api.providers.filter(function(x){return x==='kakao'||x==='naver'||x==='google'});
       authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>'+
         '<h2 id="authTitle">네아니요 시작하기</h2><p>투표는 로그인 없이도 됩니다. 로그인하면 한줄평을 남기고, 내 그룹별 결과와 투표 기록을 어느 기기에서나 볼 수 있어요.</p>'+
-        (sso.length?'<div class="sso">'+sso.map(function(x){return '<button class="'+x+'" type="button" data-ny-sso="'+x+'">'+(x==='kakao'?'카카오로 시작하기':'Google로 시작하기')+'</button>'}).join('')+'</div><p style="text-align:center;margin:10px 0;font-size:calc(12px * var(--fs))">또는 이메일로</p>':'')+
+        (sso.length?'<div class="sso">'+sso.map(function(x){return '<button class="'+x+'" type="button" data-ny-sso="'+x+'">'+(x==='kakao'?'카카오로 시작하기':x==='naver'?'네이버로 시작하기':'Google로 시작하기')+'</button>'}).join('')+'</div><p style="text-align:center;margin:10px 0;font-size:calc(12px * var(--fs))">또는 이메일로</p>':'')+
         '<form class="pf" id="nyMail" novalidate><div class="field full"><label for="nyMailIn">이메일</label><input id="nyMailIn" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required></div>'+
         '<p class="msg full" id="nyMailMsg" role="status"></p><button class="btn dark full" type="submit">로그인 링크 받기</button></form>'+
         '<p style="font-size:calc(12px * var(--fs))">비밀번호 없이, 메일로 받은 링크를 누르면 로그인돼요. 처음이면 자동으로 가입됩니다.</p>';
@@ -3676,7 +3677,7 @@ a.mine-it:hover{border-color:var(--muted)}
       });
       authBody.querySelectorAll('[data-ny-sso]').forEach(function(b){ b.onclick=function(){ api.oauth(b.dataset.nySso); }; });
     };
-    api.oauth=function(pv){ api.sb.auth.signInWithOAuth({provider:pv,options:{redirectTo:location.origin+location.pathname+location.search}}); };
+    api.oauth=function(pv){ api.sb.auth.signInWithOAuth({provider:pv==='naver'?'custom:naver':pv,options:{redirectTo:location.origin+location.pathname+location.search}}); };
     api.signOut=function(){ if(api.sb) api.sb.auth.signOut(); api.token=null; api.uid=null; };
     api.saveProfile=function(u){
       if(!api.token) return;
@@ -3814,7 +3815,7 @@ a.mine-it:hover{border-color:var(--muted)}
     api.ready=ready; api.call=call;
     return api;
   })();
-  function viaName(v){ return v==='google'?'Google':v==='kakao'?'카카오':'이메일'; }
+  function viaName(v){ return v==='google'?'Google':v==='kakao'?'카카오':v==='naver'?'네이버':'이메일'; }
 
   // 투표 데이터: 사이트에 포함된 data/polls.json + 자동 수집 피드(feed 브랜치, 배포 없이 갱신)
   var FEEDS=['data/polls.json','https://raw.githubusercontent.com/handgoldking1234/neaniyo/feed/data/polls.json'];
