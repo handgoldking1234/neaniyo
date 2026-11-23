@@ -3571,11 +3571,16 @@ a.mine-it:hover{border-color:var(--muted)}
       });
       DEMO.tick(true);
     }
+    // 지난번에 받은 사용자 투표·참여 수를 먼저 보여 준다 (서버 응답은 뒤에서 갱신)
+    api.addUserPoll=function(x){ addUserPoll(x); };
+    api.restore=function(c){ (c.u||[]).forEach(function(x){ try{ addUserPoll(JSON.parse(JSON.stringify(x))); }catch(e){} }); if(c.c) apply(c.c); };
     api.syncCounts=function(done){
       if(!api.on){ if(done) done(); return; }
       var ids=polls.filter(function(p){return REAL.test(p.id)}).map(function(p){return p.id}), jobs=[];
-      for(var i=0;i<ids.length;i+=150) jobs.push(call('counts?ids='+encodeURIComponent(ids.slice(i,i+150).join(','))).then(function(j){ apply(j.counts); }).catch(function(){}));
+      var got={};
+      for(var i=0;i<ids.length;i+=150) jobs.push(call('counts?ids='+encodeURIComponent(ids.slice(i,i+150).join(','))).then(function(j){ apply(j.counts); Object.assign(got,j.counts||{}); }).catch(function(){}));
       Promise.all(jobs).then(function(){
+        if(Object.keys(got).length) bootSave('c',got);
         if(started) [].forEach.call(document.querySelectorAll('.poll[data-id]'),function(a){ var p=polls.find(function(x){return x.id===a.dataset.id}); if(p&&REAL.test(p.id)) redraw(p); });
         if(done) done();
       });
@@ -3684,7 +3689,7 @@ a.mine-it:hover{border-color:var(--muted)}
     api.loadPolls=function(done){
       ready.then(function(){
         if(!api.on) return done();
-        var want=params.get('p')||params.get('embed'), jobs=[call('polls').then(function(j){ (j.polls||[]).forEach(function(x){addUserPoll(x)}); })];
+        var want=params.get('p')||params.get('embed'), jobs=[call('polls').then(function(j){ bootSave('u',(j.polls||[]).slice(0,300)); (j.polls||[]).forEach(function(x){addUserPoll(x)}); })];
         if(want&&/^u/.test(want)&&!polls.some(function(p){return p.id===want})) jobs.push(call('polls?id='+encodeURIComponent(want)).then(function(j){ addUserPoll(j.poll); }).catch(function(){}));
         Promise.all(jobs).catch(function(){}).then(function(){ api.syncCounts(done); });
       },function(){ done(); });
@@ -3762,13 +3767,16 @@ a.mine-it:hover{border-color:var(--muted)}
 
   // 투표 데이터: 사이트에 포함된 data/polls.json + 자동 수집 피드(feed 브랜치, 배포 없이 갱신)
   var FEEDS=['data/polls.json','https://raw.githubusercontent.com/handgoldking1234/neaniyo/feed/data/polls.json'];
+  // ===== 첫 화면 빠르게: 지난번 받은 데이터(최대 1일)를 먼저 그리고, 서버 응답이 오면 조용히 갱신 =====
+  var BOOT_KEY='ny_boot_v1', bootFeed=[], bootData=(function(){ try{ var c=JSON.parse(localStorage.getItem(BOOT_KEY)||'null'); return c&&Date.now()-c.t<864e5?c:null; }catch(e){ return null; } })()||{};
+  function bootSave(k,v){ try{ bootData[k]=v; bootData.t=Date.now(); localStorage.setItem(BOOT_KEY,JSON.stringify(bootData)); }catch(e){} }
   function loadFeeds(done){
-    var left=FEEDS.length+1, fin=function(){ if(--left===0) done(); };
+    var left=FEEDS.length+1, fin=function(){ if(--left===0){ var all=[].concat.apply([],bootFeed.filter(Boolean)); if(all.length) bootSave('f',all.slice(-400)); done(); } };
     var dataLeft=FEEDS.length, afterFiles=function(){ if(--dataLeft===0) NY.loadPolls(fin); };
     FEEDS.forEach(function(u,i){
       try{
         fetch(u+(i?'?t='+Math.floor(Date.now()/300000):''),{cache:'no-store'}).then(function(r){return r.ok?r.json():[]})
-          .then(function(list){ if(Array.isArray(list)) list.forEach(addDaily); afterFiles(); fin(); }).catch(function(){ afterFiles(); fin(); });
+          .then(function(list){ if(Array.isArray(list)){ try{ bootFeed[i]=JSON.parse(JSON.stringify(list)); }catch(e){} list.forEach(addDaily); } afterFiles(); fin(); }).catch(function(){ afterFiles(); fin(); });
       }catch(e){ afterFiles(); fin(); }
     });
   }
@@ -3838,9 +3846,25 @@ a.mine-it:hover{border-color:var(--muted)}
   })();
   var started=false;
   function start(){ if(started) return; DEMO.tick(true); started=true; init(); }
-  setTimeout(start,2500);
+  // 저장해 둔 피드·사용자 투표·참여 수를 먼저 넣는다
+  try{ (bootData.f||[]).forEach(function(x){ try{ addDaily(JSON.parse(JSON.stringify(x))); }catch(e){} }); if(NY&&NY.restore) NY.restore(bootData); }catch(e){}
+  polls.sort(function(a,b){return a.t-b.t});
+  // 링크로 들어온 투표가 아직 없으면(처음 보는 사용자 투표 등) 그 투표를 기다리고, 아니면 바로 그린다
+  var wantId=params.get('p')||params.get('embed');
+  if(!wantId||polls.some(function(p){return p.id===wantId})) start();
+  else {
+    setTimeout(start,2500);
+    // 공유 링크로 들어온 사용자 투표는 로그인 설정을 기다리지 않고 바로 받아 온다
+    if(/^u[\w-]{1,39}$/.test(wantId)) fetch('/api/polls?id='+encodeURIComponent(wantId)).then(function(r){return r.ok?r.json():{}}).then(function(j){
+      if(j&&j.poll&&NY&&NY.addUserPoll){ NY.addUserPoll(j.poll); polls.sort(function(a,b){return a.t-b.t}); }
+      if(!started) start(); else route();
+    }).catch(function(){});
+  }
   try{
-    loadFeeds(function(){ nextUp(); polls.sort(function(a,b){return a.t-b.t}); start(); if(started) route(); });
+    var bootN=polls.length;
+    loadFeeds(function(){ nextUp(); polls.sort(function(a,b){return a.t-b.t}); if(!started){ start(); return; }
+      // 새로 들어온 투표가 있을 때만 다시 그린다 (펼친 통계는 유지)
+      if(polls.length!==bootN){ if((location.hash||'#vote')==='#vote'||!location.hash) reRenderKeep(); else route(); } });
     // 10분마다 새로 쌓인 예약 투표를 받아 옴 (배포 없이 갱신)
     setInterval(function(){ if(!document.hidden) loadFeeds(function(){ nextUp(); releaseDue(); }); },600000);
   }catch(e){start()}
