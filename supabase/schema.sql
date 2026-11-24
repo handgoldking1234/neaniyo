@@ -245,11 +245,16 @@ returns jsonb language sql stable security definer set search_path = public as $
            row_number() over (order by c.n desc, c.last_at asc) rn,
            case when p.rank_public then p.nickname end nick
     from c left join ny_profiles p on p.id = c.user_id
+  ), a as ( -- 등급은 기간과 상관없이 전체 누적 투표 수로 정함
+    select v.user_id, count(*)::int t from ny_votes v
+    where v.user_id in (select user_id from r where rn <= lim) or v.user_id = me
+    group by v.user_id
   )
   select jsonb_build_object(
-    'top', coalesce((select jsonb_agg(jsonb_build_object('r', rk, 'name', nick, 'n', n) order by rn) from r where rn <= lim), '[]'::jsonb),
+    'top', coalesce((select jsonb_agg(jsonb_build_object('r', rk, 'name', nick, 'n', n, 't', coalesce(a.t, r.n)) order by rn) from r left join a using (user_id) where rn <= lim), '[]'::jsonb),
     'total', (select count(*) from r),
-    'me', (select jsonb_build_object('r', rk, 'n', n) from r where me is not null and user_id = me)
+    'me', (select jsonb_build_object('r', rk, 'n', n) from r where me is not null and user_id = me),
+    'myTotal', (select t from a where me is not null and user_id = me)
   );
 $$;
 revoke all on function public.ny_top_voters(int, int, uuid) from public, anon, authenticated;

@@ -9,7 +9,7 @@ export default handler(async (req, res) => {
     const days = [7, 30, 0].includes(+req.query.days) ? +req.query.days : 7;
     const user = await authUser(req).catch(() => null);
     const j = (await rpc('ny_top_voters', { days, lim: 30, me: user ? user.id : null })) || {};
-    return send(res, 200, { top: j.top || [], total: j.total || 0, me: j.me || null, days }, user ? 'private, max-age=30' : 'public, max-age=60');
+    return send(res, 200, { top: j.top || [], total: j.total || 0, me: j.me || null, myTotal: j.myTotal || 0, days }, user ? 'private, max-age=30' : 'public, max-age=60');
   }
   const id = String(req.query.id || '');
   if (!/^[\w-]{1,40}$/.test(id)) return fail(res, 400, 'id');
