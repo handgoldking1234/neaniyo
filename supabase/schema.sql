@@ -258,3 +258,34 @@ returns jsonb language sql stable security definer set search_path = public as $
   );
 $$;
 revoke all on function public.ny_top_voters(int, int, uuid) from public, anon, authenticated;
+
+-- 11. 인기 출제자: 내가 만든(승인된) 투표가 받은 표. 로그인한 사람 표만, 만든 사람 본인 표는 제외
+create or replace function public.ny_top_creators(days int default 7, lim int default 30, me uuid default null)
+returns jsonb language sql stable security definer set search_path = public as $$
+  with rv as (
+    select up.user_id, v.created_at
+    from ny_user_polls up join ny_votes v on v.poll_id = up.id
+    where up.status = 'approved' and v.user_id is not null and v.user_id <> up.user_id
+  ), c as (
+    select user_id, count(*)::int n, max(created_at) last_at from rv
+    where days <= 0 or created_at >= now() - make_interval(days => days)
+    group by user_id
+  ), r as (
+    select c.user_id, c.n, rank() over (order by c.n desc)::int rk,
+           row_number() over (order by c.n desc, c.last_at asc) rn,
+           case when p.rank_public then p.nickname end nick
+    from c left join ny_profiles p on p.id = c.user_id
+  ), a as (
+    select user_id, count(*)::int t from rv
+    where user_id in (select user_id from r where rn <= lim) or user_id = me
+    group by user_id
+  )
+  select jsonb_build_object(
+    'top', coalesce((select jsonb_agg(jsonb_build_object('r', rk, 'name', nick, 'n', n, 't', coalesce(a.t, r.n)) order by rn) from r left join a using (user_id) where rn <= lim), '[]'::jsonb),
+    'total', (select count(*) from r),
+    'me', (select jsonb_build_object('r', rk, 'n', n) from r where me is not null and user_id = me),
+    'myTotal', coalesce((select t from a where me is not null and user_id = me), 0),
+    'myPolls', (select count(*)::int from ny_user_polls where me is not null and user_id = me and status = 'approved')
+  );
+$$;
+revoke all on function public.ny_top_creators(int, int, uuid) from public, anon, authenticated;

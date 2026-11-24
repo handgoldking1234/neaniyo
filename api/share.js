@@ -89,7 +89,7 @@ async function sitemap(res) {
     const r = await db('ny_user_polls?select=id,created_at&status=eq.approved&vis=eq.public&order=created_at.desc&limit=2000').catch(() => []);
     for (const x of r) urls.push({ loc: `${SITE}/p/${encodeURIComponent(x.id)}`, at: x.created_at });
   }
-  urls.push({ loc: `${SITE}/privacy` }, { loc: `${SITE}/terms` });
+  urls.push({ loc: `${SITE}/guide` }, { loc: `${SITE}/privacy` }, { loc: `${SITE}/terms` });
   const seen = new Set();
   const body = urls.filter(u => !seen.has(u.loc) && seen.add(u.loc)).map(u => `<url><loc>${esc(u.loc)}</loc>${u.at ? `<lastmod>${u.at.slice(0, 10)}</lastmod>` : ''}</url>`).join('');
   res.statusCode = 200;

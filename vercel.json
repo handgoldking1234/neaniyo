@@ -40,6 +40,10 @@
     {
       "source": "/terms",
       "destination": "/terms.html"
+    },
+    {
+      "source": "/guide",
+      "destination": "/guide.html"
     }
   ],
   "crons": [

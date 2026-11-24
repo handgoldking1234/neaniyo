@@ -5,6 +5,12 @@ import { handler, send, fail, rpc, authUser } from './_lib.js';
 const MIN_N = 30;
 export default handler(async (req, res) => {
   // GET /api/stats?view=voters&days=7|30|0 → 투표왕 랭킹 (로그인 불필요, 로그인하면 내 순위 포함)
+  if (req.query.view === 'creators') {
+    const days = [7, 30, 0].includes(+req.query.days) ? +req.query.days : 7;
+    const user = await authUser(req).catch(() => null);
+    const j = (await rpc('ny_top_creators', { days, lim: 30, me: user ? user.id : null })) || {};
+    return send(res, 200, { top: j.top || [], total: j.total || 0, me: j.me || null, myTotal: j.myTotal || 0, myPolls: j.myPolls || 0, days }, user ? 'private, max-age=30' : 'public, max-age=60');
+  }
   if (req.query.view === 'voters') {
     const days = [7, 30, 0].includes(+req.query.days) ? +req.query.days : 7;
     const user = await authUser(req).catch(() => null);
