@@ -652,7 +652,7 @@ function adPollRow(r,kind){
   var d=r.data||{}, b=AD.busy[r.id]?' disabled':'';
   var vis={public:'공개',link:'링크',secret:'비밀방'}[r.vis]||r.vis;
   return '<tr><td style="white-space:nowrap">'+adWhen(r.created_at)+'</td><td><span class="chip mute">'+esc(d.cat||'-')+'</span> <span class="chip '+(r.vis==='public'?'live':'wait')+'">'+vis+'</span></td>'+
-    '<td><a href="/?p='+encodeURIComponent(r.id)+'" target="_blank" rel="noopener"><b>'+esc(d.q||'(제목 없음)')+'</b></a><div class="sub">'+esc((d.o||[]).join(' / '))+'</div>'+(d.story?'<div class="sub">'+esc(String(d.story).slice(0,120))+'</div>':'')+'</td>'+
+    '<td><a href="/?p='+encodeURIComponent(r.id)+'" target="_blank" rel="noopener"><b>'+esc(d.q||'(제목 없음)')+'</b></a><div class="sub">'+esc((d.o||[]).join(' / '))+'</div>'+(d.story?'<div class="sub">'+esc(String(d.story).slice(0,120))+'</div>':'')+((d.imgs&&d.imgs.length)?'<div class="sub" style="color:#B45309;font-weight:700">사진 '+d.imgs.length+'장 · 연예인·유명인 실사진, 뉴스·방송·영화 캡처, 남의 작품이면 공개하지 마세요(초상권·저작권)</div>':'')+'</td>'+
     '<td style="white-space:nowrap">'+(kind==='pending'?'<button class="btn pri" type="button" data-act="ad" data-op="approve" data-id="'+esc(r.id)+'"'+b+'>공개</button> ':'')+
     '<button class="btn dng" type="button" data-act="ad" data-op="reject" data-id="'+esc(r.id)+'"'+b+'>'+(kind==='pending'?'반려':'내리기')+'</button></td></tr>';
 }
