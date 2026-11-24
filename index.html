@@ -2618,6 +2618,8 @@ a.mine-it:hover{border-color:var(--muted)}
     if(searchQ&&(location.hash||'#vote')!=='#vote'){ location.hash='#vote'; return; }
     render();
   }
+  // 주소의 ?q= 로 들어오면 바로 검색 (검색엔진 사이트 검색 연결)
+  setTimeout(function(){ var uq=params.get('q'); if(uq){ srchIn.value=uq; if(window.innerWidth<=720){ srchBar.hidden=false; } applySearch(uq); } },0);
   function openSearch(){ closeMenu(); srchBar.hidden=false; srchBtn.setAttribute('aria-expanded','true'); srchIn.focus(); }
   function closeSearch(){ if(window.innerWidth>720){ srchIn.value=''; applySearch(''); srchIn.blur(); return; } srchBar.hidden=true; srchBtn.setAttribute('aria-expanded','false'); if(searchQ||srchIn.value){ srchIn.value=''; applySearch(''); } srchBtn.focus(); }
   srchBtn.onclick=openSearch;
