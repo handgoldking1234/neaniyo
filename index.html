@@ -429,14 +429,14 @@ body.embedded .sitefoot{display:none}
 .lg{align-items:stretch;text-align:center;gap:0!important;padding:28px 24px 22px!important}
 .lg .lg-brand{display:inline-flex;align-self:center;align-items:center;gap:8px;font-weight:800;font-size:calc(18px * var(--fs));color:var(--ink)}
 .lg .lg-brand svg{width:28px;height:28px}
-.lg h2{font-size:calc(28px * var(--fs))!important;margin:26px 0 6px!important;letter-spacing:-.5px}
+.lg h2{font-size:calc(28px * var(--fs))!important;margin:30px 0 26px!important;letter-spacing:-.5px}
 .lg .lg-sub{margin:0 0 24px!important}
 .lg .lg-mail{display:flex;align-items:center;justify-content:center;position:relative;width:100%;height:52px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:calc(16px * var(--fs));cursor:pointer}
 .lg .lg-mail .i{position:absolute;left:18px;width:22px;height:22px}
 .lg .lg-mail:hover{border-color:var(--muted)}
 .lg .lg-or{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--muted);font-size:calc(13px * var(--fs))}
 .lg .lg-or:before,.lg .lg-or:after{content:"";flex:1;height:1px;background:var(--line)}
-.lg .lg-sso{display:flex;justify-content:center;gap:18px;margin:0 0 22px}
+.lg .lg-sso{display:flex;justify-content:center;gap:22px;margin:0 0 22px}
 .lg .lg-sso button{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;padding:0;cursor:pointer;color:var(--muted);font-size:calc(12px * var(--fs))}
 .lg .lg-sso .c{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:#fff;transition:transform .12s}
 .lg .lg-sso button:hover .c{transform:translateY(-2px)}
@@ -447,6 +447,7 @@ body.embedded .sitefoot{display:none}
 .lg .lg-box{display:grid;grid-template-columns:1fr 1fr;background:var(--bg,#F5F6F8);border-radius:10px;padding:14px 0;font-size:calc(13px * var(--fs));color:var(--muted)}
 .lg .lg-box div+div{border-left:1px solid var(--line)}
 .lg .lg-box a{display:inline-block;margin-top:3px;color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.lg .lg-help{margin:22px 0 0!important;color:var(--ink)!important;font-size:calc(14px * var(--fs))!important}.lg .lg-help a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 .lg .lg-foot{margin:16px 0 0!important;font-size:calc(12px * var(--fs))!important}
 .lg .lg-foot a{color:var(--muted)}
 .lg #nyMail{margin-top:4px;text-align:left}
@@ -2491,7 +2492,7 @@ a.mine-it:hover{border-color:var(--muted)}
     }
     acctMenu.hidden=false; loginBtn.setAttribute('aria-expanded','true');
   }
-  loginBtn.onclick=function(e){ e.stopPropagation(); acctMenu.hidden?openMenu():closeMenu(); };
+  loginBtn.onclick=function(e){ e.stopPropagation(); if(!user&&NY&&NY.on){ closeMenu(); return NY.openLogin(); } acctMenu.hidden?openMenu():closeMenu(); };
   acctMenu.addEventListener('click',function(e){
     var b=e.target.closest('[data-am]'); if(!b) return;
     var a=b.dataset.am; closeMenu();
@@ -3727,7 +3728,7 @@ a.mine-it:hover{border-color:var(--muted)}
     api.openLogin=function(prefer){
       if(!api.sb){ toast('로그인 준비 중이에요. 잠시 후 다시 눌러 주세요.'); return; }
       if(prefer&&api.providers.indexOf(prefer)>=0) return api.oauth(prefer);
-      var sso=api.providers.filter(function(x){return x==='kakao'||x==='naver'||x==='google'});
+      var sso=['kakao','naver','google'].filter(function(x){return api.providers.indexOf(x)>=0});
       var ICO={kakao:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#191600" d="M12 3.6c-5.1 0-9.2 3.2-9.2 7.2 0 2.6 1.7 4.8 4.3 6.1l-.9 3.4c-.1.3.3.6.6.4l4-2.7c.4 0 .8.1 1.2.1 5.1 0 9.2-3.2 9.2-7.2S17.1 3.6 12 3.6z"/></svg>',
         naver:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#03C75A" d="M15.6 12.8 8.1 2H2v20h6.4V11.2L15.9 22H22V2h-6.4z"/></svg>',
         google:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.8z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 7.9-2.9l-3.9-3c-1.1.7-2.4 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.4v3.1C3.4 21.4 7.4 24 12 24z"/><path fill="#FBBC05" d="M5.4 14.4c-.2-.7-.4-1.5-.4-2.4s.1-1.6.4-2.4V6.5h-4C.5 8.2 0 10 0 12s.5 3.8 1.4 5.5l4-3.1z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4C18 1.2 15.2 0 12 0 7.4 0 3.4 2.6 1.4 6.5l4 3.1C6.3 6.9 8.9 4.8 12 4.8z"/></svg>'},
@@ -3735,12 +3736,12 @@ a.mine-it:hover{border-color:var(--muted)}
       var hasMail=api.providers.indexOf('email')>=0;
       authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>'+
         '<div class="lg-brand"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><clipPath id="lgdlg"><rect width="32" height="32" rx="9"/></clipPath></defs><g clip-path="url(#lgdlg)"><rect width="16" height="32" fill="var(--a)"/><rect x="16" width="16" height="32" fill="var(--b)"/></g><circle cx="9" cy="16" r="4.2" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M20 12l7 8M27 12l-7 8" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>네아니요</div>'+
-        '<h2 id="authTitle">로그인</h2><p class="lg-sub">투표는 로그인 없이도 할 수 있어요.<br>로그인하면 그룹별 결과, 등급, 투표 기록을 어디서나 볼 수 있어요.</p>'+
+        '<h2 id="authTitle">로그인</h2>'+
         (hasMail?'<button type="button" class="lg-mail" data-ny-mail>'+ic('mail')+'이메일로 로그인</button>':'')+
         (hasMail&&sso.length?'<div class="lg-or">또는</div>':'')+
-        (sso.length?'<div class="lg-sso">'+sso.map(function(x){return '<button class="'+x+'" type="button" data-ny-sso="'+x+'" aria-label="'+NAME[x]+'로 로그인">'+(last===x?'<span class="recent">최근 로그인</span>':'')+'<span class="c">'+ICO[x]+'</span>'+NAME[x]+'</button>'}).join('')+'</div>':'')+
-        '<div class="lg-box"><div>처음이신가요?<br><span>로그인하면 바로 가입돼요</span></div><div>궁금한 점이 있나요?<br><a href="guide#faq">이용 가이드</a></div></div>'+
-        '<p class="lg-foot"><a href="terms" target="_blank" rel="noopener">이용약관</a> · <a href="privacy" target="_blank" rel="noopener"><b>개인정보처리방침</b></a></p>';
+        (sso.length?'<div class="lg-sso">'+sso.map(function(x){return '<button class="'+x+'" type="button" data-ny-sso="'+x+'" aria-label="'+NAME[x]+'로 로그인">'+(last===x?'<span class="recent">최근 로그인</span>':'')+'<span class="c">'+ICO[x]+'</span></button>'}).join('')+'</div>':'')+
+        '<div class="lg-box"><div>처음이신가요?<br><span>로그인하면 바로 가입돼요</span></div><div>투표는 로그인 없이도 돼요<br><a href="guide">이용 가이드</a></div></div>'+
+        '<p class="lg-help">로그인에 어려움이 있나요? <a href="guide#faq">도움말</a></p><p class="lg-foot"><a href="terms" target="_blank" rel="noopener">이용약관</a> · <a href="privacy" target="_blank" rel="noopener"><b>개인정보처리방침</b></a></p>';
       openDialog();
       var mb=authBody.querySelector('[data-ny-mail]');
       if(mb) mb.onclick=function(){
