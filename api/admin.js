@@ -2,7 +2,7 @@
 // GET  /api/admin                     → 승인 대기 투표, 최근 공개 투표, 검토 대기·신고 한줄평
 // GET  /api/admin?view=stats&days=14  → 방문·참여·유입·기기 통계 (ny_admin_stats)
 // GET  /api/admin?view=members&q=     → 회원 목록 (ny_admin_members)
-// POST /api/admin {act, id, reason}   → approve | reject (투표), show | hide | delete (한줄평), setadmin | unadmin | ban | unban (회원), testmail
+// POST /api/admin {act, id, reason}   → approve | reject | setcat{cat,sub} (투표), show | hide | delete (한줄평), setadmin | unadmin | ban | unban (회원), testmail
 import { handler, send, fail, db, rpc, authUser, body, mail, SUPA_URL } from './_lib.js';
 export default handler(async (req, res) => {
   const user = await authUser(req); if (!user) return fail(res, 401, 'login');
@@ -31,6 +31,14 @@ export default handler(async (req, res) => {
   switch (b.act) {
     case 'approve': await db(`ny_user_polls?id=eq.${encodeURIComponent(id)}`, { method: 'PATCH', body: { status: 'approved', reject_reason: null, updated_at: now } }); break;
     case 'reject': await db(`ny_user_polls?id=eq.${encodeURIComponent(id)}`, { method: 'PATCH', body: { status: 'rejected', reject_reason: String(b.reason || '').slice(0, 200) || null, updated_at: now } }); break;
+    case 'setcat': { // 카테고리 바로잡기 (data.cat / data.sub)
+      const cat = String(b.cat || '').slice(0, 20), sub = String(b.sub || '').slice(0, 20);
+      if (!cat) return fail(res, 400, 'cat');
+      const rows = await db(`ny_user_polls?id=eq.${encodeURIComponent(id)}&select=data`);
+      if (!rows || !rows[0]) return fail(res, 404, 'poll');
+      await db(`ny_user_polls?id=eq.${encodeURIComponent(id)}`, { method: 'PATCH', body: { data: { ...rows[0].data, cat, sub }, updated_at: now } });
+      break;
+    }
     case 'show': await db(`ny_comments?id=eq.${encodeURIComponent(id)}`, { method: 'PATCH', body: { status: 'visible' } }); break;
     case 'hide': await db(`ny_comments?id=eq.${encodeURIComponent(id)}`, { method: 'PATCH', body: { status: 'hidden' } }); break;
     case 'delete': await db(`ny_comments?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE' }); break;

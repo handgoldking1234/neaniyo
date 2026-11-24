@@ -3311,7 +3311,7 @@ a.mine-it:hover{border-color:var(--muted)}
   function fillSubs(){ var t=TAX.filter(function(x){return x.c===catSel.value})[0]; subSel.innerHTML=t.s.map(function(x){return '<option>'+x+'</option>'}).join(''); }
   function setCat(c,sub){ if(catTouched) return; if(catSel.value!==c){ catSel.value=c; fillSubs(); } if(sub) subSel.value=sub; }
   catSel.addEventListener('change',function(){ catTouched=true; fillSubs(); sync(); });
-  catSel.value='연예'; fillSubs();
+  catSel.value='밸런스'; fillSubs();
 
   // 사진: 클릭·드래그·붙여넣기
   function shrink(file,cb){
@@ -3411,17 +3411,43 @@ a.mine-it:hover{border-color:var(--muted)}
     return {kind:'vs',name:'OX',desc:'둘 중 하나를 골라요',story:story,img:nImg>=1,nImg:nImg};
   }
   function linkOf(){ return relayMode?null:parseLink(linkIn.value); }
+  function dupOf(arr){ var seen={}; for(var i=0;i<arr.length;i++){ var k=String(arr[i]).replace(/\s+/g,'').toLowerCase(); if(!k) continue; if(seen[k]) return arr[i]; seen[k]=1; } return ''; }
   function autoCat(d){
-    var t=qIn.value+' '+storyIn.value, lk=linkOf();
+    var opts=optInputs().map(function(i){return i.value}).join(' ');
+    var t=qIn.value+' '+storyIn.value+' '+opts, lk=linkOf();
     if(quizMode||/수능|모의고사|퀴즈|정답|[1-6]학년|초등|중학|고등학/.test(t)) return ['교육',/수능|모의고사/.test(t)?'수능':/초등|[1-6]학년/.test(t)?'초등':/중학|고등학/.test(t)?'중·고등':'상식'];
     if(d.story) return ['사연'];
+    // 음식은 제목에 '먹'만 있어도 거의 확실해서 먼저 봐요 (예: 연말모임 뭘 먹을까?)
+    if(/먹을|먹지|먹고|먹자|먹는|맛집|음식|메뉴|요리|카페|외식|배달|야식|간식|디저트|커피|치킨|피자|햄버거|파스타|고기|삼겹살|갈비|소고기|돼지|족발|보쌈|초밥|스시|일식|중식|한식|양식|분식|라면|떡볶이|국밥|짜장|짬뽕|탕수육|부먹|찍먹|냉면|마라탕|탕후루|붕어빵|호떡|술집|맥주|소주|와인|케이크/.test(t)&&!/회식/.test(t)) return ['라이프','음식·맛집'];
     if(/예고편|티저|영화|개봉|극장|시사회/.test(t)) return ['연예','영화'];
-    if(/드라마|넷플릭스|OTT/.test(t)) return ['연예','배우·드라마'];
+    if(/드라마|넷플릭스|OTT|배우/.test(t)) return ['연예','배우·드라마'];
+    if(/아이돌|컴백|앨범|음원|가수|콘서트|팬미팅|걸그룹|보이그룹|K-?팝/.test(t)) return ['연예','아이돌·K팝'];
+    if(/예능|방송|PD|MC/.test(t)) return ['연예','예능·방송'];
     if(/뉴스|기사|속보|보도/.test(t)||(lk&&!lk.yt)) return ['사회','생활·소비'];
     if(lk&&lk.yt) return ['연예','유튜버·인플루언서'];
-    if(/등산|등반|여행|캠핑|나들이|단풍|바다|휴가/.test(t)) return ['라이프','여행·여가'];
-    if(/맛집|음식|메뉴|요리|카페/.test(t)) return ['라이프','음식·맛집'];
+    if(/등산|등반|여행|캠핑|나들이|단풍|바다|휴가|호캉스|해외|제주/.test(t)) return ['라이프','여행·여가'];
+    if(/연애|결혼|썸|데이트|소개팅|남친|여친|애인|고백|이별/.test(t)) return ['라이프','연애·결혼'];
+    if(/육아|아기|아이랑|어린이집|유치원|부모님|명절|가족/.test(t)) return ['라이프','육아·가족'];
+    if(/운동|헬스|다이어트|러닝|요가|필라테스|건강|수면/.test(t)) return ['라이프','건강·운동'];
+    if(/회사|직장|상사|동료|이직|퇴사|연봉|야근|출근|재택|회식/.test(t)) return ['사회','직장·노동'];
+    if(/날씨|추위|더위|폭염|한파|내복|미세먼지|장마|환경|분리수거/.test(t)) return ['사회','환경·날씨'];
+    if(/지하철|버스|운전|교통|주차|택시/.test(t)) return ['사회','교통·안전'];
+    if(/주식|코스피|나스닥|ETF/.test(t)) return ['경제','주식'];
+    if(/부동산|집값|전세|월세|청약/.test(t)) return ['경제','부동산'];
+    if(/코인|비트코인/.test(t)) return ['경제','코인'];
+    if(/적금|저축|재테크|용돈|월급|가계부/.test(t)) return ['경제','재테크·소비'];
+    if(/야구|KBO|MLB/.test(t)) return ['스포츠','야구'];
+    if(/축구|EPL|K리그|월드컵/.test(t)) return ['스포츠','축구'];
+    if(/농구|배구/.test(t)) return ['스포츠','농구·배구'];
+    if(/롤|LoL|e스포츠|이스포츠/.test(t)) return ['스포츠','e스포츠'];
+    if(/게임|닌텐도|플스|스팀/.test(t)) return ['IT·게임','게임'];
+    if(/아이폰|갤럭시|스마트폰|휴대폰|핸드폰/.test(t)) return ['IT·게임','스마트폰'];
+    if(/AI|인공지능|챗GPT|GPT/.test(t)) return ['IT·게임','AI·테크'];
+    if(/옷|코디|패딩|신발|가방|패션/.test(t)) return ['패션·쇼핑','패션'];
+    if(/화장품|립|쿠션|향수|뷰티/.test(t)) return ['패션·쇼핑','뷰티'];
     if(upImgs.length&&!relayMode&&!photoAsk) return ['패션·쇼핑'];
+    // 어디에도 안 맞으면 연예 대신 일반 취향 투표로
+    if(qIn.value.trim().length>=4) return ['밸런스','취향'];
     return null;
   }
   // ===== 문제(정답 있는) 모드 =====
@@ -3470,7 +3496,7 @@ a.mine-it:hover{border-color:var(--muted)}
     mselWrap.hidden=quizMode||!(d.kind==='multi'||d.kind==='photo'); syncAns();
     // 카테고리 자동 제안
     var autoC=autoCat(d), lk=linkOf(), raw=linkIn.value.trim();
-    if(!catTouched){ var key=autoC?autoC.join('/'):''; if(key!==sync.key){ if(autoC){ setCat(autoC[0],autoC[1]); } else if(sync.key){ catSel.value='연예'; fillSubs(); } sync.key=key; } }
+    if(!catTouched){ var key=autoC?autoC.join('/'):''; if(key!==sync.key){ if(autoC){ setCat(autoC[0],autoC[1]); } else if(sync.key){ catSel.value='밸런스'; fillSubs(); } sync.key=key; } }
     linkWrap.hidden=relayMode;
     linkPrev.hidden=!raw; linkPrev.className='linkprev'+(lk?' ok':'');
     linkPrev.innerHTML=lk?(lk.yt?ic('clapperboard')+'유튜브 영상 · 카드에서 바로 재생':ic('newspaper')+esc(lk.host)+' · 카드 아래 원문 링크로 붙어요'):'주소 형식이 아니에요. https://로 시작하는 주소를 넣어 주세요.';
@@ -3497,6 +3523,7 @@ a.mine-it:hover{border-color:var(--muted)}
       var qs=[].map.call(rbuild.children,function(b){ var qq=b.querySelector('.rqi').value.trim(), oo=[].map.call(b.querySelectorAll('.roi'),function(x){return x.value.trim()}).filter(Boolean); if(!oo.length) oo=suggestAns(qq).slice(); return {q:qq,o:oo}; });
       var bad=qs.findIndex(function(x){return !x.q||x.o.length<2});
       if(bad>=0){ fail(qs[bad].q?'Q'+(bad+1)+'의 보기를 하나 더 입력하거나 모두 비워 두세요.':'Q'+(bad+1)+' 질문을 입력해 주세요.'); return; }
+      for(var dq=0;dq<qs.length;dq++){ var dd=dupOf(qs[dq].o); if(dd){ fail('Q'+(dq+1)+'에 보기 "'+dd+'"이(가) 두 번 들어가 있어요.'); return; } }
       if(quizMode){
         for(var qk=0;qk<rbuild.children.length;qk++){
           var rb0=rbuild.children[qk], typed=[].filter.call(rb0.querySelectorAll('.roi'),function(x){return x.value.trim()}).length, ra=ansOf(rb0.querySelector('.rans'));
@@ -3516,6 +3543,7 @@ a.mine-it:hover{border-color:var(--muted)}
         o=vals.filter(Boolean);
         if(o.length===0) o=suggestAns(q+' '+storyIn.value).slice();
         else if(o.length===1){ fail('보기를 하나 더 입력하거나 둘 다 비워 두세요.'); return; }
+        var dup=dupOf(o); if(dup){ fail('보기 "'+dup+'"이(가) 두 번 들어가 있어요. 하나를 바꾸거나 지워 주세요.'); return; }
         np.type=o.length>2?'multi':'vs';
         if(upImgs.length===1) np.img=upImgs[0];
         else if(upImgs.length>1) np.gal=upImgs.slice();
@@ -3541,7 +3569,7 @@ a.mine-it:hover{border-color:var(--muted)}
       location.href='?p='+np.id; return;
     }
     polls.unshift(np); saveMine(); if(NY) NY.submitPoll(np);
-    form.reset(); upImgs=[]; photoAsk=false; relayMode=false; catTouched=false; sync.key=''; ansrow.dataset.a=''; setQuiz(false); ['f-photo-wrap','f-link-wrap','f-cat-wrap','f-story-wrap'].forEach(function(id){openFold(id,false)}); form.classList.remove('st-open'); rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='연예'; fillSubs();
+    form.reset(); upImgs=[]; photoAsk=false; relayMode=false; catTouched=false; sync.key=''; ansrow.dataset.a=''; setQuiz(false); ['f-photo-wrap','f-link-wrap','f-cat-wrap','f-story-wrap'].forEach(function(id){openFold(id,false)}); form.classList.remove('st-open'); rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='밸런스'; fillSubs();
     document.getElementById('f-story-n').textContent='0'; syncVis();
     // 전체 공개는 바로 메인 맨 위로, 링크·비밀방은 주소를 보여 줌
     if(vis==='public'){ document.getElementById('made').hidden=true; pinId=np.id; setFilter('all',''); location.hash='#vote'; window.scrollTo({top:0}); toast('투표를 올렸어요! 메인 맨 위에 있어요.'); }
@@ -3550,7 +3578,7 @@ a.mine-it:hover{border-color:var(--muted)}
   function endEdit(silent){
     editId=null; document.getElementById('editbar').hidden=true; document.getElementById('f-submit').textContent='투표 올리기';
     pwIn.placeholder='비밀번호 4자 이상';
-    if(!silent){ form.reset(); upImgs=[]; photoAsk=false; relayMode=false; catTouched=false; sync.key=''; ['f-photo-wrap','f-link-wrap','f-cat-wrap','f-story-wrap'].forEach(function(id){openFold(id,false)}); form.classList.remove('st-open'); rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='연예'; fillSubs(); syncVis(); }
+    if(!silent){ form.reset(); upImgs=[]; photoAsk=false; relayMode=false; catTouched=false; sync.key=''; ['f-photo-wrap','f-link-wrap','f-cat-wrap','f-story-wrap'].forEach(function(id){openFold(id,false)}); form.classList.remove('st-open'); rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='밸런스'; fillSubs(); syncVis(); }
   }
   function startEdit(p){
     location.hash='#create';
