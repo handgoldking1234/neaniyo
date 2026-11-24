@@ -27,7 +27,7 @@
 body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 
-/* Layout: 상단 탭(투표·랭킹·만들기·경쟁사) + 단일 컬럼 피드, 투표 카드 = 임베드 단위 */
+/* Layout: 상단 탭(투표·랭킹·만들기·프리미엄) + 단일 컬럼 피드, 투표 카드 = 임베드 단위 */
 :root{
   --bg:#F3F4F8; --surface:#FFFFFF; --ink:#14161F; --muted:#5E6378; --line:#E2E4EC;
   --a:#E8336D; --a-soft:#FCE3EB; --b:#2F5BEA; --b-soft:#E2E9FD; --ok:#1F9D6B; --c:#E59A17; --d:#14A3A0; --e:#8B5CF6; --f:#7A8094; --gold:#B7791F;
@@ -1196,7 +1196,6 @@ a.mine-it:hover{border-color:var(--muted)}
       <a href="./#vote" data-v="vote">투표</a>
       <a href="./#ranking" data-v="ranking">랭킹</a>
       <a href="./#premium" data-v="premium">프리미엄</a>
-      <a href="./#analysis" data-v="analysis">경쟁사 분석</a>
     </nav>
     <form class="srch-bar" id="srchBar" role="search" hidden>
       <button class="sb-back" id="srchBack" type="button" aria-label="검색 닫기"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></button>
@@ -1375,77 +1374,6 @@ a.mine-it:hover{border-color:var(--muted)}
       </div>
     </section>
 
-    <section id="v-analysis" hidden>
-      <div class="sec">
-        <h2>시장 지형</h2>
-        <p class="lede">연예 투표는 아이돌 팬덤 앱이, 이슈 투표는 커뮤니티와 메신저가 나눠 갖고 있습니다. 두 진영 모두 투표를 자기 앱 안에 가둬 두고, 외부 사이트에 붙이는 임베드는 해외 위젯 업체만 합니다. 네아니요가 들어갈 자리는 그 사이입니다.</p>
-      </div>
-
-      <div class="sec">
-        <h2>경쟁사 비교</h2>
-        <div class="tbl"><table>
-          <thead><tr><th>서비스</th><th>영역</th><th>투표 방식</th><th>외부 임베드</th><th>수익 모델</th><th>약점</th></tr></thead>
-          <tbody>
-            <tr><td><b>최애돌</b><small>팬덤 앱</small></td><td>아이돌 순위</td><td>하트 충전 후 투표, 테마픽·이미지픽</td><td class="n">없음</td><td>투표권 인앱결제, 광고</td><td>아이돌 한정, 앱 설치 필수</td></tr>
-            <tr><td><b>아이돌챔프</b><small>MBC플러스</small></td><td>음악방송 연계</td><td>쇼챔피언 사전투표, 차트 투표</td><td class="n">없음</td><td>인앱결제, 광고 리워드</td><td>방송사 종속, 이슈 투표 없음</td></tr>
-            <tr><td><b>아이돌픽</b><small>동아닷컴</small></td><td>아이돌 랭킹</td><td>위클리·스페셜 투표, 투표 인증서</td><td class="n">없음</td><td>스타픽 판매, 포털 기사 노출</td><td>팬 과금 의존</td></tr>
-            <tr><td><b>팬앤스타</b><small>더팩트</small></td><td>아이돌 순위</td><td>출석·광고 시청으로 포인트 적립</td><td class="n">없음</td><td>광고, 이벤트</td><td>포인트 노동, 후보 선정 불만</td></tr>
-            <tr><td><b>논전</b><small>찬반 커뮤니티</small></td><td>이슈 토론</td><td>진영 선택 후 팀 게시판·논쟁</td><td class="n">없음</td><td>미확인</td><td>토론 피로도, 규모 작음</td></tr>
-            <tr><td><b>치즈버튼</b><small>투표 SaaS</small></td><td>공모전·행사</td><td>OTP 인증 1인 1표, QR, 실시간 결과</td><td>링크·QR 중심</td><td>기관·행사 유료</td><td>엔터·이슈 콘텐츠 없음</td></tr>
-            <tr><td><b>카톡·네이버폼·인스타</b><small>플랫폼 내장</small></td><td>범용</td><td>단톡방·스토리 스티커·폼</td><td class="n">없음</td><td>무료</td><td>플랫폼 밖으로 못 나감</td></tr>
-            <tr><td><b>Elfsight·Embeddable</b><small>해외 위젯</small></td><td>범용 위젯</td><td>스크립트·iframe 임베드</td><td class="y">있음</td><td>월 구독</td><td>영어권 UX, 콘텐츠 없음</td></tr>
-          </tbody>
-        </table></div>
-      </div>
-
-      <div class="sec">
-        <h2>네아니요가 노리는 빈자리</h2>
-        <div class="grid2">
-          <div class="box key"><h3>투표가 콘텐츠다</h3><p>위젯 업체는 틀만 팔고, 팬덤 앱은 앱 안에서만 돕니다. 네아니요는 매일 올라오는 연예·이슈 투표 자체가 상품이고, 그 카드를 블로그·카페·기사 어디든 붙이게 합니다.</p></div>
-          <div class="box"><h3>유튜브식 임베드</h3><p>iframe 한 줄, 테마와 크기 선택만. 티스토리·네이버 블로그·워드프레스에 맞춘 높이 자동 조절이 기본입니다.</p></div>
-          <div class="box"><h3>로그인 없는 1인 1표</h3><p>팬덤 앱의 투표권 과금과 포인트 노동이 가장 큰 불만입니다. 무료 1표에 기기·쿠키·IP 조합 중복 차단으로 대응합니다.</p></div>
-          <div class="box"><h3>임베드 = 유입 경로</h3><p>임베드 카드마다 원문 링크와 관련 투표가 걸려, 붙인 곳이 많을수록 본진 검색 유입과 백링크가 늘어납니다.</p></div>
-        </div>
-      </div>
-
-      <div class="sec">
-        <h2>성공 가능성 진단</h2>
-        <div class="score">
-          <div><span>시장 수요</span><i style="--w:80%"></i><b>8</b></div>
-          <div><span>차별성</span><i style="--w:70%"></i><b>7</b></div>
-          <div><span>구현 난이도</span><i style="--w:85%"></i><b>8.5</b></div>
-          <div><span>초기 트래픽</span><i style="--w:45%"></i><b>4.5</b></div>
-          <div><span>수익화</span><i style="--w:55%"></i><b>5.5</b></div>
-        </div>
-        <p class="lede">구현 난이도 점수가 높을수록 만들기 쉽다는 뜻입니다. 기술은 5일 MVP 범위지만, 투표를 매일 채울 콘텐츠 운영과 첫 임베드처 확보가 승부처입니다.</p>
-      </div>
-
-      <div class="sec">
-        <h2>카테고리 운영 비율</h2>
-        <div class="score">
-          <div><span>연예</span><i style="--w:30%"></i><b>30%</b></div>
-          <div><span>사회 이슈</span><i style="--w:25%"></i><b>25%</b></div>
-          <div><span>경제·부동산·주식</span><i style="--w:15%"></i><b>15%</b></div>
-          <div><span>드라마·예능</span><i style="--w:10%"></i><b>10%</b></div>
-          <div><span>스포츠</span><i style="--w:10%"></i><b>10%</b></div>
-          <div><span>정치</span><i style="--w:5%"></i><b>5%</b></div>
-          <div><span>밸런스</span><i style="--w:5%"></i><b>5%</b></div>
-        </div>
-        <p class="lede">연예·사회 이슈가 공유와 임베드가 가장 잘 일어나는 주제라 절반 이상을 채웁니다. 부동산·주식은 재테크 블로그와 카페에 붙이기 좋아 임베드 확산용으로 꾸준히 둡니다. 정치는 반응은 크지만 운영 부담이 커서 제도·정책 질문으로만 소량 운영합니다.</p>
-      </div>
-
-      <div class="sec">
-        <h2>리스크와 대응</h2>
-        <div class="grid2">
-          <div class="box"><h3>정치 편향 논란</h3><p>특정 정당·후보 대상 투표는 열지 않고 제도·정책 질문만 둡니다. 보기는 양쪽을 같은 무게로 쓰고, 선거 기간에는 정치 카테고리를 쉬는 규칙을 둡니다. 결과가 여론조사로 오해받지 않게 "참여자 기준, 표본 아님"을 표시합니다.</p></div>
-          <div class="box"><h3>투자 조언 오해</h3><p>부동산·주식 투표 결과는 투자 판단 근거가 아니라는 문구를 카드에 붙이고, 특정 종목·단지 이름을 건 투표는 검수 후 노출합니다.</p></div>
-          <div class="box"><h3>조작·어뷰징</h3><p>팬덤 단체 투표가 몰리면 신뢰가 깨집니다. 시간당 투표 속도 감지, 이상치 표시, 결과에 "집계 기준" 공개.</p></div>
-          <div class="box"><h3>실명 연예인 이슈</h3><p>열애·논란 투표는 명예훼손 소지가 있습니다. 실명 인물 대상 투표는 운영자 검수 후 노출, 신고 버튼 필수.</p></div>
-          <div class="box"><h3>콘텐츠 고갈</h3><p>AI로 그날 실검·기사에서 투표 초안을 뽑고 사람이 다듬는 하루 10건 파이프라인을 둡니다.</p></div>
-          <div class="box"><h3>수익 구조</h3><p>초기는 결과 화면 광고, 이후 브랜드 스폰서 투표와 언론사·커뮤니티 대상 화이트라벨 임베드.</p></div>
-        </div>
-      </div>
-    </section>
   </main>
   <aside class="side-hot" aria-label="실시간 인기 투표">
     <div class="hotbox">
@@ -1461,7 +1389,7 @@ a.mine-it:hover{border-color:var(--muted)}
     <div class="sf-top">
       <a class="sf-brand" href="./">네아니요</a>
       <nav class="sf-links" aria-label="하단 링크">
-        <a href="./#vote">투표</a><a href="./#ranking">랭킹</a><a href="./#create">투표 만들기</a><a href="guide">이용 가이드</a><a href="guide#rights">권리 침해 신고</a><a href="./#premium">프리미엄</a><a href="./#analysis">경쟁사 분석</a>
+        <a href="./#vote">투표</a><a href="./#ranking">랭킹</a><a href="./#create">투표 만들기</a><a href="guide">이용 가이드</a><a href="guide#rights">권리 침해 신고</a><a href="./#premium">프리미엄</a>
       </nav>
     </div>
     <div class="sf-legal" id="sfLegal"></div>
@@ -1483,7 +1411,6 @@ a.mine-it:hover{border-color:var(--muted)}
     <a href="./#ranking" data-v="ranking"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>랭킹</a>
     <a href="./#create" data-v="create"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>투표 만들기</a>
     <a href="./#premium" data-v="premium"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>프리미엄</a>
-    <a href="./#analysis" data-v="analysis"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>경쟁사 분석</a>
   </nav>
   <div class="dr-cats"><b class="dr-tt">전체 카테고리</b><div class="dr-cgrid" id="drCats"></div></div>
   <div class="dr-set"><span>효과음 <small>투표할 때만</small></span><button class="sw" id="drSnd" type="button" role="switch" aria-checked="true" aria-label="효과음"><i></i></button></div>
@@ -1494,7 +1421,9 @@ a.mine-it:hover{border-color:var(--muted)}
   <a href="./#ranking" data-v="ranking"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg><span>랭킹</span></a>
   <a href="./#create" data-v="create" class="bt-mk" aria-label="투표 만들기"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg></a>
   <a href="./#premium" data-v="premium"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg><span>프리미엄</span></a>
-  <a href="./#analysis" data-v="analysis"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span>분석</span></a>
+  <a href="./#mine" data-v="mine"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+  <path d="M3 3v5h5" />
+  <path d="M12 7v5l4 2" /></svg><span>내 투표</span></a>
 </nav>
 <div class="fabs" id="fabs">
   <button class="snd fab-snd" id="sndBtn" type="button" aria-label="효과음 끄기" aria-pressed="true"></button>
@@ -3643,7 +3572,7 @@ a.mine-it:hover{border-color:var(--muted)}
   }
 
   // 라우팅
-  var views=['vote','mine','ranking','create','premium','analysis'];
+  var views=['vote','mine','ranking','create','premium'];
   // 뒤로: 사이트 안에서 넘어왔으면 이전 화면으로, 바로 들어왔으면 투표 피드로
   var inNav=0; window.addEventListener('hashchange',function(){ inNav++; });
   document.getElementById('pgBack').addEventListener('click',function(){ if(inNav>0) history.back(); else location.hash='vote'; });
