@@ -9,7 +9,7 @@ export default handler(async (req, res) => {
     const days = [7, 30, 0].includes(+req.query.days) ? +req.query.days : 7;
     const user = await authUser(req).catch(() => null);
     const j = (await rpc('ny_top_creators', { days, lim: 30, me: user ? user.id : null })) || {};
-    return send(res, 200, { top: j.top || [], total: j.total || 0, me: j.me || null, myTotal: j.myTotal || 0, myPolls: j.myPolls || 0, days }, user ? 'private, max-age=30' : 'public, max-age=60');
+    return send(res, 200, { top: j.top || [], total: j.total || 0, me: j.me || null, myTotal: j.myTotal || 0, myWins: j.myWins || 0, myNext: j.myNext || 0, myPolls: j.myPolls || 0, days }, user ? 'private, max-age=30' : 'public, max-age=60');
   }
   if (req.query.view === 'voters') {
     const days = [7, 30, 0].includes(+req.query.days) ? +req.query.days : 7;

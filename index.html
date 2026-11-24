@@ -170,7 +170,8 @@ pre.code{margin:0;background:var(--ink);color:var(--bg);border-radius:8px;paddin
 .grade{display:inline-flex;align-items:center;gap:3px;margin-left:6px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.5;vertical-align:1px;white-space:nowrap;background:var(--g-bg,#EEF2F7);color:var(--g-fg,#475569)}
 .grade.g2{--g-bg:#E8F5EE;--g-fg:#15803D}.grade.g3{--g-bg:#E7F0FF;--g-fg:#1D4ED8}.grade.g4{--g-bg:#F1EAFE;--g-fg:#6D28D9}.grade.g5{--g-bg:#FFF1DE;--g-fg:#B45309}.grade.g6{--g-bg:#1F2937;--g-fg:#FCD34D}
 .gbar{flex:1 1 100%;height:6px;border-radius:99px;background:var(--line);overflow:hidden}.gbar i{display:block;height:100%;background:var(--accent,#2563EB);border-radius:99px}
-.glist{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}.glist li{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:10px}.glist li.on{border-color:var(--accent,#2563EB);font-weight:700}.glist small{color:var(--muted)}.vme small{color:var(--muted)}.vme .btn{padding:8px 14px}
+.glist{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}.glist li{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:10px}.glist li.on{border-color:var(--accent,#2563EB);font-weight:700}.glist small{color:var(--muted)}
+.gnote{margin-top:14px!important;padding:10px 12px;border-radius:10px;background:var(--bg,#F5F6F8);font-size:calc(13px * var(--fs))}.vme small{color:var(--muted)}.vme .btn{padding:8px 14px}
 .rk{font-family:var(--display);font-weight:800;font-size:calc(20px * var(--fs));color:var(--muted)}
 .rank li:nth-child(-n+3) .rk{color:var(--a)}
 .rank .t{font-weight:500;min-width:0}
@@ -2294,26 +2295,38 @@ a.mine-it:hover{border-color:var(--muted)}
   // ===== 투표왕: 투표를 가장 많이 한 사람 (로그인 사용자, 닉네임 공개 동의한 사람만 이름 표시) =====
   var vDays=7, vCache={};
   // 투표 등급: 전체 누적 투표 수(로그인 후 투표)로 정해요. 낮은 순서 → 높은 순서
-  // 기준 숫자는 바꾸지 않아요(바꾸면 강등이 생겨요). 등급은 맨 위에만 추가해요
+  // 기준 운영(가이드에 공고): 이용자가 늘면 기준을 올릴 수 있음. 올릴 때는 7일 전 공지하고,
+  // 그 시점의 등급을 저장해 두었다가 max(저장된 등급, 새 기준 등급)으로 보여 줘서 강등이 없게 한다
   var GRADES=[[0,'유권자',1],[20,'통장',1],[60,'동장',2],[150,'구의원',2],[300,'시의원',3],[500,'구청장',3],[800,'시장',4],[1300,'도지사',4],[2000,'국회의원',5]];
   // 순위 칭호: 투표왕 1~3위에게만 (보고 있는 기간 기준). 재미로 붙인 이름이에요
-  var TITLES={1:'대통령',2:'국무총리',3:'장관'};
+  var TITLES={1:'국무총리',2:'부총리',3:'장관'}; // 대통령은 출제 등급 꼭대기(받은 표 1,000만)
   function titleTag(r){ return TITLES[r]?'<span class="grade g6">'+TITLES[r]+'</span>':''; }
-  // 출제 등급: 내가 만든 투표가 받은 표(로그인한 다른 사람 표만) 누적. 기준 숫자는 바꾸지 말고 위에만 추가
-  var CGRADES=[[0,'예비후보',1],[100,'후보',2],[1000,'당선인',3],[5000,'재선 의원',4],[20000,'3선 의원',5],[50000,'다선 의원',6]];
-  function cgradeOf(n){ n=+n||0; var i=0; while(i+1<CGRADES.length&&n>=CGRADES[i+1][0]) i++; return i; }
-  function cgradeTag(n){ var g=CGRADES[cgradeOf(n)]; return '<span class="grade g'+g[2]+'">'+g[1]+'</span>'; }
+  // 출제 등급: 내가 만든 투표가 받은 표(로그인한 다른 사람 표만, 본인 표 제외)
+  //  t = 누적 받은 표, w = 1만 표 넘긴 투표 수(당선 횟수). 아래 조건을 모두 채운 가장 높은 등급
+  var WIN=10000;
+  var CGRADES=[{n:'예비후보',c:1,d:'투표를 처음 만들면'},{n:'후보',c:2,t:100,d:'받은 표 100표'},
+    {n:'초선 의원',c:3,w:1,d:'1만 표 넘긴 투표 1개 (당선 1번)'},{n:'재선 의원',c:3,w:2,d:'1만 표 넘긴 투표 2개'},{n:'3선 의원',c:4,w:3,d:'1만 표 넘긴 투표 3개'},
+    {n:'다선 의원',c:4,w:5,d:'1만 표 넘긴 투표 5개'},{n:'국회의장',c:5,w:5,t:1000000,d:'다선 의원 + 받은 표 100만'},{n:'대통령',c:6,t:10000000,d:'받은 표 1,000만'}];
+  function cgradeOf(t,w){ t=+t||0; w=+w||0; var g=0; CGRADES.forEach(function(x,i){ if((!x.t||t>=x.t)&&(!x.w||w>=x.w)) g=i; }); return g; }
+  function cgradeTag(t,w){ var g=CGRADES[cgradeOf(t,w)]; return '<span class="grade g'+g.c+'">'+g.n+'</span>'; }
+  function cnext(t,w,best){ // 다음 등급까지: [문구, 진행률%]
+    var gi=cgradeOf(t,w), nx=CGRADES[gi+1]; if(!nx) return ['가장 높은 등급이에요',100];
+    if(nx.w&&w<nx.w){ var need=nx.w-w; return [nx.n+'까지 1만 표 넘긴 투표 '+need+'개 더 · 가장 가까운 투표 '+fmt(best||0)+' / 1만 표',Math.min(100,Math.round((best||0)/WIN*100))]; }
+    var base=0; for(var i=gi;i>=0;i--) if(CGRADES[i].t){ base=CGRADES[i].t; break; }
+    return [nx.n+'까지 '+fmt(nx.t-t)+'표 남았어요',Math.round((t-base)/(nx.t-base)*100)];
+  }
   function isPeople(){ return period==='voters'||period==='creators'; }
   function gradeOf(n){ n=+n||0; var i=0; while(i+1<GRADES.length&&n>=GRADES[i+1][0]) i++; return i; }
   function gradeTag(n){ var g=GRADES[gradeOf(n)]; return '<span class="grade g'+g[2]+'">'+g[1]+'</span>'; }
   function showGrades(n){
     var cur=n==null?-1:gradeOf(n);
     authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>'+
-      '<h2 id="authTitle">투표 등급</h2><p>로그인하고 투표한 수(전체 기간)만큼 등급이 올라가요. 투표 하나가 한 표예요.</p>'+
+      '<h2 id="authTitle">등급 안내</h2><h3 style="margin:4px 0 0;font-size:16px">투표 등급</h3><p>로그인하고 투표한 수(전체 기간)만큼 등급이 올라가요. 투표 하나가 한 표예요.</p>'+
       '<p><b>순위 칭호</b> 투표왕 랭킹 1위 '+titleTag(1)+' · 2위 '+titleTag(2)+' · 3위 '+titleTag(3)+'<br><small>보고 있는 기간(이번 주·이번 달·전체)의 순위로 붙고, 순위가 바뀌면 칭호도 바뀌어요.</small></p>'+
       '<ul class="glist">'+GRADES.slice().reverse().map(function(g,k){ var i=GRADES.length-1-k; return '<li'+(i===cur?' class="on"':'')+'><span>'+gradeTag(g[0])+(i===cur?' <small>지금 내 등급</small>':'')+'</span><small>'+(g[0]?fmt(g[0])+'표부터':'처음 시작')+'</small></li>'; }).join('')+'</ul>'+
-      '<h3 style="margin:18px 0 0;font-size:16px">출제 등급</h3><p>내가 만든 투표에 다른 사람이 로그인하고 투표한 수(전체 기간)로 올라가요. 내 표는 세지 않아요.</p>'+
-      '<ul class="glist">'+CGRADES.slice().reverse().map(function(g){ return '<li><span>'+cgradeTag(g[0])+'</span><small>'+(g[0]?'받은 표 '+fmt(g[0])+'표부터':'투표를 처음 만들면')+'</small></li>'; }).join('')+'</ul>'+
+      '<h3 style="margin:18px 0 0;font-size:16px">출제 등급</h3><p>내가 만든 투표가 받은 표(로그인한 다른 사람의 표만)로 올라가요. 투표 하나가 1만 표를 넘으면 <b>당선</b> 1번이에요.</p>'+
+      '<ul class="glist">'+CGRADES.slice().reverse().map(function(g){ return '<li><span><span class="grade g'+g.c+'">'+g.n+'</span></span><small>'+g.d+'</small></li>'; }).join('')+'</ul>'+
+      '<p class="gnote"><b>등급 기준 안내</b> 이용자가 늘어나면 등급 기준이 올라갈 수 있어요. 기준이 바뀌어도 <b>이미 받은 등급은 그대로 유지</b>되고, 바뀌기 7일 전에 미리 알려요.</p>'+
       '<p><small>등급과 칭호는 재미로 붙인 이름이에요. 실제 직책이나 특정 정치인·정당과는 관계없어요. <a href="/guide#grade">이용 가이드에서 자세히 보기</a></small></p>';
     openDialog();
   }
@@ -2344,13 +2357,13 @@ a.mine-it:hover{border-color:var(--muted)}
   function drawCreators(j){
     var rl=document.getElementById('rank'), me=document.getElementById('vme');
     rl.innerHTML=j.top.length?j.top.map(function(x){
-      return '<li class="vrow"><div class="vr"><span class="rkw"><span class="rk">'+x.r+'</span></span><span class="t">'+(x.name?esc(x.name):'<span class="anon">익명 출제자</span>')+cgradeTag(x.t!=null?x.t:x.n)+(x.r<=3?' <span class="crown">'+ic('crown')+'</span>':'')+'</span><span class="v">'+fmt(x.n)+'<small>표</small></span></div></li>';
+      return '<li class="vrow"><div class="vr"><span class="rkw"><span class="rk">'+x.r+'</span></span><span class="t">'+(x.name?esc(x.name):'<span class="anon">익명 출제자</span>')+cgradeTag(x.t!=null?x.t:x.n,x.w)+(x.r<=3?' <span class="crown">'+ic('crown')+'</span>':'')+'</span><span class="v">'+fmt(x.n)+'<small>표</small></span></div></li>';
     }).join(''):'<li><p class="empty">이 기간에 만든 투표로 표를 받은 사람이 아직 없어요. 투표를 만들고 공유해 첫 번째가 되어 보세요.</p></li>';
     var mk='<a class="btn dark" href="./#create">투표 만들기</a>', gb='<button type="button" class="btn" data-vgrade>등급 안내</button>';
-    if(!user){ me.innerHTML='<div class="vme"><p>로그인하고 투표를 만들면 내 출제 등급이 여기에 보여요. 예비후보에서 시작해 다선 의원까지 올라가 보세요.</p><button type="button" class="btn dark" data-vlogin>로그인</button> '+gb+'</div>'; return; }
+    if(!user){ me.innerHTML='<div class="vme"><p>로그인하고 투표를 만들면 내 출제 등급이 여기에 보여요. 예비후보에서 시작해 대통령까지 올라가 보세요.</p><button type="button" class="btn dark" data-vlogin>로그인</button> '+gb+'</div>'; return; }
     if(!j.myPolls){ me.innerHTML='<div class="vme"><p>아직 만든 투표가 없어요. 투표를 만들면 <b>예비후보</b>가 되고, 다른 사람이 투표할수록 등급이 올라가요.</p>'+mk+' '+gb+'</div>'; return; }
-    var tot=j.myTotal||0, gi=cgradeOf(tot), nx=CGRADES[gi+1], pct=nx?Math.round((tot-CGRADES[gi][0])/(nx[0]-CGRADES[gi][0])*100):100;
-    me.innerHTML='<div class="vme"><p>내 출제 등급 '+cgradeTag(tot)+' <small>투표 '+fmt(j.myPolls)+'개 · 받은 표 '+fmt(tot)+'표 · '+(nx?nx[1]+'까지 '+fmt(nx[0]-tot)+'표 남았어요':'가장 높은 등급이에요')+'</small></p><div class="gbar" aria-hidden="true"><i style="width:'+pct+'%"></i></div>'+
+    var tot=j.myTotal||0, wins=j.myWins||0, nx=cnext(tot,wins,j.myNext);
+    me.innerHTML='<div class="vme"><p>내 출제 등급 '+cgradeTag(tot,wins)+' <small>투표 '+fmt(j.myPolls)+'개 · 받은 표 '+fmt(tot)+'표'+(wins?' · 당선 '+wins+'번':'')+' · '+nx[0]+'</small></p><div class="gbar" aria-hidden="true"><i style="width:'+nx[1]+'%"></i></div>'+
       '<p>'+(j.me?'내 순위 <b>'+j.me.r+'위</b> · 이 기간 '+fmt(j.me.n)+'표'+(j.total?' <small>(출제자 '+fmt(j.total)+'명)</small>':''):'이 기간에 내 투표가 받은 표가 아직 없어요. 링크를 공유해 보세요.')+'</p>'+
       (user.nick&&user.rankPublic?'<small>랭킹에 <b>'+esc(user.nick)+'</b>(으)로 보여요.</small> ':'<small>지금은 랭킹에 익명으로 보여요.</small> ')+'<button type="button" class="btn" data-vnick>'+(user.nick&&user.rankPublic?'닉네임 바꾸기':'닉네임 공개하기')+'</button> '+mk+' '+gb+'</div>';
   }
