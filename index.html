@@ -613,7 +613,10 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .tn.anon{font-weight:600;color:var(--muted)}
 .tt{color:var(--muted);font-size:calc(12px * var(--fs))}
 .top-tag{font-size:calc(11px * var(--fs));font-weight:700;color:var(--e);border:1px solid currentColor;border-radius:6px;padding:0 5px}
-.tbest{margin-left:auto;display:inline-flex;align-items:center;gap:3px;font-size:calc(11.5px * var(--fs));font-weight:700;color:var(--a)}
+.tc .ops{align-items:center}
+.tside{margin-left:auto;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 9px;border-radius:999px;color:#fff;background:var(--c);font-size:calc(11.5px * var(--fs));font-weight:700;flex:0 1 auto;min-width:0}
+.th{flex-wrap:nowrap!important;min-width:0}.th .tn,.th .tt,.th .tbest,.th .top-tag{white-space:nowrap;flex:none}
+.tbest{display:inline-flex;align-items:center;gap:3px;font-size:calc(11.5px * var(--fs));font-weight:700;color:var(--a)}
 .tbest .i{width:13px;height:13px}
 .tx{margin:4px 0 0;line-height:1.5;font-size:calc(14.5px * var(--fs));white-space:pre-wrap;word-break:break-word}
 .trv{margin:4px 0 0;font-size:calc(12px * var(--fs));color:var(--muted)}
@@ -622,7 +625,7 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .tc .ops .i{width:17px;height:17px}
 .tc .ops button[data-act="like"][aria-pressed="true"]{color:#ff3040;font-weight:700}
 .tc .ops button[aria-pressed="true"] .i{fill:currentColor}
-.tc .ops .trp{margin-left:auto;font-size:calc(11.5px * var(--fs));opacity:.7}
+.tc .ops .trp{opacity:.55}.tc .ops .trp .i{width:15px;height:15px}.tc .ops .tside+.trp{margin-left:-8px}.tc .ops .trp:first-child,.tc .ops :not(.tside)+.trp{margin-left:auto}
 .tc .ops .likepop .i{animation:heartpop .45s cubic-bezier(.2,.9,.3,1.4)}
 .treps{margin-top:4px}
 .tc.sub{padding:10px 0 4px}
@@ -3088,11 +3091,12 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       if(cReply[p.id]===c.id) repHtml+='<form class="cform tform reply" data-cform="'+p.id+'" data-pid="'+c.id+'" novalidate>'+cAv({mine:true,id:'me'+(user&&user.id||'')})+'<label class="sr" for="r-'+c.id+'" hidden>답글</label><textarea class="cin" id="r-'+c.id+'" rows="1" maxlength="'+MOD.limits.maxLength+'" placeholder="'+esc(nm||'익명')+'님에게 답글"></textarea><button class="tpost" type="submit">게시</button></form>';
     }
     return '<div class="tc'+(best?' best':'')+(reps?'':' sub')+((reps&&(nrep&&open||cReply[p.id]===c.id))?' has-rep':'')+'" data-tc="'+c.id+'">'+cAv(c)+
-      '<div class="tb"><div class="th"><b class="tn'+(nm?'':' anon')+'">'+(nm?esc(nm):'익명 투표러')+'</b>'+(c.op?'<span class="top-tag">작성자</span>':'')+(p.o[c.o]!=null?'<span class="side-tag" style="background:'+OPC[c.o%OPC.length]+'">'+esc(p.o[c.o])+'</span>':'')+'<span class="tt">'+esc(c.at||'')+'</span>'+(best?'<span class="tbest">'+ic('crown')+'대표</span>':'')+'</div>'+
+      '<div class="tb"><div class="th"><b class="tn'+(nm?'':' anon')+'">'+(nm?esc(nm):'익명 투표러')+'</b>'+(c.op?'<span class="top-tag">작성자</span>':'')+(best?'<span class="tbest" title="대표 의견">'+ic('crown')+'대표</span>':'')+'<span class="tt">'+esc(c.at||'')+'</span></div>'+
       '<p class="tx">'+esc(c.text)+'</p>'+(c.review?'<p class="trv">검토 중이라 나에게만 보여요</p>':'')+
       '<div class="ops"><button type="button" data-act="like" data-cid="'+c.id+'" aria-pressed="'+!!c.liked+'" aria-label="공감">'+ic('heart')+(c.likes>0?fmt(c.likes):'')+'</button>'+
       (reps!==null?'<button type="button" data-act="reply" data-cid="'+c.id+'" aria-label="답글 달기">'+ic('message-circle')+(nrep?nrep:'')+'</button>':'<button type="button" data-act="reply" data-cid="'+(c.pid||'')+'" data-to="'+esc(nm||'')+'" aria-label="답글 달기">'+ic('message-circle')+'</button>')+
-      (c.mine?'':'<button type="button" class="trp" data-act="report" data-cid="'+c.id+'">신고</button>')+'</div>'+repHtml+'</div></div>';
+      (p.o[c.o]!=null?'<span class="tside" style="--c:'+OPC[c.o%OPC.length]+'" title="'+esc(p.o[c.o])+' 선택">'+esc(p.o[c.o])+'</span>':'')+
+      (c.mine?'':'<button type="button" class="trp" data-act="report" data-cid="'+c.id+'" aria-label="신고">'+ic('flag')+'</button>')+'</div>'+repHtml+'</div></div>';
   }
   function cmtBlock(p,done){
     if(NY&&NY.on&&cmtOn(p)) NY.needComments(p);
