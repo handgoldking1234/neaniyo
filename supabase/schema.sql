@@ -294,3 +294,8 @@ returns jsonb language sql stable security definer set search_path = public as $
   );
 $$;
 revoke all on function public.ny_top_creators(int, int, uuid) from public, anon, authenticated;
+
+-- 12. 유입 경로 (광고·홍보 효과 측정): 투표·가입에 들어온 경로를 함께 저장, ny_admin_stats 의 'conv' 가 경로별 방문·투표·가입을 보여 줌
+alter table public.ny_votes add column if not exists src text;
+alter table public.ny_profiles add column if not exists src text;
+create index if not exists ny_votes_src_idx on public.ny_votes (src, created_at) where src is not null;

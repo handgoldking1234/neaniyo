@@ -30,7 +30,8 @@ export default handler(async (req, res) => {
   }
   const row = {
     poll_id: pollId, voter, user_id: user ? user.id : null, choice, relay,
-    gender: prof?.gender || null, age_band: ageBand(prof?.birth_year), region: prof?.region || null, ip_hash: ipH
+    gender: prof?.gender || null, age_band: ageBand(prof?.birth_year), region: prof?.region || null, ip_hash: ipH,
+    src: /^[a-z0-9_.-]{1,30}$/.test(String(b.src || '')) ? String(b.src) : null // 유입 경로 (광고 효과 측정)
   };
   let already = false;
   try { await db('ny_votes', { method: 'POST', body: row, prefer: 'return=minimal' }); }

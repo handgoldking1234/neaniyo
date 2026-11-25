@@ -562,7 +562,7 @@ function rnd(seed){return function(){seed=(seed*16807)%2147483647;return (seed-1
 // ===== 분석·회원 (실제 데이터: /api/admin?view=stats|members) =====
 // 방문은 IUX Cloud pageviews(site 'neaniyo', 사이트의 trackVisit)로, 투표·가입·한줄평은 ny_* 테이블로 집계한다
 var AN={days:14,st:'idle',err:'',data:null,mst:'idle',merr:'',members:null,q:'',busy:{}};
-var SRC={direct:'직접 방문',naver:'네이버',google:'구글',daum:'다음',bing:'Bing',kakao:'카카오톡',instagram:'인스타그램',facebook:'페이스북',youtube:'유튜브',x:'X(트위터)',threads:'스레드',blog:'블로그',other:'기타 사이트'};
+var SRC={kakao_share:'카톡 공유',link:'링크 복사',share:'앱 공유',facebook_share:'페북 공유',x_share:'X 공유',band_share:'밴드 공유',insta_ad:'인스타 광고',direct:'직접 방문',naver:'네이버',google:'구글',daum:'다음',bing:'Bing',kakao:'카카오톡',instagram:'인스타그램',facebook:'페이스북',youtube:'유튜브',x:'X(트위터)',threads:'스레드',blog:'블로그',other:'기타 사이트'};
 var DEV={pc:'PC',mobile:'모바일',tablet:'태블릿'};
 function anTok(){return window.NY_ADMIN&&window.NY_ADMIN.sb?window.NY_ADMIN.sb.auth.getSession().then(function(r){return r.data.session.access_token}):Promise.reject(new Error('login'))}
 function anGet(qs){return anTok().then(function(t){return fetch('/api/admin?'+qs,{headers:{Authorization:'Bearer '+t},cache:'no-store'})}).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j})})}
@@ -593,7 +593,7 @@ function vStats(){
 }
 function vTraffic(){
   var w=anNeed();if(w)return anBar()+w;var d=AN.data;
-  return anBar()+noVisits(d)+'<div class="grid half"><section class="card"><h2>유입 채널</h2><p class="desc">방문의 첫 화면 기준 · 공유 링크에 utm_source를 붙이면 그 이름으로 나뉩니다</p>'+shareBars(d.sources||[],function(k){return SRC[k]||k})+'</section>'+
+  return anBar()+noVisits(d)+adConv(d)+'<div class="grid half"><section class="card"><h2>유입 채널</h2><p class="desc">방문의 첫 화면 기준 · 공유 링크에 utm_source를 붙이면 그 이름으로 나뉩니다</p>'+shareBars(d.sources||[],function(k){return SRC[k]||k})+'</section>'+
     '<section class="card"><h2>상위 유입 사이트</h2><p class="desc">들어온 사이트별 방문 수</p>'+((d.refs||[]).length?'<div class="tbl-wrap"><table style="min-width:0"><thead><tr><th>사이트</th><th class="num">방문</th></tr></thead><tbody>'+d.refs.map(function(r){return '<tr><td>'+esc(r.k)+'</td><td class="num">'+nf(r.v)+'</td></tr>'}).join('')+'</tbody></table></div>':'<p class="desc">아직 다른 사이트에서 들어온 방문이 없습니다.</p>')+'</section></div>'+
     '<section class="card" style="margin-top:14px"><h2>많이 열린 화면</h2><p class="desc">/p/… 는 공유 링크로 열린 투표입니다</p>'+((d.paths||[]).length?hbars(d.paths.map(function(r){var l=r.k.indexOf('/p/')===0?'공유: '+pollQ(r.k.slice(3)):r.k==='/'?'첫 화면':r.k;return {l:l.length>18?l.slice(0,18)+'…':l,v:r.v,vl:nf(r.v),tip:l+' · '+nf(r.v)}})):'<p class="desc">기록 없음</p>')+'</section>';
 }
@@ -659,6 +659,14 @@ document.addEventListener('change',function(e){
     toast('카테고리를 '+v[0]+' › '+(v[1]||'')+'(으)로 바꿨습니다.');
   }).catch(function(err){ toast('바꾸지 못했습니다: '+err.message); }).then(function(){ s.disabled=false; });
 });
+function adConv(d){
+  var L=d.conv||[]; if(!L.length) return '';
+  var rows=L.map(function(x){ var r=x.visitors?Math.round(100*x.voters/x.visitors):0;
+    return '<tr><td><b>'+esc(SRC[x.k]||x.k)+'</b> <small style="color:var(--muted)">'+esc(x.k)+'</small></td><td class="num">'+fmtN(x.visitors)+'</td><td class="num">'+fmtN(x.votes)+'</td><td class="num">'+fmtN(x.voters)+'</td><td class="num">'+(x.visitors?r+'%':'-')+'</td><td class="num">'+fmtN(x.signups)+'</td></tr>'; }).join('');
+  return '<section class="card"><h2>유입 경로별 성과</h2><p class="desc">광고·홍보 링크 끝에 <code>?from=이름</code>(예: <code>?from=insta_ad</code>, <code>?from=theqoo</code>)을 붙이면 그 이름으로 따로 셉니다. 공유 버튼으로 퍼진 방문은 kakao_share·link 등으로 잡혀요. 투표율 = 투표한 사람 ÷ 방문자.</p>'+
+    '<div class="tbl-wrap"><table style="min-width:0"><thead><tr><th>경로</th><th class="num">방문자</th><th class="num">투표 수</th><th class="num">투표한 사람</th><th class="num">투표율</th><th class="num">가입</th></tr></thead><tbody>'+rows+'</tbody></table></div></section>';
+}
+function fmtN(n){ return (+n||0).toLocaleString('ko-KR'); }
 function adWhen(t){var ms=Date.parse(t);return isNaN(ms)?'-':when(ms)}
 function adPollRow(r,kind){
   var d=r.data||{}, b=AD.busy[r.id]?' disabled':'';

@@ -49,5 +49,8 @@ export default handler(async (req, res) => {
   };
   if (!row.gender || !row.birth_year || !row.region) return fail(res, 400, 'profile');
   const out = await db('ny_profiles?on_conflict=id', { method: 'POST', body: row, prefer: 'resolution=merge-duplicates,return=representation' });
+  // 처음 가입한 경로만 남긴다 (이미 있으면 그대로)
+  const src = String(b.src || '');
+  if (/^[a-z0-9_.-]{1,30}$/.test(src) && out[0] && !out[0].src) await db(`ny_profiles?id=eq.${user.id}&src=is.null`, { method: 'PATCH', body: { src } }).catch(() => {});
   send(res, 200, { profile: out[0] });
 });

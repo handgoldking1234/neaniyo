@@ -2970,12 +2970,12 @@ a.mine-it:hover{border-color:var(--muted)}
   function shareMsg(p){ var mi=myIdx(p); if(isQuiz(p)) return p.q+' 한번 풀어 보세요!'; return (typeof mi==='number'&&p.o[mi]?'저는 「'+p.o[mi]+'」 골랐어요. ':'')+p.q+' 어떻게 생각하세요?'; }
   function kakaoShare(p){
     var key=NY&&NY.kakaoKey; if(!key) return false;
-    var go=function(){ try{ if(!window.Kakao.isInitialized()) window.Kakao.init(key); window.Kakao.Share.sendScrap({requestUrl:shareUrl(p)}); }catch(e){ copy(shareMsg(p)+' '+shareUrl(p),'카카오톡을 열지 못해 링크를 복사했어요. 카톡에 붙여 넣어 주세요.'); } };
+    var go=function(){ try{ if(!window.Kakao.isInitialized()) window.Kakao.init(key); window.Kakao.Share.sendScrap({requestUrl:shareUrl(p,'kakao_share')}); }catch(e){ copy(shareMsg(p)+' '+shareUrl(p),'카카오톡을 열지 못해 링크를 복사했어요. 카톡에 붙여 넣어 주세요.'); } };
     if(window.Kakao) go(); else { var sc=document.createElement('script'); sc.src=KAKAO_SDK; sc.onload=go; sc.onerror=function(){ copy(shareMsg(p)+' '+shareUrl(p),'카카오톡을 열지 못해 링크를 복사했어요.'); }; document.head.appendChild(sc); }
     return true;
   }
   function shareSheet(p){
-    var u=shareUrl(p), t=shareMsg(p), e=encodeURIComponent, items=[];
+    var u=shareUrl(p,'link'), t=shareMsg(p), e=encodeURIComponent, items=[], U=function(v){ return shareUrl(p,v); };
     if(NY&&NY.kakaoKey) items.push(['kakao','카카오톡','<svg viewBox="0 0 24 24" class="i"><path fill="#191919" d="M12 3.5C6.8 3.5 2.6 6.8 2.6 10.9c0 2.6 1.7 4.9 4.3 6.2l-1 3.7c-.1.3.3.6.6.4l4.3-2.9c.4 0 .8.1 1.2.1 5.2 0 9.4-3.3 9.4-7.4S17.2 3.5 12 3.5z"/></svg>']);
     if(navigator.share) items.push(['native',NY&&NY.kakaoKey?'다른 앱':'카카오톡·다른 앱',ic('share-2')]);
     items.push(['fb','페이스북','<svg viewBox="0 0 24 24" class="i"><path fill="#fff" d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.5V4.4c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.4H8v3h2.6V21z"/></svg>'],
@@ -2989,10 +2989,10 @@ a.mine-it:hover{border-color:var(--muted)}
     authBody.querySelectorAll('[data-sh]').forEach(function(b){ b.onclick=function(){
       var k=b.dataset.sh;
       if(k==='kakao'){ kakaoShare(p); closeDialog(); }
-      else if(k==='native'){ navigator.share({title:'네아니요 · '+p.q,text:t,url:u}).catch(function(){}); closeDialog(); }
-      else if(k==='fb') window.open('https://www.facebook.com/sharer/sharer.php?u='+e(u),'_blank','noopener,width=600,height=640');
-      else if(k==='x') window.open('https://twitter.com/intent/tweet?text='+e(t)+'&url='+e(u),'_blank','noopener,width=600,height=520');
-      else if(k==='band') window.open('https://band.us/plugin/share?body='+e(t+'\n'+u)+'&route='+e(location.host),'_blank','noopener,width=600,height=640');
+      else if(k==='native'){ navigator.share({title:'네아니요 · '+p.q,text:t,url:U('share')}).catch(function(){}); closeDialog(); }
+      else if(k==='fb') window.open('https://www.facebook.com/sharer/sharer.php?u='+e(U('facebook_share')),'_blank','noopener,width=600,height=640');
+      else if(k==='x') window.open('https://twitter.com/intent/tweet?text='+e(t)+'&url='+e(U('x_share')),'_blank','noopener,width=600,height=520');
+      else if(k==='band') window.open('https://band.us/plugin/share?body='+e(t+'\n'+U('band_share'))+'&route='+e(location.host),'_blank','noopener,width=600,height=640');
       else if(k==='copy'){ copy(t+' '+u,'메시지와 링크를 복사했어요. 원하는 곳에 붙여 넣어 주세요.'); closeDialog(); }
     }; });
   }
@@ -3054,7 +3054,7 @@ a.mine-it:hover{border-color:var(--muted)}
     });
     function dl(b,name){ var u=URL.createObjectURL(b),a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(u)},4000); toast('결과 이미지를 저장했어요. 인스타·스레드에 올려 보세요.'); }
   }
-  function shareUrl(p){return SITE+'p/'+encodeURIComponent(p.id)} // /p/<id>: 투표별 카톡·SNS 미리보기 (api/share.js) → /?p=<id> 로 이동
+  function shareUrl(p,via){return SITE+'p/'+encodeURIComponent(p.id)+(via?'?utm_source='+via:'')} // via: 공유 경로 표시(유입 경로 통계용) // /p/<id>: 투표별 카톡·SNS 미리보기 (api/share.js) → /?p=<id> 로 이동
   // 휴대폰: 공유 버튼은 기기 공유창(카톡 등)으로 링크만 보냄. 임베드 코드는 블로그용이라 메신저로 가지 않게
   // 임베드 안 로고: 누르면 네아니요 사이트(이 투표 페이지)가 새 탭으로 열림
   function embedBrand(p){
@@ -3898,7 +3898,7 @@ a.mine-it:hover{border-color:var(--muted)}
         if(sent[id]||!REAL.test(id)) return;
         var p=polls.find(function(x){return x.id===id}); if(!p) return;
         sent[id]=1; saveSent();
-        call('vote',{method:'POST',body:{pollId:id,choice:[].concat(voted[id]),relay:p.type==='relay',deviceId:dev}})
+        call('vote',{method:'POST',body:{pollId:id,choice:[].concat(voted[id]),relay:p.type==='relay',deviceId:dev,src:window.nySrcNow?nySrcNow():''}})
           .then(function(j){ apply(j.counts); setTimeout(function(){ redraw(p); renderRank(); },800); })
           .catch(function(e){ if(e.status!==429&&e.status!==400){ delete sent[id]; saveSent(); } });
       });
@@ -3946,10 +3946,12 @@ a.mine-it:hover{border-color:var(--muted)}
     };
     api.oauth=function(pv){ try{ localStorage.setItem('ny_last_via',pv); }catch(e){} api.sb.auth.signInWithOAuth({provider:pv==='naver'?'custom:naver':pv,options:{redirectTo:location.origin+location.pathname+location.search}}); };
     api.signOut=function(){ if(api.sb) api.sb.auth.signOut(); api.token=null; api.uid=null; };
+    // 이번 방문 경로, 없으면 30일 안에 처음 들어온 경로
+    window.nySrcNow=function(){ try{ var s=sessionStorage.getItem('ny_src'); if(s&&s!=='direct'&&s!=='other') return s; var f=JSON.parse(localStorage.getItem('ny_src_first')||'null'); if(f&&Date.now()-f.t<30*864e5) return f.s; return s||''; }catch(e){ return ''; } };
     api.saveProfile=function(u){
       if(!api.token) return;
       u.sid=api.uid; saveUser();
-      call('profile',{method:'POST',body:{gender:u.gender,birth:u.birth,region:u.region,edu:u.edu,stat:u.stat,notify:u.notify!==false}})
+      call('profile',{method:'POST',body:{gender:u.gender,birth:u.birth,region:u.region,edu:u.edu,stat:u.stat,notify:u.notify!==false,src:window.nySrcNow?nySrcNow():''}})
         .catch(function(){ toast('프로필을 저장하지 못했어요. 다시 시도해 주세요.'); });
     };
     function loadMe(session){
@@ -4037,18 +4039,24 @@ a.mine-it:hover{border-color:var(--muted)}
     // ---- 방문 기록 (IUX Cloud pageviews, site 'neaniyo') ----
     // 개인을 알아볼 수 있는 값은 보내지 않는다: 탭마다 새로 만드는 임의 방문 ID, 본 화면, 들어온 사이트 이름, 기기·OS·브라우저 종류, 화면 크기
     function trackVisit(cfg){
+      try{ // 광고 링크의 ?from= / ?utm_source= 는 방문 기록과 별개로 먼저 기억 (투표·가입 경로용)
+        var q0=new URLSearchParams(location.search), s0=(q0.get('utm_source')||q0.get('from')||'').toLowerCase().replace(/[^a-z0-9_.-]/g,'').slice(0,30);
+        if(s0){ sessionStorage.setItem('ny_src',s0); localStorage.setItem('ny_src_first',JSON.stringify({s:s0,t:Date.now()})); }
+      }catch(e){}
       try{
         if(navigator.webdriver||/bot|crawl|spider|preview/i.test(navigator.userAgent)) return;
         var ss=window.sessionStorage, sid=ss&&ss.getItem('ny_sid');
         if(!sid){ sid=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()); try{ss.setItem('ny_sid',sid)}catch(e){} }
         var ua=navigator.userAgent, q=new URLSearchParams(location.search);
         var ref=''; try{ var rh=document.referrer?new URL(document.referrer).hostname:''; if(rh&&rh!==location.hostname) ref=rh.replace(/^www\./,''); }catch(e){}
-        var src=(q.get('utm_source')||'').toLowerCase().slice(0,30);
+        var src=(q.get('utm_source')||q.get('from')||'').toLowerCase().replace(/[^a-z0-9_.-]/g,'').slice(0,30);
         if(!src){
           var M=[[/kakao/i,'kakao',1],[/naver/i,'naver'],[/google\./,'google'],[/daum|kakao\.com/,'daum'],[/bing\./,'bing'],[/instagram/,'instagram'],[/facebook|fb\.com/,'facebook'],[/youtube|youtu\.be/,'youtube'],[/^t\.co$|twitter|x\.com/,'x'],[/threads/,'threads'],[/blog|tistory|brunch/,'blog']];
           for(var i=0;i<M.length&&!src;i++){ if(M[i][2]?M[i][0].test(ua):(ref&&M[i][0].test(ref))) src=M[i][1]; }
           if(!src) src=ref?'other':'direct';
         }
+        // 이 방문의 유입 경로를 기억 → 투표·가입 때 함께 보내 경로별 성과를 셈 (광고 효과 측정)
+        try{ if(!ss.getItem('ny_src')) ss.setItem('ny_src',src); if(src!=='direct'&&src!=='other') localStorage.setItem('ny_src_first',JSON.stringify({s:src,t:Date.now()})); }catch(e){}
         var device=/iPad|Tablet|SM-T|Tab/i.test(ua)?'tablet':/Mobi|Android|iPhone/i.test(ua)?'mobile':'pc'; // IUX Cloud 통계와 같은 값(pc·mobile·tablet)
         var os=/iPhone|iPad|iPod/.test(ua)?'iOS':/Android/.test(ua)?'Android':/Windows/.test(ua)?'Windows':/Mac OS X/.test(ua)?'macOS':/Linux/.test(ua)?'Linux':'기타';
         var br=/KAKAOTALK/i.test(ua)?'카카오톡 인앱':/NAVER\(inapp|NAVER/.test(ua)?'네이버 앱':/Instagram/.test(ua)?'인스타그램 인앱':/FBAN|FBAV/.test(ua)?'페이스북 인앱':/SamsungBrowser/.test(ua)?'삼성 인터넷':/Whale/.test(ua)?'웨일':/Edg\//.test(ua)?'Edge':/CriOS|Chrome/.test(ua)?'Chrome':/Firefox|FxiOS/.test(ua)?'Firefox':/Safari/.test(ua)?'Safari':'기타';

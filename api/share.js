@@ -131,7 +131,7 @@ export default async function (req, res) {
 <meta property="og:url" content="${esc(url)}"><meta property="og:image" content="${esc(img)}">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${esc(img)}">
-<script>location.replace(${JSON.stringify(target)}+location.hash)</script>
+<script>var s=new URLSearchParams(location.search).get('utm_source');location.replace(${JSON.stringify(target)}+(s?(${JSON.stringify(target)}.indexOf('?')<0?'?':'&')+'utm_source='+encodeURIComponent(s):'')+location.hash)</script>
 </head><body style="font-family:system-ui,sans-serif;padding:24px"><a href="${esc(target)}">네아니요에서 투표 보기</a></body></html>`;
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
