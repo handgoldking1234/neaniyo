@@ -1555,7 +1555,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     <div class="sf-top">
       <a class="sf-brand" href="./">네아니요</a>
       <nav class="sf-links" aria-label="하단 링크">
-        <a href="./#vote">투표</a><a href="./#ranking">랭킹</a><a href="./#create">투표 만들기</a><a href="guide">이용 가이드</a><a href="guide#rights">권리 침해 신고</a><a href="./#premium">프리미엄</a>
+        <a href="./#vote">투표</a><a href="./#ranking">랭킹</a><a href="./#create">투표 만들기</a><a href="guide">이용 가이드</a><a href="guide#rights">권리 침해 신고</a>
       </nav>
     </div>
     <div class="sf-legal" id="sfLegal"></div>
@@ -2680,6 +2680,8 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   // ===== 로그인·프로필 (시안: 브라우저에만 저장) =====
   var UKEY='neaniyo-user', user=null;
   try{user=JSON.parse(localStorage.getItem(UKEY)||'null')}catch(e){user=null}
+  // 프리미엄은 준비 중: 예전에 시작한 체험도 끈다 (다시 열 때 PRO_ON=true)
+  var PRO_ON=false; if(!PRO_ON&&user&&user.pro){ user.pro=false; try{localStorage.setItem(UKEY,JSON.stringify(user))}catch(e){} }
   function saveUser(){try{user?localStorage.setItem(UKEY,JSON.stringify(user)):localStorage.removeItem(UKEY)}catch(e){}}
   var loginBtn=document.getElementById('loginBtn'), auth=document.getElementById('auth'), authBody=document.getElementById('authBody');
   function feedNote(){ var n=document.getElementById('feedNote'); if(!n) return;
@@ -2768,12 +2770,10 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     if(!user){
       acctMenu.innerHTML='<div class="am-hd"><b>네아니요 시작하기</b><small>투표는 로그인 없이도 됩니다. 로그인하면 내 그룹별 결과와 투표 기록을 볼 수 있어요.</small></div>'+
         (NY&&NY.on?'<div class="sso">'+NY.providers.filter(function(x){return x==='kakao'||x==='naver'||x==='google'}).map(function(x){return '<button class="'+x+'" type="button" data-am="'+x+'">'+(x==='kakao'?'카카오로 시작하기':x==='naver'?'네이버로 시작하기':'Google로 시작하기')+'</button>'}).join('')+'<button class="btn dark" type="button" data-am="mail">'+ic('log-in')+'이메일로 시작하기</button></div>'
-          :'<div class="sso"><button class="kakao" type="button" data-am="kakao">카카오로 시작하기</button><button class="google" type="button" data-am="google">Google로 시작하기</button></div>')+
-        '<ul><li><a href="./#premium" data-am="link">'+ic('crown')+'프리미엄 알아보기</a></li></ul>';
+          :'<div class="sso"><button class="kakao" type="button" data-am="kakao">카카오로 시작하기</button><button class="google" type="button" data-am="google">Google로 시작하기</button></div>');
     }else{
       acctMenu.innerHTML='<div class="am-hd"><b>'+viaName(user.via)+' 계정'+(user.pro?' <span class="pro" style="font-size:calc(10.5px * var(--fs));font-weight:700;color:#fff;background:var(--gold);border-radius:4px;padding:1px 5px">PRO</span>':'')+'</b><small>'+esc(user.gender)+' · '+(user.birth?ageBand(user.birth):'-')+' · '+esc(user.region)+' · 참여 '+Object.keys(voted).length+'개</small></div>'+
         '<ul><li><button type="button" data-am="me">'+ic('user-round')+'내 정보</button></li>'+
-        '<li>'+(user.pro?'<button type="button" data-am="unpro">'+ic('crown')+'프리미엄 체험 종료</button>':'<a href="./#premium" data-am="link">'+ic('crown')+'프리미엄 (준비 중)</a>')+'</li>'+
         '<li class="sep" aria-hidden="true"></li>'+
         '<li><button type="button" data-am="logout">'+ic('log-out')+'로그아웃</button></li></ul>';
     }
