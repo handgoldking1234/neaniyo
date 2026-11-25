@@ -2201,7 +2201,9 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   function fmt(n){return n.toLocaleString('ko-KR')}
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 
-  function newAt(p){ if(p.created) return p.created; if(p.at){ var a=Date.parse(p.at); if(!isNaN(a)) return a; } return LOAD_AT-(p.t||0)*36e5-(p.ex?6e5:0); }
+  // 시각 정보가 없는 기본 예시 투표는 '최신'에서 실제 새 글 뒤로 보낸다
+  var OLD_AT=Date.parse('2026-11-01T00:00:00+09:00');
+  function newAt(p){ if(p.created) return p.created; if(p.at){ var a=Date.parse(p.at); if(!isNaN(a)) return a; } return OLD_AT-(p.t||0)*36e5-(p.ex?6e5:0); }
   var LOAD_AT=Date.now();
   function isPublic(p){return !p.vis||p.vis==='public'}
   var unlocked={}; try{unlocked=JSON.parse(sessionStorage.getItem('neaniyo-open')||'{}')||{}}catch(e){}
