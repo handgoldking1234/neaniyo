@@ -1345,7 +1345,6 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     <nav class="tabs" aria-label="메뉴">
       <a href="./#vote" data-v="vote">투표</a>
       <a href="./#ranking" data-v="ranking">랭킹</a>
-      <a href="./#premium" data-v="premium">프리미엄</a>
     </nav>
     <form class="srch-bar" id="srchBar" role="search" hidden>
       <button class="sb-back" id="srchBack" type="button" aria-label="검색 닫기"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></button>
@@ -1490,55 +1489,6 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       </form>
     </section>
 
-    <section id="v-premium" hidden>
-      <div class="soon">
-        <span class="soon-ic"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg></span>
-        <h2>프리미엄은 준비 중이에요</h2>
-        <p>지금은 투표·한줄평·랭킹 모두 무료로 쓸 수 있어요.<br>더 쓸모 있는 기능으로 다듬어서 소식 전할게요.</p>
-        <a class="btn dark" href="./#vote">투표하러 가기</a>
-      </div>
-      <div hidden data-premium-full>
-      <div class="sec" style="margin-top:20px">
-        <h2>결과를 더 깊게, 프리미엄</h2>
-        <p class="lede">투표는 누구나 무료입니다. 결과를 성별·연령·지역·학력으로 쪼개 보고 자료로 가져가려는 분을 위한 기능입니다.</p>
-      </div>
-      <div class="plans">
-        <div class="plan">
-          <h3>비로그인</h3>
-          <div class="price">0원</div>
-          <ul><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>투표 참여</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>전체 결과 보기</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>링크 공유·임베드</li><li class="no"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /></svg>세부 통계</li></ul>
-          <a class="btn" href="./#vote">투표하러 가기</a>
-        </div>
-        <div class="plan">
-          <h3>무료 회원</h3>
-          <div class="price">0원</div>
-          <ul><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>성별·연령대별 결과</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>"나와 같은 그룹" 결과</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>내 투표 기록</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>투표 만들기</li><li class="no"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /></svg>지역·학력·시간대 분석</li></ul>
-          <button class="btn dark" type="button" data-plan="free">무료로 시작하기</button>
-        </div>
-        <div class="plan hot">
-          <h3>프리미엄 <span class="pbadge">추천</span></h3>
-          <div class="price">9,900원 <small>/ 월</small></div>
-          <ul><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>무료 회원 기능 전부</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>지역·학력·시간대 교차분석</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>엑셀(CSV) 다운로드</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>여론조사형 PDF 리포트</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>내 투표 응답자 조건 지정</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>임베드 로고 제거</li></ul>
-          <button class="btn gold" type="button" data-plan="pro"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" /> <path d="M5 21h14" /></svg>7일 무료 체험</button>
-        </div>
-        <div class="plan">
-          <h3>비즈니스</h3>
-          <div class="price">문의</div>
-          <ul><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>브랜드 스폰서 투표</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>맞춤 응답자 모집</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>리포트 제작</li><li><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>언론사·커뮤니티 화이트라벨 임베드</li></ul>
-          <span class="btn">biz@neaniyo.iux.kr</span>
-        </div>
-      </div>
-      <div class="sec" style="margin-top:24px">
-        <h2>통계 원칙</h2>
-        <div class="grid2">
-          <div class="box"><h3>30명 미만은 가립니다</h3><p>응답자가 30명이 안 되는 그룹은 비율을 공개하지 않습니다. 소수 그룹에서 개인이 특정되는 것을 막기 위해서입니다.</p></div>
-          <div class="box"><h3>정치 투표는 세부 통계 없음</h3><p>정치 카테고리는 개인 성향 보호를 위해 성별·연령 등 교차분석을 제공하지 않고 전체 결과만 보여줍니다.</p></div>
-          <div class="box"><h3>집계 통계만 제공</h3><p>다운로드는 그룹별 비율과 응답 수만 담습니다. 개인 단위 응답이나 프로필은 어떤 요금제에서도 내보내지 않습니다.</p></div>
-          <div class="box"><h3>표본 조사가 아닙니다</h3><p>참여자 기준 결과라 여론조사와 다릅니다. 다운로드 파일과 리포트에도 이 문구가 함께 들어갑니다.</p></div>
-        </div>
-      </div>
-      </div>
-    </section>
 
   </main>
   <aside class="side-hot" aria-label="실시간 인기 투표">
@@ -1576,7 +1526,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   <path d="M12 7v5l4 2" /></svg>내 투표</a>
     <a href="./#ranking" data-v="ranking"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>랭킹</a>
     <a href="./#create" data-v="create"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>투표 만들기</a>
-    <a href="./#premium" data-v="premium"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>프리미엄</a>
+
   </nav>
   <div class="dr-cats"><b class="dr-tt">전체 카테고리</b><div class="dr-cgrid" id="drCats"></div></div>
   <div class="dr-set"><span>효과음 <small>투표할 때만</small></span><button class="sw" id="drSnd" type="button" role="switch" aria-checked="true" aria-label="효과음"><i></i></button></div>
@@ -1586,7 +1536,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   <a href="./#vote" data-v="vote"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="3"/><path d="m9 12 2 2 4-4"/></svg><span>투표</span></a>
   <a href="./#ranking" data-v="ranking"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg><span>랭킹</span></a>
   <a href="./#create" data-v="create" class="bt-mk" aria-label="투표 만들기"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg></a>
-  <a href="./#premium" data-v="premium"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg><span>프리미엄</span></a>
+<a href="./#vote" data-v="search" id="btSearch" aria-label="검색"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>검색</span></a>
   <a href="./#mine" data-v="mine"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
   <path d="M3 3v5h5" />
   <path d="M12 7v5l4 2" /></svg><span>내 투표</span></a>
@@ -2416,12 +2366,18 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   }
 
   // 기간별 랭킹 기준 (시안용 계산식, 개발 단계에서 실제 기간별 득표 집계로 교체)
+  // 실제 시각(at·created)이 있는 투표 = 자동 수집·이용자 투표. 시각 없는 기본 예시는 숫자가 커서 늘 1등을 차지하므로,
+  // 실제 투표가 충분하면(10개 이상) 실시간·오늘 순위에서 뺀다.
+  function realT(p){ return !!(p.at||p.created); }
+  function liveFill(){ var n=0; for(var i=0;i<polls.length&&n<10;i++){ var q=polls[i]; if(realT(q)&&!q.closed&&q.t<=72) n++; } return n>=10; }
+  // 표 + 좋아요·한줄평(관심의 신호)을 시간이 지날수록 줄여서 점수로: 새로 반응이 붙는 글이 올라온다
+  function heat(p){ var cm=((typeof cmts!=="undefined"&&cmts&&cmts[p.id])||[]).length; return (sum(p.v)+3*(p.lk||0)+5*cm)/Math.pow(1+p.t/3,1.3); }
   var RANK={
-    live:{cap:'최근 1시간 동안 표가 가장 많이 몰린 투표',unit:'표/시간',max:100,
-      pick:function(p){return !p.closed},
-      score:function(p){return Math.round(sum(p.v)*0.12/(1+p.t/6))+(p.boost||0)}},
+    live:{cap:'최근 반응이 빠르게 붙는 투표',unit:'표/시간',max:100,
+      pick:function(p){return !p.closed&&(realT(p)?p.t<=72:!liveFill())},
+      score:function(p){return Math.max(1,Math.round(heat(p)))+(p.boost||0)}},
     day:{cap:'오늘 하루 참여가 많은 순',unit:'명',max:100,
-      pick:function(p){return !p.closed&&p.t<=24},score:function(p){return sum(p.v)}},
+      pick:function(p){return !p.closed&&p.t<=24&&(realT(p)||!liveFill())},score:function(p){return sum(p.v)}},
     week:{cap:'이번 주 참여가 많은 순',unit:'명',max:100,
       pick:function(p){return p.t<=168},score:function(p){return sum(p.v)}},
     month:{cap:'이번 달 참여가 많은 순 · 마감된 투표 포함',unit:'명',max:100,
@@ -2870,11 +2826,9 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   function onScrollFab(){ fabTop.hidden=window.scrollY<400; }
   window.addEventListener('scroll',onScrollFab,{passive:true}); onScrollFab();
   fabTop.onclick=function(){ var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches; window.scrollTo({top:0,behavior:rm?'auto':'smooth'}); };
-  function startTrial(){ location.hash='premium'; return; if(!user){ auth.dataset.next='pro'; return openAuth(); } user.pro=true; saveUser(); authUI(); toast('프리미엄 7일 체험을 시작했습니다.'); refreshOpenStats(); }
-  document.getElementById('v-premium').addEventListener('click',function(e){
-    var b=e.target.closest('[data-plan]'); if(!b) return;
-    if(b.dataset.plan==='pro') startTrial(); else if(!user){ auth.dataset.next=''; openAuth(); } else toast('이미 회원입니다.');
-  });
+  function startTrial(){ return; if(!user){ auth.dataset.next='pro'; return openAuth(); } user.pro=true; saveUser(); authUI(); toast('프리미엄 7일 체험을 시작했습니다.'); refreshOpenStats(); }
+  // 하단 탭 '검색': 투표 화면으로 가서 검색창 열기
+  document.getElementById('btSearch').addEventListener('click',function(e){ e.preventDefault(); if(location.hash!=='#vote') location.hash='vote'; setTimeout(function(){ var sb=document.getElementById('srchBtn'); if(sb) sb.click(); },60); });
 
   // ===== 상세 통계 (시안: 전체 결과를 기준으로 만든 예시 분포) =====
   var OPC=['var(--a)','var(--b)','var(--c)','var(--d)','var(--e)','var(--f)'];
@@ -3367,7 +3321,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       if(act==='stats'){ var sp2=art.querySelector('.stats'); sp2.hidden=!sp2.hidden; actBtn.classList.toggle('on',!sp2.hidden); if(!sp2.hidden) statsPanel(p,sp2,'gender'); }
       if(act==='dim'){ statsPanel(p,art.querySelector('.stats'),actBtn.dataset.dim); }
       if(act==='login'){ openAuth(); }
-      if(act==='upgrade'){ location.hash='premium'; }
+      if(act==='upgrade'){ return; }
       if(act==='csv'){ downloadCsv(p); }
       if(act==='ytplay'&&p.link&&p.link.yt){ YT.load(actBtn.closest('.pimg'),true); return; }
       if(act==='more'){
@@ -4037,7 +3991,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   }
 
   // 라우팅
-  var views=['vote','mine','ranking','create','premium'];
+  var views=['vote','mine','ranking','create'];
   // 뒤로: 사이트 안에서 넘어왔으면 이전 화면으로, 바로 들어왔으면 투표 피드로
   var inNav=0; window.addEventListener('hashchange',function(){ inNav++; });
   document.getElementById('pgBack').addEventListener('click',function(){ if(inNav>0) history.back(); else location.hash='vote'; });
