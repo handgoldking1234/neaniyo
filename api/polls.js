@@ -24,7 +24,7 @@ async function moveImages(id, data) {
   if (data.img) data.img = await toStorage(id, data.img, 'img');
   for (const k of ['gal', 'imgs']) if (Array.isArray(data[k])) data[k] = await Promise.all(data[k].map((v, i) => toStorage(id, v, `${k}${i}`)));
 }
-const KEEP = ['id', 'cat', 'sub', 'q', 'o', 'type', 'qs', 'a', 'n', 'vis', 'comments', 'story', 'img', 'gal', 'imgs', 'link', 'multiSel', 'pw', 'created'];
+const KEEP = ['id', 'cat', 'sub', 'q', 'o', 'type', 'qs', 'a', 'n', 'vis', 'comments', 'story', 'img', 'gal', 'imgs', 'link', 'multiSel', 'pw', 'created', 'wc'];
 const out = r => ({ ...r.data, id: r.id, vis: r.vis, status: r.status, created: Date.parse(r.created_at) });
 
 export default handler(async (req, res) => {
@@ -51,6 +51,8 @@ export default handler(async (req, res) => {
   const okA = (a, o) => Number.isInteger(a) && a >= 0 && Array.isArray(o) && a < o.length;
   if (Array.isArray(data.qs)) data.qs = data.qs.map(x => okA(x.a, x.o) ? { q: x.q, o: x.o, a: x.a } : { q: x.q, o: x.o });
   if ('a' in data && !okA(data.a, data.o)) delete data.a;
+  // 사진 월드컵: 후보 수(qs×2)와 사진 수가 맞을 때만 사진을 남긴다
+  if (data.wc) { data.wc = true; if (data.type !== 'relay' || !Array.isArray(data.qs) || ![4, 8, 16].includes(data.qs.length)) return fail(res, 400, 'wc'); if (data.imgs && (!Array.isArray(data.imgs) || data.imgs.length !== data.qs.length * 2)) delete data.imgs; }
   await moveImages(p.id, data);
   if (JSON.stringify(data).length > MAX) return fail(res, 413, 'too-large');
   const vis = ['public', 'link', 'secret'].includes(p.vis) ? p.vis : 'public';
