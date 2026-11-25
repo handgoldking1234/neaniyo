@@ -522,6 +522,12 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .gate{display:flex;flex-direction:column;gap:10px;align-items:flex-start;font-size:calc(13.5px * var(--fs))}
 .pbadge{font-size:calc(10.5px * var(--fs));font-weight:700;color:#fff;background:var(--gold);border-radius:4px;padding:1px 6px}
 
+/* 프리미엄 준비 중 */
+.soon{text-align:center;padding:64px 20px 72px;max-width:420px;margin:20px auto 0}
+.soon-ic{display:inline-flex;width:64px;height:64px;border-radius:50%;align-items:center;justify-content:center;background:color-mix(in srgb,var(--a) 12%,transparent);color:var(--a);margin-bottom:16px}
+.soon-ic .i{width:30px;height:30px}
+.soon h2{margin:0 0 10px;font-size:calc(22px * var(--fs))}
+.soon p{margin:0 0 22px;color:var(--muted);line-height:1.6;word-break:keep-all}
 /* 프리미엄 요금제 */
 .plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 .plan{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px}
@@ -1466,6 +1472,13 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     </section>
 
     <section id="v-premium" hidden>
+      <div class="soon">
+        <span class="soon-ic"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg></span>
+        <h2>프리미엄은 준비 중이에요</h2>
+        <p>지금은 투표·한줄평·랭킹 모두 무료로 쓸 수 있어요.<br>더 쓸모 있는 기능으로 다듬어서 소식 전할게요.</p>
+        <a class="btn dark" href="./#vote">투표하러 가기</a>
+      </div>
+      <div hidden data-premium-full>
       <div class="sec" style="margin-top:20px">
         <h2>결과를 더 깊게, 프리미엄</h2>
         <p class="lede">투표는 누구나 무료입니다. 결과를 성별·연령·지역·학력으로 쪼개 보고 자료로 가져가려는 분을 위한 기능입니다.</p>
@@ -1504,6 +1517,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
           <div class="box"><h3>집계 통계만 제공</h3><p>다운로드는 그룹별 비율과 응답 수만 담습니다. 개인 단위 응답이나 프로필은 어떤 요금제에서도 내보내지 않습니다.</p></div>
           <div class="box"><h3>표본 조사가 아닙니다</h3><p>참여자 기준 결과라 여론조사와 다릅니다. 다운로드 파일과 리포트에도 이 문구가 함께 들어갑니다.</p></div>
         </div>
+      </div>
       </div>
     </section>
 
@@ -2695,7 +2709,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       '<h2 id="authTitle">내 정보 '+(user.pro?'<span class="pbadge">프리미엄 체험 중</span>':'')+'</h2>'+
       '<div class="me"><div><span>로그인</span><b>'+viaName(user.via)+'</b></div><div><span>성별</span><b>'+esc(user.gender)+'</b></div><div><span>연령대</span><b>'+age+'</b></div><div><span>지역</span><b>'+esc(user.region)+'</b></div><div><span>학력</span><b>'+(esc(user.edu)||'응답 안 함')+'</b></div><div><span>참여한 투표</span><b>'+Object.keys(voted).length+'개</b></div></div>'+
       (NY&&NY.on?'<div class="me"><div><span>랭킹 닉네임</span><b>'+(user.nick?esc(user.nick)+(user.rankPublic?'':' <small>(비공개)</small>'):'없음')+'</b> <button type="button" class="linkbtn" data-me="nick">'+(user.nick?'바꾸기':'정하기')+'</button></div></div>':'')+'<p style="font-size:calc(12px * var(--fs))">프로필은 30일에 한 번만 바꿀 수 있습니다.</p>'+
-      '<div class="row">'+(user.pro?'<button class="btn" type="button" data-me="unpro">체험 종료</button>':'<button class="btn gold" type="button" data-me="pro">프리미엄 7일 체험</button>')+'<button class="btn" type="button" data-me="logout">로그아웃</button></div>'+
+      '<div class="row">'+(user.pro?'<button class="btn" type="button" data-me="unpro">체험 종료</button>':'')+'<button class="btn" type="button" data-me="logout">로그아웃</button></div>'+
       '<p class="hint" style="margin-top:14px"><a href="privacy">개인정보처리방침</a> · <a href="terms">이용약관</a> · <button type="button" data-me="withdraw" style="background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit">회원 탈퇴</button></p>';
     openDialog();
   }
@@ -2730,7 +2744,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     }else{
       acctMenu.innerHTML='<div class="am-hd"><b>'+viaName(user.via)+' 계정'+(user.pro?' <span class="pro" style="font-size:calc(10.5px * var(--fs));font-weight:700;color:#fff;background:var(--gold);border-radius:4px;padding:1px 5px">PRO</span>':'')+'</b><small>'+esc(user.gender)+' · '+(user.birth?ageBand(user.birth):'-')+' · '+esc(user.region)+' · 참여 '+Object.keys(voted).length+'개</small></div>'+
         '<ul><li><button type="button" data-am="me">'+ic('user-round')+'내 정보</button></li>'+
-        '<li>'+(user.pro?'<button type="button" data-am="unpro">'+ic('crown')+'프리미엄 체험 종료</button>':'<button type="button" data-am="pro">'+ic('crown')+'프리미엄 7일 체험</button>')+'</li>'+
+        '<li>'+(user.pro?'<button type="button" data-am="unpro">'+ic('crown')+'프리미엄 체험 종료</button>':'<a href="./#premium" data-am="link">'+ic('crown')+'프리미엄 (준비 중)</a>')+'</li>'+
         '<li class="sep" aria-hidden="true"></li>'+
         '<li><button type="button" data-am="logout">'+ic('log-out')+'로그아웃</button></li></ul>';
     }
@@ -2827,7 +2841,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   function onScrollFab(){ fabTop.hidden=window.scrollY<400; }
   window.addEventListener('scroll',onScrollFab,{passive:true}); onScrollFab();
   fabTop.onclick=function(){ var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches; window.scrollTo({top:0,behavior:rm?'auto':'smooth'}); };
-  function startTrial(){ if(!user){ auth.dataset.next='pro'; return openAuth(); } user.pro=true; saveUser(); authUI(); toast('프리미엄 7일 체험을 시작했습니다.'); refreshOpenStats(); }
+  function startTrial(){ location.hash='premium'; return; if(!user){ auth.dataset.next='pro'; return openAuth(); } user.pro=true; saveUser(); authUI(); toast('프리미엄 7일 체험을 시작했습니다.'); refreshOpenStats(); }
   document.getElementById('v-premium').addEventListener('click',function(e){
     var b=e.target.closest('[data-plan]'); if(!b) return;
     if(b.dataset.plan==='pro') startTrial(); else if(!user){ auth.dataset.next=''; openAuth(); } else toast('이미 회원입니다.');
@@ -2905,9 +2919,9 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     } else rows=breakdown(p,d);
     var locked=d.tier==='pro'&&!user.pro;
     if(locked&&real) rows=breakdown(p,d); // 잠긴 표는 흐리게만 보이므로 실제 수치를 화면에 싣지 않는다
-    var tbl=locked?'<div class="locked">'+xtable(p,d,rows)+'<div class="lockmsg"><b>'+d.label+'별 결과는 프리미엄 기능입니다</b><button class="btn gold" data-act="upgrade">'+ic('crown')+'프리미엄 알아보기</button></div></div>':xtable(p,d,rows);
+    var tbl=locked?'<div class="locked">'+xtable(p,d,rows)+'<div class="lockmsg"><b>'+d.label+'별 결과는 프리미엄 기능으로 준비 중이에요</b><button class="btn gold" data-act="upgrade">'+ic('crown')+'프리미엄 알아보기</button></div></div>':xtable(p,d,rows);
     var foot='<div class="foot2"><span>참여자 기준 · 표본 조사 아님 · '+MIN_N+'명 미만 그룹 비공개</span>'+
-      (user.pro?'<span class="dl"><a class="btn dark" href="?report='+p.id+'" target="_blank" rel="noopener">'+ic('download')+'PDF 리포트</a><button class="btn" data-act="csv">'+ic('download')+'CSV</button></span>':'<span><span class="pbadge">PRO</span> 지역·학력·시간대 · PDF 리포트 · CSV</span>')+'</div>';
+      (user.pro?'<span class="dl"><a class="btn dark" href="?report='+p.id+'" target="_blank" rel="noopener">'+ic('download')+'PDF 리포트</a><button class="btn" data-act="csv">'+ic('download')+'CSV</button></span>':'<span><span class="pbadge">준비 중</span> 지역·학력·시간대 · PDF 리포트 · CSV</span>')+'</div>';
     el.innerHTML=head+tabs+legend+tbl+foot;
     resize();
   }
