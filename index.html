@@ -1382,7 +1382,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
               <input id="f-pw" type="password" maxlength="20" autocomplete="new-password" placeholder="비밀번호 4자 이상" hidden style="border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px">
             </div>
             <label class="tgl" for="f-msel" id="f-msel-wrap" hidden><span>복수 선택 허용<small>보기나 사진을 여러 개 고를 수 있어요</small></span><input type="checkbox" id="f-msel"></label>
-            <label class="tgl" for="f-cmt"><span>한줄평 열기<small>투표한 사람이 80자 한줄평을 남길 수 있어요</small></span><input type="checkbox" id="f-cmt" checked></label>
+            <label class="tgl" for="f-cmt" hidden><span>한줄평 열기<small>투표한 사람이 80자 한줄평을 남길 수 있어요</small></span><input type="checkbox" id="f-cmt" checked></label>
           </div>
         </details>
         <div class="make-bar">
@@ -2109,6 +2109,8 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       '<form data-unlock="'+p.id+'" novalidate><label class="sr" for="pw-'+p.id+'" hidden>비밀번호</label><input id="pw-'+p.id+'" type="password" placeholder="비밀번호" autocomplete="off"><button class="btn dark" type="submit">입장</button></form>'+
       '<p class="cmsg" data-umsg></p></article>';
   }
+  // 한줄평은 모든 투표에서 연다 (2026-11-26)
+  function cmtOn(p){ return !!p; }
   function isQuiz(p){ return typeof p.a==='number'||!!(p.qs&&p.qs.some(function(x){return typeof x.a==='number'})); }
   function relayTotal(p){ return p.wc?p.qs.length*2-1:p.qs.length; }
   // 이상형 월드컵 대진: 32강 승자끼리 16강 → 8강 → 4강 → 결승
@@ -2215,7 +2217,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       '<div class="foot"><span class="n">'+(voters(p)?fmt(voters(p))+'명 참여':'첫 투표자가 되어 보세요')+(p.closed?' · 마감된 투표':done?'':' · 투표하면 결과 공개')+'</span>'+
       (embedded?'<a class="egoto" href="'+SITE+'?p='+p.id+'" target="_blank" rel="noopener">'+(done?'다른 투표 보기':'네아니요에서 보기')+ic('external-link')+'</a>':'')+
       '<span class="acts">'+(done&&p.type!=='relay'?'<button class="btn" data-act="stats">'+ic('chart-column')+'상세 통계</button>':'')+(done&&p.vis!=='secret'&&!embedded?'<button class="btn" data-act="card" aria-label="결과 이미지 저장" title="결과 이미지 저장">'+ic('image')+'결과 이미지</button>':'')+'<button class="btn" data-act="copy">'+ic('share-2')+'공유</button>'+(p.vis==='secret'?'':'<button class="btn dark" data-act="embed">'+ic('code')+'임베드</button>')+'</span></div>'+
-      '<div class="stats" hidden></div><div class="embed" hidden></div>'+(p.comments&&!embedded?cmtBlock(p,done):'')+'</article>';
+      '<div class="stats" hidden></div><div class="embed" hidden></div>'+(cmtOn(p)&&!embedded?cmtBlock(p,done):'')+'</article>';
   }
 
   // 한 번에 20개씩 보여주고 '더보기'로 이어서 붙임
@@ -2931,7 +2933,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
         '<div class="r-leg">'+p.o.map(function(o,i){return '<span><i style="background:'+OPC[i%OPC.length]+'"></i>'+esc(o)+'</span>'}).join('')+'</div></div>'+pf(2)+'</section>';
     }
     // 추이 · 의견 · 유의사항
-    var cm=(p.comments?getC(p).filter(function(c){return !c.hidden}):[]), best=p.o.map(function(_,i){ return cm.filter(function(c){return c.o===i}).sort(function(x,y){return y.likes-x.likes})[0]; });
+    var cm=(cmtOn(p)?getC(p).filter(function(c){return !c.hidden}):[]), best=p.o.map(function(_,i){ return cm.filter(function(c){return c.o===i}).sort(function(x,y){return y.likes-x.likes})[0]; });
     var opin=best.some(Boolean)?'<div class="r-cm">'+best.map(function(c,i){return c?'<div><b style="color:'+OPC[i%OPC.length]+'">\''+esc(p.o[i])+'\' 대표 한줄평</b><p>“'+esc(c.text)+'”</p><small>공감 '+fmt(c.likes)+'</small></div>':''}).join('')+'</div>':'';
     var aiS=Array.isArray(p.ai)&&p.ai.length?'<div class="r-cm">'+p.ai.map(function(t,i){return t?'<div><b style="color:'+OPC[i%OPC.length]+'">\''+esc(p.o[i])+'\' 쪽 논리 <small>(AI 요약)</small></b><p>'+esc(t)+'</p></div>':''}).join('')+'</div>':'';
     var n3=pol?4:5;
@@ -3010,13 +3012,13 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   function aiBlock(p,done){
     if(!done||!Array.isArray(p.ai)||!p.ai.length) return '';
     // 사람 한줄평이 하나라도 있으면 AI 정리는 빼고 사람 의견을 보여 줌
-    if(p.comments&&getC(p).some(function(c){return !c.hidden&&(!c.review||c.mine)})) return '';
-    return '<div class="aibox"><h4>'+ic('sparkles')+'<span class="aitag">AI</span>양쪽 의견 정리'+(p.comments?' <small>· 한줄평이 달리면 사라져요</small>':'')+'</h4><ul>'+
+    if(cmtOn(p)&&getC(p).some(function(c){return !c.hidden&&(!c.review||c.mine)})) return '';
+    return '<div class="aibox"><h4>'+ic('sparkles')+'<span class="aitag">AI</span>양쪽 의견 정리'+(cmtOn(p)?' <small>· 한줄평이 달리면 사라져요</small>':'')+'</h4><ul>'+
       p.ai.map(function(t,i){ return t&&p.o[i]?'<li><span class="side-tag" style="background:'+OPC[i%OPC.length]+'">'+esc(p.o[i])+'</span><span>'+esc(t)+'</span></li>':''; }).join('')+
-      '</ul>'+(p.comments&&!embedded?'<p class="aifoot">AI가 쓴 요약이에요. 내 생각은 아래 한줄평으로 남겨 주세요.</p>':'<p class="aifoot">AI가 쓴 요약이에요. 실제 참여자 의견이 아닙니다.</p>')+'</div>';
+      '</ul>'+(cmtOn(p)&&!embedded?'<p class="aifoot">AI가 쓴 요약이에요. 내 생각은 아래 한줄평으로 남겨 주세요.</p>':'<p class="aifoot">AI가 쓴 요약이에요. 실제 참여자 의견이 아닙니다.</p>')+'</div>';
   }
   function cmtBlock(p,done){
-    if(NY&&NY.on&&p.comments) NY.needComments(p);
+    if(NY&&NY.on&&cmtOn(p)) NY.needComments(p);
     var list=getC(p).filter(function(c){return !c.hidden&&(!c.review||c.mine)});
     if(!done) return '<div class="cmts"><h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개</small></h4><p class="hint">투표하면 한줄평을 보고 남길 수 있어요.</p></div>';
     var sorted=list.slice().sort(function(a,b){return b.likes-a.likes});
@@ -3713,7 +3715,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     var sc=document.getElementById('sumCat'), catSet=catTouched||!!sync.key; sc.textContent=catSet?catLabel(catSel.value):'카테고리'; sc.parentNode.classList.toggle('unset',!catSet); sc.parentNode.setAttribute('aria-label','카테고리: '+catLabel(catSel.value)+(subSel.value?' › '+subSel.value:'')+(catTouched?'':' (자동 선택)')); sc.parentNode.title=sc.parentNode.getAttribute('aria-label');
     document.getElementById('autotype').innerHTML=ic('sparkles')+'<span class="at-label">이렇게 올라가요</span>'+tags;
     var vis=document.querySelector('input[name="f-vis"]:checked').value;
-    document.getElementById('moreSum').innerHTML=ic('settings-2')+'설정 <small>'+(vis==='public'?'전체 공개':vis==='link'?'링크 공유만':'비밀방')+(d.story||document.getElementById('f-cmt').checked?' · 한줄평 켜짐':'')+(!mselWrap.hidden&&document.getElementById('f-msel').checked?' · 복수 선택':'')+'</small>';
+    document.getElementById('moreSum').innerHTML=ic('settings-2')+'설정 <small>'+(vis==='public'?'전체 공개':vis==='link'?'링크 공유만':'비밀방')+''+(!mselWrap.hidden&&document.getElementById('f-msel').checked?' · 복수 선택':'')+'</small>';
   }
   function syncVis(){ pwIn.hidden=!document.getElementById('f-v-pw').checked; if(!pwIn.hidden) document.getElementById('moreSet').open=true; sync(); }
   ['f-v-pub','f-v-link','f-v-pw'].forEach(function(id){document.getElementById(id).onchange=syncVis});
@@ -3727,7 +3729,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     if(!q){ fail('제목을 입력해 주세요.'); qIn.focus(); return; }
     var old=editId?polls.find(function(x){return x.id===editId}):null;
     if(vis==='secret'&&pwIn.value.length<4&&!(old&&old.pw&&!pwIn.value)){ fail('비밀번호를 4자 이상 입력해 주세요.'); document.getElementById('moreSet').open=true; return; }
-    var np={id:'u'+Date.now().toString(36),cat:catSel.value,sub:subSel.value,q:q,h:'방금',t:0,vis:vis,comments:document.getElementById('f-cmt').checked,own:true,created:Date.now()};
+    var np={id:'u'+Date.now().toString(36),cat:catSel.value,sub:subSel.value,q:q,h:'방금',t:0,vis:vis,comments:true,own:true,created:Date.now()};
     if(d.kind==='wc'){
       var its=wcItems.slice(0,wcN).map(function(x){return {name:x.name.trim(),img:x.img}});
       var miss=its.findIndex(function(x){return !x.name});
@@ -3830,7 +3832,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   }
   function showMade(np,vis){
     var made=document.getElementById('made'), url=shareUrl(np);
-    made.innerHTML='<h3>투표를 만들었습니다</h3><p class="hint">'+(vis==='public'?'피드 맨 위에도 올라갔어요.':vis==='link'?'피드와 랭킹에는 나오지 않고, 이 주소를 받은 사람만 참여할 수 있어요.':'피드와 랭킹에는 나오지 않고, 주소와 비밀번호를 모두 아는 사람만 참여할 수 있어요. 비밀번호는 따로 알려 주세요.')+(np.comments?' 한줄평이 열려 있어요.':'')+'</p>'+
+    made.innerHTML='<h3>투표를 만들었습니다</h3><p class="hint">'+(vis==='public'?'피드 맨 위에도 올라갔어요.':vis==='link'?'피드와 랭킹에는 나오지 않고, 이 주소를 받은 사람만 참여할 수 있어요.':'피드와 랭킹에는 나오지 않고, 주소와 비밀번호를 모두 아는 사람만 참여할 수 있어요. 비밀번호는 따로 알려 주세요.')+' 한줄평이 열려 있어요.'+'</p>'+
       '<div class="url">'+esc(url)+'</div><div class="row"><button class="btn dark" type="button" data-copyurl="'+esc(url)+'">'+ic('copy')+'주소 복사</button><a class="btn" href="?p='+np.id+'">투표 보러 가기</a><button class="btn" type="button" data-editmade>'+ic('pencil')+'수정하기</button></div>';
     made.hidden=false;
     made.querySelector('[data-copyurl]').onclick=function(){copy(url,'투표 주소를 복사했습니다.')};
