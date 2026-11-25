@@ -708,6 +708,10 @@ body.embedded .side-hot{display:none!important}
 .rsum{margin:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:color-mix(in srgb,var(--e) 12%,transparent);border-radius:10px;padding:10px 12px;font-size:calc(14px * var(--fs))}
 .rsum .i{width:16px;height:16px;color:var(--e)}
 .rsum b{color:var(--e)}
+.wc-path{display:flex;flex-direction:column;gap:4px;font-size:calc(13.5px * var(--fs))}
+.wc-path em{font-style:normal;font-weight:700;color:var(--e);margin-right:6px}
+.wc-sub{margin:4px 0 0;font-weight:700;font-size:calc(13px * var(--fs));opacity:.7}
+.relay h4 small{font-weight:600;opacity:.6}
 .rbuild{display:flex;flex-direction:column;gap:12px}
 .rblock{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
 .rblock .rh{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:calc(13px * var(--fs));color:var(--e)}
@@ -1795,7 +1799,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       :'<circle cx="330" cy="62" r="34" fill="#FFC93C"/><path d="M330 12 L330 0 M374 62 L392 62 M362 26 L374 14 M296 26 L286 14" stroke="#FFC93C" stroke-width="7" stroke-linecap="round"/><path d="M0 250 Q100 220 200 245 T400 240 L400 300 L0 300 Z" fill="#7CC36E"/><rect x="90" y="150" width="130" height="100" fill="#F28B6A" stroke="#C4553C" stroke-width="5"/><path d="M75 155 L155 85 L235 155 Z" fill="#E24B4B" stroke="#A8302E" stroke-width="5" stroke-linejoin="round"/><rect x="138" y="195" width="34" height="55" fill="#7A4A2A"/><rect x="104" y="170" width="26" height="24" fill="#BDE4FF" stroke="#4A7BD8" stroke-width="4"/><rect x="182" y="170" width="26" height="24" fill="#BDE4FF" stroke="#4A7BD8" stroke-width="4"/><circle cx="295" cy="215" r="14" fill="#FF7FB0"/><path d="M295 229 L295 255" stroke="#3E8E41" stroke-width="5"/><circle cx="340" cy="222" r="11" fill="#B88CFF"/><path d="M340 233 L340 255" stroke="#3E8E41" stroke-width="5"/><path d="M40 60 Q60 40 80 60 Q100 40 120 60" stroke="#8FB6E8" stroke-width="6" fill="none" stroke-linecap="round"/>')+'</svg>';
     return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sv);
   }
-  polls.forEach(function(p){ if(p.type==='relay'){ p.o=p.qs[0].o; p.v=p.qs[0].v; } });
+  polls.forEach(function(p){ if(p.type==='relay'){ p.o=p.qs[0].o; p.v=p.qs[0].v; if(/^wc-/.test(p.id)) p.wc=true; } });
   var JK={long:['#283A5E',1],black:['#24262B'],beige:['#D9C3A0'],khaki:['#6E6B45'],navy:['#283A5E'],charcoal:['#4A4D55'],ivory:['#EDE6D6',0,'#DCE3EE'],burgundy:['#7A2737']};
   // 예시 사진: Pexels 무료 사진(px:사진번호|대체그림). 사진을 못 불러오면 대체 그림으로 바꿈
   var FALLBACK={};
@@ -2076,13 +2080,39 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       '<p class="cmsg" data-umsg></p></article>';
   }
   function isQuiz(p){ return typeof p.a==='number'||!!(p.qs&&p.qs.some(function(x){return typeof x.a==='number'})); }
+  function relayTotal(p){ return p.wc?p.qs.length*2-1:p.qs.length; }
+  // 이상형 월드컵 대진: 32강 승자끼리 16강 → 8강 → 4강 → 결승
+  function wcState(p,ans){
+    var cur=[], k=0, rounds=[]; p.qs.forEach(function(q){ cur.push(q.o[0],q.o[1]); });
+    while(cur.length>1){
+      var next=[], size=cur.length, label=size===2?'결승전':size+'강';
+      for(var i=0;i<size;i+=2){
+        var o=[cur[i],cur[i+1]];
+        if(k>=ans.length) return {step:k,match:{label:label,no:i/2+1,cnt:size/2,o:o},rounds:rounds};
+        next.push(o[ans[k]]===undefined?o[0]:o[ans[k]]); k++;
+      }
+      rounds.push({size:size,win:next}); cur=next;
+    }
+    return {step:k,champ:cur[0],rounds:rounds};
+  }
+  function wcSummary(p,mine){
+    if(!Array.isArray(mine)||mine.length<relayTotal(p)) return '';
+    var st=wcState(p,mine), r=st.rounds, fin=r.length>=2?r[r.length-2].win:[], semi=r.length>=3?r[r.length-3].win:[];
+    var runner=fin.filter(function(x){return x!==st.champ})[0];
+    return '<p class="rsum wc-champ">'+ic('crown')+'내 우승 <b>'+esc(st.champ)+'</b></p>'+
+      '<div class="wc-path">'+(runner?'<span><em>준우승</em>'+esc(runner)+'</span>':'')+(semi.length?'<span><em>4강</em>'+semi.map(esc).join(' · ')+'</span>':'')+'</div>'+
+      '<p class="wc-sub">32강 전체 투표 결과</p>';
+  }
   var relayAns={};
+  // 이상형 월드컵: 32강만 고르고 끝났던 기록은 16강부터 이어서 하게 한다
+  polls.forEach(function(p){ var m=voted[p.id]; if(p.wc&&Array.isArray(m)&&m.length<relayTotal(p)){ relayAns[p.id]=m.slice(); p.wcResume=true; delete voted[p.id]; } });
   function relayBody(p,done){
-    var mine=voted[p.id], total=p.qs.length;
+    var mine=voted[p.id], total=relayTotal(p);
     if(!done){
-      var step=(relayAns[p.id]||[]).length, cq=p.qs[step];
+      var step=(relayAns[p.id]||[]).length, cq=p.qs[step], title='Q'+(step+1)+'. '+esc(cq?cq.q:'');
+      if(p.wc){ var ws=wcState(p,relayAns[p.id]||[]); cq={o:ws.match.o}; title=ws.match.cnt===1?'결승전':esc(ws.match.label)+' '+ws.match.no+'경기 <small>/ '+ws.match.cnt+'경기</small>'; }
       return '<div class="relay"><div class="rprog"><span>'+(step+1)+' / '+total+'</span><i><b style="width:'+(step/total*100)+'%"></b></i></div>'+
-        '<div class="rq" data-step="'+step+'"><h4>Q'+(step+1)+'. '+esc(cq.q)+'</h4><div class="opts">'+cq.o.map(function(o,i){
+        '<div class="rq" data-step="'+step+'"><h4>'+title+'</h4><div class="opts">'+cq.o.map(function(o,i){
           return '<button class="opt" data-ri="'+i+'"><span class="fill"></span><span>'+esc(o)+'</span><span class="pct"></span></button>';
         }).join('')+'</div></div></div>';
     }
@@ -2096,6 +2126,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       }).join('')+'</div>'+(hasA&&qq.e?'<p class="qexp">'+ic('lightbulb')+esc(qq.e)+'</p>':'')+'</div>';
     }).join('');
     var sumLine=Array.isArray(mine)&&quiz?'<p class="rsum">'+ic('check')+'<b>'+total+'문제 중 '+right+'개</b> 맞혔어요'+(right===total?' · 만점!':right>=total*0.7?' · 잘했어요!':' · 정답을 확인해 보세요')+'</p>':Array.isArray(mine)?'<p class="rsum">'+ic('check')+'내 답 '+total+'개 중 <b>'+same+'개</b>가 다수 의견과 같아요'+(same===total?' · 완벽한 대세파!':same===0?' · 나만의 길을 가는 소수파':'')+'</p>':'';
+    if(p.wc) sumLine=wcSummary(p,mine);
     return '<div class="relay done">'+sumLine+html+'</div>';
   }
   function card(p){
@@ -2140,7 +2171,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     var credit=p.credit?'<p class="credit">사진: '+esc(p.credit)+' · <a href="https://www.pexels.com" target="_blank" rel="noopener">Pexels</a></p>':'';
     return '<article class="poll'+(done?' done':'')+'" data-id="'+p.id+'">'+
       (embedded?embedBrand(p):'')+
-      '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+catIc(p.cat)+catLabel(p.cat)+(p.sub?' <span class="sub">› '+esc(p.sub)+'</span>':'')+'</span>'+(isQuiz(p)?'<span class="ex qz">문제</span>':'')+(p.type==='relay'?'<span class="ex rl">릴레이 '+p.qs.length+'문항</span>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'<span class="when"><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+'</span>'+(p.own&&!embedded?'<span class="own-acts"><button type="button" data-act="edit">'+ic('pencil')+'수정</button><button type="button" data-act="del">'+ic('trash-2')+'삭제</button></span>':'')+'</div>'+
+      '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+catIc(p.cat)+catLabel(p.cat)+(p.sub?' <span class="sub">› '+esc(p.sub)+'</span>':'')+'</span>'+(isQuiz(p)?'<span class="ex qz">문제</span>':'')+(p.type==='relay'?'<span class="ex rl">'+(p.wc?'월드컵 '+p.qs.length*2+'강':'릴레이 '+p.qs.length+'문항')+'</span>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'<span class="when"><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+'</span>'+(p.own&&!embedded?'<span class="own-acts"><button type="button" data-act="edit">'+ic('pencil')+'수정</button><button type="button" data-act="del">'+ic('trash-2')+'삭제</button></span>':'')+'</div>'+
       '<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+credit+aiBlock(p,done)+
       (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
       '<div class="foot"><span class="n">'+(voters(p)?fmt(voters(p))+'명 참여':'첫 투표자가 되어 보세요')+(p.closed?' · 마감된 투표':done?'':' · 투표하면 결과 공개')+'</span>'+
@@ -3038,6 +3069,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
         p.qs.slice(0,6).forEach(function(qq,k){ var t=sum(qq.v)||1,mx=Math.max.apply(null,qq.v),ti=qq.v.indexOf(mx),hasA=typeof qq.a==='number',si=hasA?qq.a:ti; rows.push({lab:'Q'+(k+1)+'. '+(hasA?'정답률':qq.o[si]),pc:Math.round(qq.v[si]*1000/t)/10,hl:true,ok:hasA}); });
         if(Array.isArray(mine)) p.qs.forEach(function(qq,k){ if(typeof qq.a==='number'){ tot++; if(mine[k]===qq.a) right++; } });
         if(tot){ g.fillStyle=OK; font('800',40); g.fillText('저는 '+tot+'문제 중 '+right+'개 맞혔어요',110,y); y+=64; }
+        if(p.wc&&Array.isArray(mine)&&mine.length>=relayTotal(p)){ g.fillStyle=A; font('800',44); g.fillText('내 우승: '+wcState(p,mine).champ,110,y); y+=68; }
       } else {
         var ps=pct(p),mx2=Math.max.apply(null,ps),hasA2=typeof p.a==='number';
         // 문제는 친구가 풀 수 있게 정답과 비율을 가린다
@@ -3186,14 +3218,14 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       var ans=relayAns[p.id]=relayAns[p.id]||[]; var ri=+rb.dataset.ri; ans.push(ri);
       var rr=rb.getBoundingClientRect(); burst(e.clientX||rr.left+rr.width/2,e.clientY||rr.top+rr.height/2,OPC[ri%OPC.length],{small:true}); try{SFX.like()}catch(err){}
       rb.classList.add('sel');
-      if(ans.length<p.qs.length){
+      if(ans.length<relayTotal(p)){
         setTimeout(function(){
           var rq=art.querySelector('.rq'); rq.classList.add('out');
           setTimeout(function(){ var tmp=document.createElement('div'); tmp.innerHTML=relayBody(p,false); var nb=tmp.firstChild; nb.querySelector('.rq').classList.add('in'); art.querySelector('.relay').replaceWith(nb); requestAnimationFrame(function(){requestAnimationFrame(function(){ nb.querySelector('.rq').classList.remove('in'); })}); resize(); },220);
         },180);
       }else{
         var cb=nextCombo();
-        p.qs.forEach(function(qq,k){ qq.v[ans[k]]++; }); p.n=(p.n||0)+1; voted[p.id]=ans.slice(); delete relayAns[p.id]; save();
+        if(!p.wcResume){ p.qs.forEach(function(qq,k){ qq.v[ans[k]]++; }); p.n=(p.n||0)+1; } p.wcResume=false; voted[p.id]=ans.slice(); delete relayAns[p.id]; save();
         SFX.vote(cb); burst(e.clientX||rr.left+rr.width/2,(e.clientY||rr.top)-10,'var(--a)',{label:cb>=2?'COMBO x'+cb+'!':'완주!',combo:cb>=2});
         setTimeout(function(){ var fresh=rerender(art,p); fresh.querySelectorAll('.fill').forEach(function(f){f.dataset.w=f.style.width;f.style.width='0'}); requestAnimationFrame(function(){requestAnimationFrame(function(){ fresh.querySelectorAll('.fill').forEach(function(f){f.style.width=f.dataset.w}); })}); if(p.own) saveMine(); renderRank(); },260);
       }
@@ -3808,6 +3840,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   function choiceText(p,c,snap){
     var o=(p&&p.o)||(snap&&snap.o)||[];
     if(Array.isArray(c)){
+      if(p&&p.wc&&c.length>=relayTotal(p)) return '우승 '+wcState(p,c).champ;
       if(p&&p.type==='relay'&&p.qs) return c.map(function(x,k){ var q=p.qs[k]; return 'Q'+(k+1)+' '+(q&&q.o[x]!=null?q.o[x]:'?'); }).join(' · ');
       return c.map(function(x){return o[x]!=null?o[x]:'?'}).join(', ');
     }
