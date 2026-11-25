@@ -1286,6 +1286,14 @@ a.mine-it:hover{border-color:var(--muted)}
 }
 body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
 @media (prefers-reduced-motion:reduce){.mk-tip{transition:opacity .2s}}
+.foot{border-top:0;padding-top:6px;margin-top:2px}
+.foot .acts,.foot .acts:not(#x){display:flex;align-items:center;gap:2px;width:auto;flex:none;flex-wrap:nowrap;margin-left:-8px}
+.ib{border:0;background:none;color:var(--ink);display:inline-flex;align-items:center;gap:5px;padding:8px;border-radius:999px;cursor:pointer;font-size:calc(14px * var(--fs));font-variant-numeric:tabular-nums;line-height:1}
+.ib:hover{background:var(--surface)}
+.ib:active{transform:scale(.92)}
+.ib .i{width:21px;height:21px;margin:0;vertical-align:0}
+.foot .n{margin-left:auto;text-align:right;flex:0 1 auto}
+@media (max-width:520px){.foot{flex-wrap:nowrap}.foot .n{font-size:calc(12px * var(--fs))}}
 </style>
 </head>
 <body>
@@ -2260,9 +2268,10 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+catIc(p.cat)+catLabel(p.cat)+(p.sub?' <span class="sub">› '+esc(p.sub)+'</span>':'')+'</span>'+(isQuiz(p)?'<span class="ex qz">문제</span>':'')+(p.type==='relay'?'<span class="ex rl">'+(p.wc?'월드컵 '+p.qs.length*2+'강':'릴레이 '+p.qs.length+'문항')+'</span>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'<span class="when"><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+'</span>'+(p.own&&!embedded?'<span class="own-acts"><button type="button" data-act="edit">'+ic('pencil')+'수정</button><button type="button" data-act="del">'+ic('trash-2')+'삭제</button></span>':'')+'</div>'+
       '<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+credit+aiBlock(p,done)+
       (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
-      '<div class="foot"><span class="n">'+(voters(p)?fmt(voters(p))+'명 참여':'첫 투표자가 되어 보세요')+(p.closed?' · 마감된 투표':done?'':' · 투표하면 결과 공개')+'</span>'+
+      '<div class="foot">'+
+      '<span class="acts">'+(cmtOn(p)&&!embedded?'<button type="button" class="ib" data-act="cmtgo" aria-label="한줄평 달기" title="한줄평">'+ic('message-circle')+(cCount(p)?'<span>'+fmt(cCount(p))+'</span>':'')+'</button>':'')+'<button type="button" class="ib" data-act="copy" aria-label="공유" title="공유">'+ic('send')+'</button>'+(done&&p.type!=='relay'?'<button type="button" class="ib" data-act="stats" aria-label="상세 통계" title="상세 통계">'+ic('chart-column')+'</button>':'')+(done&&p.vis!=='secret'&&!embedded?'<button type="button" class="ib" data-act="card" aria-label="결과 이미지 저장" title="결과 이미지 저장">'+ic('image')+'</button>':'')+(p.vis==='secret'?'':'<button type="button" class="ib" data-act="embed" aria-label="임베드 코드" title="임베드">'+ic('code')+'</button>')+'</span>'+
       (embedded?'<a class="egoto" href="'+SITE+'?p='+p.id+'" target="_blank" rel="noopener">'+(done?'다른 투표 보기':'네아니요에서 보기')+ic('external-link')+'</a>':'')+
-      '<span class="acts">'+(done&&p.type!=='relay'?'<button class="btn" data-act="stats">'+ic('chart-column')+'상세 통계</button>':'')+(done&&p.vis!=='secret'&&!embedded?'<button class="btn" data-act="card" aria-label="결과 이미지 저장" title="결과 이미지 저장">'+ic('image')+'결과 이미지</button>':'')+'<button class="btn" data-act="copy">'+ic('share-2')+'공유</button>'+(p.vis==='secret'?'':'<button class="btn dark" data-act="embed">'+ic('code')+'임베드</button>')+'</span></div>'+
+      '<span class="n">'+(voters(p)?fmt(voters(p))+'명 참여':'첫 투표자가 되어 보세요')+(p.closed?' · 마감':done?'':' · 투표하면 결과 공개')+'</span></div>'+
       '<div class="stats" hidden></div><div class="embed" hidden></div>'+(cmtOn(p)&&!embedded?cmtBlock(p,done):'')+'</article>';
   }
 
@@ -3064,7 +3073,8 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       '</ul>'+(cmtOn(p)&&!embedded?'<p class="aifoot">AI가 쓴 요약이에요. 내 생각은 아래 한줄평으로 남겨 주세요.</p>':'<p class="aifoot">AI가 쓴 요약이에요. 실제 참여자 의견이 아닙니다.</p>')+'</div>';
   }
   // 한줄평 (스레드처럼: 프로필·이름·시간, 공감·답글, 답글은 한 단계로 모아 보기)
-  var cSort={}, cReply={}, cRepOpen={};
+  var cSort={}, cReply={}, cRepOpen={}, cCompose={};
+  function cCount(p){ return getC(p).filter(function(c){return !c.hidden&&(!c.review||c.mine)}).length; }
   function cAv(c){
     var nm=c.name||(c.mine&&user&&user.nick&&user.rankPublic?user.nick:''), h=typeof c.av==='number'?c.av:(String(c.id).split('').reduce(function(a,ch){return (a*31+ch.charCodeAt(0))%360},7));
     return '<span class="tav" style="--h:'+h+'" aria-hidden="true">'+(nm?esc(nm.charAt(0)):ic('user-round'))+'</span>';
@@ -3093,7 +3103,8 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     // 부모가 숨겨진 답글은 그냥 맨 위 글처럼 보여 준다
     Object.keys(reps).forEach(function(k){ if(!tops.some(function(t){return t.id===k})){ reps[k].forEach(function(r){ tops.push(r); reps[r.id]=[]; }); } });
     var head='<h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개</small></h4>';
-    if(!done) return '<div class="cmts">'+head+'<p class="hint">투표하면 한줄평을 보고 남길 수 있어요.</p></div>';
+    var comp=!!cCompose[p.id]&&!!user;
+    if(!done||(!list.length&&!comp)) return '';
     var srt=cSort[p.id]||'top', score=function(c){ return c.likes*2+(reps[c.id]||[]).length*3; };
     var bestIds={};
     p.o.forEach(function(_,oi){var b=tops.filter(function(c){return c.o===oi}).sort(function(a,b){return score(b)-score(a)})[0]; if(b&&score(b)>0) bestIds[b.id]=1;});
@@ -3102,7 +3113,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     // 방금 쓴 내 글은 맨 위에
     var fr=ordered.filter(function(c){return c.mine&&c.fresh}); if(fr.length) ordered=fr.concat(ordered.filter(function(c){return fr.indexOf(c)<0}));
     // 피드에서는 대표 의견(최대 2개) + 내가 방금 쓴 글만, 나머지는 '모두 보기'. 공유 링크로 들어오면 전부 보임
-    var total=ordered.length, open=!!shareId||!!embedded||cmtOpen[p.id];
+    var total=ordered.length, open=!!shareId||!!embedded||cmtOpen[p.id]||comp;
     if(!open&&total>2){
       var pv=ordered.slice(0,2), myLast=tops.filter(function(c){return c.mine}).slice(-1)[0];
       if(myLast&&pv.indexOf(myLast)<0) pv.push(myLast);
@@ -3110,7 +3121,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     }
     var tabs=tops.length>1?'<div class="tsort" role="group" aria-label="정렬"><button type="button" data-act="csort" data-s="top" aria-pressed="'+(srt==='top')+'">인기순</button><button type="button" data-act="csort" data-s="new" aria-pressed="'+(srt==='new')+'">최신순</button></div>':'';
     var moreBtn=total>2&&!shareId&&!embedded?'<button type="button" class="cmore" data-act="cmore" aria-expanded="'+!!open+'">'+(open?'접기':'한줄평 '+total+'개 모두 보기')+'</button>':'';
-    var form=user?'<form class="cform tform" data-cform="'+p.id+'" novalidate>'+cAv({mine:true,id:'me'+(user.id||'')})+'<label class="sr" for="c-'+p.id+'" hidden>한줄평</label><textarea class="cin" id="c-'+p.id+'" rows="1" maxlength="'+MOD.limits.maxLength+'" placeholder="생각을 남겨 보세요"></textarea><button class="tpost" type="submit">게시</button></form><p class="cmsg" data-cmsg></p><p class="tnote">내 한줄평에는 고른 쪽(<b>'+esc(p.o[myIdx(p)]||'')+'</b>)과 '+(user.nick&&user.rankPublic?'닉네임 <b>'+esc(user.nick)+'</b>':'<b>익명 투표러</b>')+'(으)로 보여요.</p>'
+    var form=!comp?'':user?'<form class="cform tform" data-cform="'+p.id+'" novalidate>'+cAv({mine:true,id:'me'+(user.id||'')})+'<label class="sr" for="c-'+p.id+'" hidden>한줄평</label><textarea class="cin" id="c-'+p.id+'" rows="1" maxlength="'+MOD.limits.maxLength+'" placeholder="생각을 남겨 보세요"></textarea><button class="tpost" type="submit">게시</button></form><p class="cmsg" data-cmsg></p><p class="tnote">내 한줄평에는 고른 쪽(<b>'+esc(p.o[myIdx(p)]||'')+'</b>)과 '+(user.nick&&user.rankPublic?'닉네임 <b>'+esc(user.nick)+'</b>':'<b>익명 투표러</b>')+'(으)로 보여요.</p>'
       :'<button class="btn" data-act="login">'+ic('log-in')+'로그인하고 한줄평 남기기</button>';
     return '<div class="cmts">'+head.replace('</h4>',tabs+'</h4>')+form+
       '<div class="tlist">'+ordered.map(function(c){ return cOne(p,c,!!bestIds[c.id],reps[c.id]||[]); }).join('')+'</div>'+moreBtn+'</div>';
@@ -3302,6 +3313,13 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       if(act==='cmore'){ cmtOpen[p.id]=!cmtOpen[p.id]; var top0=art.getBoundingClientRect().top; var fr0=rerender(art,p);
         if(!cmtOpen[p.id]){ var d0=fr0.getBoundingClientRect().top-top0; if(d0) window.scrollBy(0,d0); var cm=fr0.querySelector('.cmts'); if(cm&&cm.getBoundingClientRect().top<0) cm.scrollIntoView({block:'start'}); }
         return; }
+      if(act==='cmtgo'){
+        if(!art.classList.contains('done')){ toast('투표하면 한줄평을 보고 남길 수 있어요.'); return; }
+        if(!user){ if(NY&&NY.openLogin) NY.openLogin(); else toast('로그인하면 한줄평을 남길 수 있어요.'); return; }
+        cCompose[p.id]=!cCompose[p.id]; cReply[p.id]=null;
+        var fc=rerender(art,p), ci=fc.querySelector('.cmts > form .cin');
+        if(ci){ ci.focus({preventScroll:true}); ci.scrollIntoView({block:'center',behavior:'smooth'}); }
+        return; }
       if(act==='csort'){ cSort[p.id]=actBtn.dataset.s; rerender(art,p); return; }
       if(act==='rmore'){ cRepOpen[actBtn.dataset.cid]=1; rerender(art,p); return; }
       if(act==='reply'){
@@ -3414,7 +3432,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       if(jd.action==='block'){ m.textContent=jd.message; return; }
       if(NY&&NY.on&&NY.isReal(p.id)) return NY.postComment(p,t,art,m,pid);
       var nc={id:p.id+'-'+Date.now().toString(36),o:myIdx(p),text:t,likes:0,at:'방금',mine:true,ts:Date.now(),fresh:true};
-      if(pid){ nc.pid=pid; cReply[p.id]=null; cRepOpen[pid]=1; }
+      if(pid){ nc.pid=pid; cReply[p.id]=null; cRepOpen[pid]=1; } else cCompose[p.id]=false;
       if(jd.action==='review') nc.review={rule:jd.rule,name:jd.name};
       getC(p).push(nc); saveC();
       rerender(art,p); toast(jd.action==='review'?jd.message:pid?'답글을 달았어요.':'한줄평을 등록했습니다.');
@@ -4217,7 +4235,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       msgEl.textContent='등록 중…';
       call('comments',{method:'POST',body:{pollId:p.id,text:text,parentId:pid||undefined}}).then(function(j){
         if(!j.ok){ msgEl.textContent=j.message||'등록할 수 없어요.'; return; }
-        var c=j.comment; c.at='방금'; c.fresh=true; getC(p).push(c); saveC(); if(c.pid){ cReply[p.id]=null; cRepOpen[c.pid]=1; }
+        var c=j.comment; c.at='방금'; c.fresh=true; getC(p).push(c); saveC(); if(c.pid){ cReply[p.id]=null; cRepOpen[c.pid]=1; } else cCompose[p.id]=false;
         rerender(art,p); toast(j.action==='review'?(j.message||'검토 후 공개돼요.'):c.pid?'답글을 달았어요.':'한줄평을 등록했습니다.');
       }).catch(function(e){ msgEl.textContent=e.message==='vote-first'?'투표가 아직 저장되지 않았어요. 잠시 후 다시 시도해 주세요.':'등록하지 못했어요. 잠시 후 다시 시도해 주세요.'; });
     };
