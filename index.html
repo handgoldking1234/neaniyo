@@ -620,6 +620,10 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .tbest .i{width:13px;height:13px}
 .tx{margin:4px 0 0;line-height:1.5;font-size:calc(14.5px * var(--fs));white-space:pre-wrap;word-break:break-word}
 .tc.pending{opacity:.55}
+.cedit{margin-top:6px;padding:8px 10px;gap:6px}
+.tcancel{border:0;background:none;color:var(--muted);font-weight:600;font-size:calc(13px * var(--fs));cursor:pointer;padding:7px 6px;flex:none}
+.tc .ops .tdel{margin-left:-6px}
+.tc .ops .tdel.sure{opacity:1;color:var(--e);font-weight:700;font-size:calc(12px * var(--fs))}
 .trv{margin:4px 0 0;font-size:calc(12px * var(--fs));color:var(--muted)}
 .tc .ops{display:flex;gap:16px;margin-top:6px}
 .tc .ops button{border:0;background:none;color:var(--muted);cursor:pointer;padding:2px 0;display:inline-flex;align-items:center;gap:4px;font-size:calc(12.5px * var(--fs));font-variant-numeric:tabular-nums}
@@ -1297,7 +1301,11 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
 .ib:active{transform:scale(.92)}
 .ib .i{width:21px;height:21px;margin:0;vertical-align:0}
 .foot .n{margin-left:auto;text-align:right;flex:0 1 auto}
-@media (max-width:520px){.foot{flex-wrap:nowrap}.foot .n{font-size:calc(12px * var(--fs))}}
+@media (max-width:520px){.foot{flex-wrap:nowrap}.foot .n{font-size:calc(12px * var(--fs));white-space:nowrap}.ib{padding:7px 6px}.ib .i{width:20px;height:20px}.foot .acts [data-act="embed"]{display:none}}
+.ib.plk[aria-pressed="true"]{color:#ff3040}
+.ib.plk[aria-pressed="true"] .i{fill:currentColor}
+.ib.likepop .i{animation:heartpop .45s cubic-bezier(.2,.9,.3,1.4)}
+@media (prefers-reduced-motion:reduce){.ib.likepop .i{animation:none}}
 </style>
 </head>
 <body>
@@ -2273,7 +2281,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       '<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+credit+aiBlock(p,done)+
       (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
       '<div class="foot">'+
-      '<span class="acts">'+(cmtOn(p)&&!embedded?'<button type="button" class="ib" data-act="cmtgo" aria-label="한줄평 달기" title="한줄평">'+ic('message-circle')+(cCount(p)?'<span>'+fmt(cCount(p))+'</span>':'')+'</button>':'')+'<button type="button" class="ib" data-act="copy" aria-label="공유" title="공유">'+ic('send')+'</button>'+(done&&p.type!=='relay'?'<button type="button" class="ib" data-act="stats" aria-label="상세 통계" title="상세 통계">'+ic('chart-column')+'</button>':'')+(done&&p.vis!=='secret'&&!embedded?'<button type="button" class="ib" data-act="card" aria-label="결과 이미지 저장" title="결과 이미지 저장">'+ic('image')+'</button>':'')+(p.vis==='secret'?'':'<button type="button" class="ib" data-act="embed" aria-label="임베드 코드" title="임베드">'+ic('code')+'</button>')+'</span>'+
+      '<span class="acts">'+(!embedded?'<button type="button" class="ib plk" data-act="plike" aria-pressed="'+!!plikes[p.id]+'" aria-label="좋아요" title="좋아요">'+ic('heart')+(likeN(p)?'<span>'+fmt(likeN(p))+'</span>':'')+'</button>':'')+(cmtOn(p)&&!embedded?'<button type="button" class="ib" data-act="cmtgo" aria-label="한줄평 달기" title="한줄평">'+ic('message-circle')+(cCount(p)?'<span>'+fmt(cCount(p))+'</span>':'')+'</button>':'')+'<button type="button" class="ib" data-act="copy" aria-label="공유" title="공유">'+ic('send')+'</button>'+(done&&p.type!=='relay'?'<button type="button" class="ib" data-act="stats" aria-label="상세 통계" title="상세 통계">'+ic('chart-column')+'</button>':'')+(done&&p.vis!=='secret'&&!embedded?'<button type="button" class="ib" data-act="card" aria-label="결과 이미지 저장" title="결과 이미지 저장">'+ic('image')+'</button>':'')+(p.vis==='secret'?'':'<button type="button" class="ib" data-act="embed" aria-label="임베드 코드" title="임베드">'+ic('code')+'</button>')+'</span>'+
       (embedded?'<a class="egoto" href="'+SITE+'?p='+p.id+'" target="_blank" rel="noopener">'+(done?'다른 투표 보기':'네아니요에서 보기')+ic('external-link')+'</a>':'')+
       '<span class="n">'+(voters(p)?fmt(voters(p))+'명 참여':'첫 투표자가 되어 보세요')+(p.closed?' · 마감':done?'':' · 투표하면 결과 공개')+'</span></div>'+
       '<div class="stats" hidden></div><div class="embed" hidden></div>'+(cmtOn(p)&&!embedded?cmtBlock(p,done):'')+'</article>';
@@ -3077,7 +3085,10 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       '</ul>'+(cmtOn(p)&&!embedded?'<p class="aifoot">AI가 쓴 요약이에요. 내 생각은 아래 한줄평으로 남겨 주세요.</p>':'<p class="aifoot">AI가 쓴 요약이에요. 실제 참여자 의견이 아닙니다.</p>')+'</div>';
   }
   // 한줄평 (스레드처럼: 프로필·이름·시간, 공감·답글, 답글은 한 단계로 모아 보기)
-  var cSort={}, cReply={}, cRepOpen={}, cCompose={};
+  var cSort={}, cReply={}, cRepOpen={}, cCompose={}, cEdit={};
+  // 글 좋아요: 내가 누른 글은 이 기기에 기억, 수는 서버 집계(p.lk)
+  var PLK='neaniyo-plikes', plikes={}; try{ plikes=JSON.parse(localStorage.getItem(PLK)||'{}')||{}; }catch(e){ plikes={}; }
+  function likeN(p){ return Math.max(p.lk!=null?p.lk:0, plikes[p.id]?1:0); }
   function cCount(p){ return getC(p).filter(function(c){return !c.hidden&&(!c.review||c.mine)}).length; }
   function cAv(c){
     var nm=c.name||(c.mine&&user&&user.nick&&user.rankPublic?user.nick:''), h=typeof c.av==='number'?c.av:(String(c.id).split('').reduce(function(a,ch){return (a*31+ch.charCodeAt(0))%360},7));
@@ -3092,12 +3103,12 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       if(cReply[p.id]===c.id) repHtml+='<form class="cform tform reply" data-cform="'+p.id+'" data-pid="'+c.id+'" novalidate>'+cAv({mine:true,id:'me'+(user&&user.id||'')})+'<label class="sr" for="r-'+c.id+'" hidden>답글</label><textarea class="cin" id="r-'+c.id+'" rows="1" maxlength="'+MOD.limits.maxLength+'" placeholder="'+esc(nm||'익명')+'님에게 답글"></textarea><button class="tpost" type="submit">게시</button></form>';
     }
     return '<div class="tc'+(c.pending?' pending':'')+(best?' best':'')+(reps?'':' sub')+((reps&&(nrep&&open||cReply[p.id]===c.id))?' has-rep':'')+'" data-tc="'+c.id+'">'+cAv(c)+
-      '<div class="tb"><div class="th"><b class="tn'+(nm?'':' anon')+'">'+(nm?esc(nm):'익명 투표러')+'</b>'+(c.op?'<span class="top-tag">작성자</span>':'')+(best?'<span class="tbest" title="대표 의견">'+ic('crown')+'대표</span>':'')+'<span class="tt">'+esc(c.at||'')+'</span></div>'+
-      '<p class="tx">'+esc(c.text)+'</p>'+(c.review?'<p class="trv">검토 중이라 나에게만 보여요</p>':'')+
+      '<div class="tb"><div class="th"><b class="tn'+(nm?'':' anon')+'">'+(nm?esc(nm):'익명 투표러')+'</b>'+(c.op?'<span class="top-tag">작성자</span>':'')+(best?'<span class="tbest" title="대표 의견">'+ic('crown')+'대표</span>':'')+'<span class="tt">'+esc(c.at||'')+(c.ed?' · 수정됨':'')+'</span></div>'+
+      (cEdit[c.id]?'<form class="cform tform cedit" data-cform="'+p.id+'" data-eid="'+c.id+'" novalidate><textarea class="cin" rows="1" maxlength="'+MOD.limits.maxLength+'" aria-label="한줄평 고치기">'+esc(c.text)+'</textarea><button type="button" class="tcancel" data-act="cedit" data-cid="'+c.id+'">취소</button><button class="tpost" type="submit">저장</button></form>':'<p class="tx">'+esc(c.text)+'</p>')+(c.review?'<p class="trv">검토 중이라 나에게만 보여요</p>':'')+
       '<div class="ops"><button type="button" data-act="like" data-cid="'+c.id+'" aria-pressed="'+!!c.liked+'" aria-label="공감">'+ic('heart')+(c.likes>0?fmt(c.likes):'')+'</button>'+
       (reps!==null?'<button type="button" data-act="reply" data-cid="'+c.id+'" aria-label="답글 달기">'+ic('message-circle')+(nrep?nrep:'')+'</button>':'<button type="button" data-act="reply" data-cid="'+(c.pid||'')+'" data-to="'+esc(nm||'')+'" aria-label="답글 달기">'+ic('message-circle')+'</button>')+
       (p.o[c.o]!=null?'<span class="tside" style="--c:'+OPC[c.o%OPC.length]+'" title="'+esc(p.o[c.o])+' 선택">'+esc(p.o[c.o])+'</span>':'')+
-      (c.mine?'':'<button type="button" class="trp" data-act="report" data-cid="'+c.id+'" aria-label="신고">'+ic('flag')+'</button>')+'</div>'+repHtml+'</div></div>';
+      (c.mine?(c.pending?'':'<button type="button" class="trp" data-act="cedit" data-cid="'+c.id+'" aria-label="고치기" title="고치기">'+ic('pencil')+'</button><button type="button" class="trp tdel" data-act="cdel" data-cid="'+c.id+'" aria-label="지우기" title="지우기">'+ic('trash-2')+'</button>'):'<button type="button" class="trp" data-act="report" data-cid="'+c.id+'" aria-label="신고">'+ic('flag')+'</button>')+'</div>'+repHtml+'</div></div>';
   }
   function cmtBlock(p,done){
     if(NY&&NY.on&&cmtOn(p)) NY.needComments(p);
@@ -3332,6 +3343,21 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
         var rid=actBtn.dataset.cid; if(!rid) return; cReply[p.id]=cReply[p.id]===rid&&!actBtn.dataset.to?null:rid; cRepOpen[rid]=1;
         var fr1=rerender(art,p), ta=fr1.querySelector('form[data-pid="'+rid+'"] .cin'); if(ta){ if(actBtn.dataset.to) ta.value='@'+actBtn.dataset.to+' '; ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); }
         return; }
+      if(act==='plike'){
+        var on=!plikes[p.id]; if(on) plikes[p.id]=1; else delete plikes[p.id];
+        try{ localStorage.setItem(PLK,JSON.stringify(plikes)); }catch(e){}
+        p.lk=Math.max(0,(p.lk||0)+(on?1:-1));
+        if(on){ var pr=actBtn.getBoundingClientRect(); burst(pr.left+14,pr.top+pr.height/2,'#ff3040',{small:true}); }
+        var fl=rerender(art,p), lb=fl.querySelector('[data-act="plike"]'); if(lb&&on) lb.classList.add('likepop');
+        if(NY&&NY.pollLike) NY.pollLike(p,on);
+        return; }
+      if(act==='cedit'){ var ce=actBtn.dataset.cid; cEdit[ce]=!cEdit[ce]; var fe=rerender(art,p), te=fe.querySelector('form[data-eid="'+ce+'"] .cin'); if(te){ te.focus(); te.setSelectionRange(te.value.length,te.value.length); te.style.height=Math.min(te.scrollHeight,160)+'px'; } return; }
+      if(act==='cdel'){
+        var cd=getC(p).filter(function(x){return x.id===actBtn.dataset.cid})[0]; if(!cd) return;
+        if(!actBtn.classList.contains('sure')){ actBtn.classList.add('sure'); actBtn.innerHTML='지울까요?'; setTimeout(function(){ if(actBtn.isConnected){ actBtn.classList.remove('sure'); actBtn.innerHTML=ic('trash-2'); } },3000); return; }
+        var Ld=getC(p), di=Ld.indexOf(cd); Ld.splice(di,1); Ld.forEach(function(x){ if(x.pid===cd.id) x.hidden=true; }); saveC(); rerender(art,p); toast('한줄평을 지웠어요.');
+        if(NY&&NY.commentAct) NY.commentAct(cd,'delete');
+        return; }
       if(act==='like'||act==='report'){
         var c=getC(p).filter(function(x){return x.id===actBtn.dataset.cid})[0]; if(!c) return;
         if(act==='like'){ c.liked=!c.liked; c.likes+=c.liked?1:-1; if(NY) NY.commentAct(c,c.liked?'like':'unlike');
@@ -3427,6 +3453,15 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       var v=f.querySelector('input').value;
       if(pwHash(v)===p.pw){ unlocked[p.id]=1; try{sessionStorage.setItem('neaniyo-open',JSON.stringify(unlocked))}catch(err){} document.title=p.q+' | 네아니요'; rerender(art,p); }
       else { art.querySelector('[data-umsg]').textContent='비밀번호가 맞지 않습니다.'; }
+      return;
+    }
+    if(f.dataset.cform&&f.dataset.eid){
+      var ei=f.querySelector('.cin'), et=ei.value.trim(), ec=getC(p).filter(function(x){return x.id===f.dataset.eid})[0];
+      var em=f.nextElementSibling&&f.nextElementSibling.matches('[data-cmsg]')?f.nextElementSibling:null; if(!em){ em=document.createElement('p'); em.className='cmsg'; f.after(em); }
+      if(!ec) return; var ejd=modJudge(et,MOD,[]); if(ejd.action==='block'){ em.textContent=ejd.message; return; }
+      if(et===ec.text){ cEdit[ec.id]=false; rerender(art,p); return; }
+      var old=ec.text; ec.text=et; ec.ed=1; cEdit[ec.id]=false; saveC(); rerender(art,p);
+      if(NY&&NY.commentEdit) NY.commentEdit(ec,et,function(ok,msg){ if(!ok){ ec.text=old; cEdit[ec.id]=true; saveC(); var a2=document.querySelector('article.poll[data-id="'+p.id+'"]'); if(a2) rerender(a2,p); toast(msg||'고치지 못했어요. 잠시 후 다시 시도해 주세요.'); } else if(msg) toast(msg); });
       return;
     }
     if(f.dataset.cform){
@@ -4136,7 +4171,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       if(!api.on){ if(done) done(); return; }
       var ids=polls.filter(function(p){return REAL.test(p.id)}).map(function(p){return p.id}), jobs=[];
       var got={};
-      for(var i=0;i<ids.length;i+=150) jobs.push(call('counts?ids='+encodeURIComponent(ids.slice(i,i+150).join(','))).then(function(j){ apply(j.counts); Object.assign(got,j.counts||{}); }).catch(function(){}));
+      for(var i=0;i<ids.length;i+=150) (function(chunk){ jobs.push(call('counts?ids='+encodeURIComponent(chunk.join(','))).then(function(j){ var lk=j.likes||{}; chunk.forEach(function(id){ var pp=polls.find(function(x){return x.id===id}); if(pp) pp.lk=lk[id]||0; }); apply(j.counts); Object.assign(got,j.counts||{}); }).catch(function(){})); })(ids.slice(i,i+150));
       Promise.all(jobs).then(function(){
         if(Object.keys(got).length) bootSave('c',got);
         if(started) [].forEach.call(document.querySelectorAll('.poll[data-id]'),function(a){ var p=polls.find(function(x){return x.id===a.dataset.id}); if(p&&REAL.test(p.id)) redraw(p); });
@@ -4258,8 +4293,16 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     };
     api.commentAct=function(c,act){
       if(!api.on||!api.token||!/^[0-9a-f-]{36}$/.test(c.id)) return false;
-      call('comment-action',{method:'POST',body:{id:c.id,act:act}}).catch(function(){});
+      call('comment-action',{method:'POST',body:{id:c.id,act:act}}).catch(function(){ if(act==='delete') toast('지우지 못했어요. 새로고침 후 다시 시도해 주세요.'); });
       return true;
+    };
+    api.pollLike=function(p,on){
+      if(!api.on||!REAL.test(p.id)) return;
+      call('vote',{method:'POST',body:{pollId:p.id,like:!!on,deviceId:dev}}).then(function(j){ if(typeof j.likes==='number'&&j.likes!==p.lk){ p.lk=j.likes; redraw(p); } }).catch(function(){});
+    };
+    api.commentEdit=function(c,text,cb){
+      if(!api.on||!api.token||!/^[0-9a-f-]{36}$/.test(c.id)) return cb(true);
+      call('comment-action',{method:'POST',body:{id:c.id,act:'edit',text:text}}).then(function(j){ if(!j.ok) cb(false,j.message); else { if(j.review) c.review={rule:'edit'}; cb(true,j.review?(j.message||'검토 후 다시 공개돼요.'):''); } }).catch(function(){ cb(false); });
     };
 
     // ---- 사용자 투표 ----

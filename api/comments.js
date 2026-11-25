@@ -3,11 +3,11 @@
 import crypto from 'node:crypto';
 import { handler, send, fail, db, rpc, authUser, body, moderation, judge, mailAdmin, SITE } from './_lib.js';
 
-const COLS = 'id,user_id,parent_id,side,body,status,rule,likes,created_at';
+const COLS = 'id,user_id,parent_id,side,body,status,rule,likes,created_at,edited_at';
 // 사용자 ID는 내보내지 않고, 프로필 색을 고르기 위한 짧은 값만 준다
 const avKey = uid => parseInt(crypto.createHash('sha256').update('ny-av:' + uid).digest('hex').slice(0, 6), 16) % 360;
 const shape = (c, uid, liked, names = {}, owner = null) => ({
-  id: c.id, o: c.side, text: c.body, likes: c.likes, ts: Date.parse(c.created_at), pid: c.parent_id || undefined,
+  id: c.id, o: c.side, text: c.body, likes: c.likes, ts: Date.parse(c.created_at), pid: c.parent_id || undefined, ed: c.edited_at ? 1 : undefined,
   name: names[c.user_id] || null, av: avKey(c.user_id), op: !!owner && c.user_id === owner || undefined,
   mine: !!uid && c.user_id === uid, liked: !!liked, review: c.status === 'review' ? { rule: c.rule } : undefined
 });

@@ -1,4 +1,4 @@
-// POST /api/vote {pollId, choice:[...], relay, deviceId} (+ 로그인 토큰이 있으면 계정으로)
+// POST /api/vote {pollId, choice:[...], relay, deviceId}  ·  {pollId, like:true|false, deviceId} → 글 좋아요 (+ 로그인 토큰이 있으면 계정으로)
 import { handler, send, fail, db, rpc, authUser, hash, ipOf, body, ageBand } from './_lib.js';
 const IP_LIMIT = +(process.env.VOTE_IP_LIMIT || 20); // 같은 IP에서 한 투표에 받을 최대 표 (학교·회사 공용망 고려)
 
@@ -7,6 +7,16 @@ export default handler(async (req, res) => {
   const b = body(req);
   const pollId = String(b.pollId || '');
   if (!/^[\w-]{1,40}$/.test(pollId)) return fail(res, 400, 'pollId');
+  // 글 좋아요: {pollId, like:true|false, deviceId}
+  if (typeof b.like === 'boolean') {
+    const u = await authUser(req), dv = String(b.deviceId || '');
+    if (!u && !/^[\w-]{8,64}$/.test(dv)) return fail(res, 400, 'deviceId');
+    const who = u ? `u:${u.id}` : `d:${hash(dv)}`;
+    if (b.like) await db('ny_poll_likes', { method: 'POST', body: { poll_id: pollId, voter: who }, prefer: 'resolution=ignore-duplicates,return=minimal' });
+    else await db(`ny_poll_likes?poll_id=eq.${encodeURIComponent(pollId)}&voter=eq.${encodeURIComponent(who)}`, { method: 'DELETE', prefer: 'return=minimal' });
+    const n = await rpc('ny_poll_like_counts', { ids: [pollId] });
+    return send(res, 200, { ok: true, likes: (n && n[pollId]) || 0 });
+  }
   const choice = [].concat(b.choice).map(Number);
   if (!choice.length || choice.length > 20 || choice.some(c => !Number.isInteger(c) || c < 0 || c > 19)) return fail(res, 400, 'choice');
   const relay = !!b.relay;
