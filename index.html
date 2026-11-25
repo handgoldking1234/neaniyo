@@ -2892,11 +2892,13 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       el.innerHTML=head+'<div class="gate"><span>로그인하고 프로필을 입력하면 성별·연령대별 결과와 내 그룹의 선택을 볼 수 있어요.</span><button class="btn dark" data-act="login">로그인하고 보기</button></div>';
       return resize();
     }
-    var d=DIMS.filter(function(x){return x.k===dimKey})[0]||DIMS[0];
+    // 프리미엄 준비 중: 유료 기준(지역·학력·시간대)은 탭에서 아예 빼 둔다
+    var DV=DIMS.filter(function(x){return x.tier!=='pro'||user.pro});
+    var d=DV.filter(function(x){return x.k===dimKey})[0]||DV[0];
     // 서버 연결 + 실제 투표 + 시험 참여(DEMO) 꺼짐 → ny_votes 실제 집계 (학력은 투표에 저장하지 않아 제외)
     var real=!!(NY&&NY.on&&NY.token&&NY.isReal(p.id)&&!DEMO.isOn());
-    if(real&&d.k==='edu') d=DIMS[0];
-    var tabs='<div class="dims" role="group" aria-label="통계 기준">'+DIMS.map(function(x){
+    if(real&&d.k==='edu') d=DV[0];
+    var tabs='<div class="dims" role="group" aria-label="통계 기준">'+DV.map(function(x){
       var lock=x.tier==='pro'&&!user.pro;
       return '<button type="button" data-act="dim" data-dim="'+x.k+'" aria-pressed="'+(x.k===d.k)+'">'+x.label+(lock?' <span class="lk" aria-label="프리미엄">'+ic('lock')+'</span>':'')+'</button>';
     }).join('')+'</div>';
@@ -2921,7 +2923,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     if(locked&&real) rows=breakdown(p,d); // 잠긴 표는 흐리게만 보이므로 실제 수치를 화면에 싣지 않는다
     var tbl=locked?'<div class="locked">'+xtable(p,d,rows)+'<div class="lockmsg"><b>'+d.label+'별 결과는 프리미엄 기능으로 준비 중이에요</b><button class="btn gold" data-act="upgrade">'+ic('crown')+'프리미엄 알아보기</button></div></div>':xtable(p,d,rows);
     var foot='<div class="foot2"><span>참여자 기준 · 표본 조사 아님 · '+MIN_N+'명 미만 그룹 비공개</span>'+
-      (user.pro?'<span class="dl"><a class="btn dark" href="?report='+p.id+'" target="_blank" rel="noopener">'+ic('download')+'PDF 리포트</a><button class="btn" data-act="csv">'+ic('download')+'CSV</button></span>':'<span><span class="pbadge">준비 중</span> 지역·학력·시간대 · PDF 리포트 · CSV</span>')+'</div>';
+      (user.pro?'<span class="dl"><a class="btn dark" href="?report='+p.id+'" target="_blank" rel="noopener">'+ic('download')+'PDF 리포트</a><button class="btn" data-act="csv">'+ic('download')+'CSV</button></span>':'')+'</div>';
     el.innerHTML=head+tabs+legend+tbl+foot;
     resize();
   }
