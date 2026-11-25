@@ -2982,7 +2982,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
 
   // ===== 공유하기: 카카오톡·다른 앱·페이스북·X·밴드·링크 복사 =====
   var KAKAO_SDK='https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js';
-  function shareMsg(p){ var mi=myIdx(p); if(isQuiz(p)) return p.q+' 한번 풀어 보세요!'; return (typeof mi==='number'&&p.o[mi]?'저는 「'+p.o[mi]+'」 골랐어요. ':'')+p.q+' 어떻게 생각하세요?'; }
+  function shareMsg(p){ if(isQuiz(p)) return p.q+' 한번 풀어 보세요!'; return p.q+' 어떻게 생각하세요?'; }  // 내가 고른 보기는 공유 문구에 넣지 않음
   function kakaoShare(p){
     var key=NY&&NY.kakaoKey; if(!key) return false;
     var go=function(){ try{ if(!window.Kakao.isInitialized()) window.Kakao.init(key); window.Kakao.Share.sendScrap({requestUrl:shareUrl(p,'kakao_share')}); }catch(e){ copy(shareMsg(p)+' '+shareUrl(p),'카카오톡을 열지 못해 링크를 복사했어요. 카톡에 붙여 넣어 주세요.'); } };
@@ -3161,7 +3161,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
         saveC(); rerender(art,p); return;
       }
       if(act==='askfriend'){
-        var myTxt=(function(){ if(isQuiz(p)) return p.q+' 저는 풀어 봤어요. 한번 풀어 보세요!'; var mi=myIdx(p); return (typeof mi==='number'&&p.o[mi]?'저는 「'+p.o[mi]+'」 골랐어요. ':'')+p.q+' 어떻게 생각하세요?'; })();
+        var myTxt=(function(){ if(isQuiz(p)) return p.q+' 저는 풀어 봤어요. 한번 풀어 보세요!'; return p.q+' 어떻게 생각하세요?'; })();
         if(navigator.share){ navigator.share({title:'네아니요 · '+p.q,text:myTxt,url:shareUrl(p)}).catch(function(err){ if(err&&err.name!=='AbortError') copy(myTxt+' '+shareUrl(p),'메시지와 링크를 복사했어요. 카톡에 붙여 넣어 보세요.'); }); }
         else copy(myTxt+' '+shareUrl(p),'메시지와 링크를 복사했어요. 카톡에 붙여 넣어 보세요.');
         return;
