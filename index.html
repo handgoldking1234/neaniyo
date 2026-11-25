@@ -3138,7 +3138,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     // 부모가 숨겨진 답글은 그냥 맨 위 글처럼 보여 준다
     Object.keys(reps).forEach(function(k){ if(!tops.some(function(t){return t.id===k})){ reps[k].forEach(function(r){ tops.push(r); reps[r.id]=[]; }); } });
     var head='<h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개</small></h4>';
-    var comp=!!cCompose[p.id]&&!!user;
+    var comp=!!cCompose[p.id];
     if(!done||(!list.length&&!comp)) return '';
     var srt=cSort[p.id]||'top', score=function(c){ return c.likes*2+(reps[c.id]||[]).length*3; };
     var bestIds={};
@@ -3421,7 +3421,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
         },180);
       }else{
         var cb=nextCombo();
-        if(!p.wcResume){ p.qs.forEach(function(qq,k){ qq.v[ans[k]]++; }); p.n=(p.n||0)+1; } p.wcResume=false; voted[p.id]=ans.slice(); delete relayAns[p.id]; save();
+        if(!p.wcResume){ p.qs.forEach(function(qq,k){ qq.v[ans[k]]++; }); p.n=(p.n||0)+1; } p.wcResume=false; voted[p.id]=ans.slice(); cCompose[p.id]=true; delete relayAns[p.id]; save();
         SFX.vote(cb); burst(e.clientX||rr.left+rr.width/2,(e.clientY||rr.top)-10,'var(--a)',{label:cb>=2?'COMBO x'+cb+'!':'완주!',combo:cb>=2});
         setTimeout(function(){ var fresh=rerender(art,p); fresh.querySelectorAll('.fill').forEach(function(f){f.dataset.w=f.style.width;f.style.width='0'}); requestAnimationFrame(function(){requestAnimationFrame(function(){ fresh.querySelectorAll('.fill').forEach(function(f){f.style.width=f.dataset.w}); })}); if(p.own) saveMine(); renderRank(); },260);
       }
@@ -3441,7 +3441,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     var cb=nextCombo();
     burst(bx,by,OPC[+b.dataset.i%OPC.length],cb>=2?{label:'COMBO x'+cb+'!',combo:true}:{label:'+1'});
     SFX.vote(cb);
-    var i=+b.dataset.i; p.v[i]++; voted[p.id]=i; save();
+    var i=+b.dataset.i; p.v[i]++; voted[p.id]=i; cCompose[p.id]=true; save();
     var html=card(p), tmp=document.createElement('div'); tmp.innerHTML=html;
     var fresh=tmp.firstChild;
     // 애니메이션: 0에서 시작해 실제 비율로
@@ -3461,7 +3461,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     var r=btn.getBoundingClientRect(), cb=nextCombo();
     burst(e.clientX||r.left+r.width/2,e.clientY||r.top+r.height/2,OPC[picks[0]%OPC.length],cb>=2?{label:'COMBO x'+cb+'!',combo:true}:{label:'+'+picks.length});
     SFX.vote(cb);
-    picks.forEach(function(i){p.v[i]++}); p.n=(p.n||voters(p))+1; voted[p.id]=picks; save();
+    picks.forEach(function(i){p.v[i]++}); p.n=(p.n||voters(p))+1; voted[p.id]=picks; cCompose[p.id]=true; save();
     var tmp=document.createElement('div'); tmp.innerHTML=card(p); var fresh=tmp.firstChild;
     fresh.querySelectorAll('.fill').forEach(function(f){f.dataset.w=f.style.width;f.style.width='0'});
     art.replaceWith(fresh);
