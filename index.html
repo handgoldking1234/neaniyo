@@ -1762,9 +1762,9 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     ]},
     // 패션·쇼핑 사진 투표 예시
     {id:'ph1',ai:['따뜻하고 실용적이라 산다는 쪽','이미 있거나 다른 옷으로 충분하다는 쪽'],ex:true,comments:true,cat:'패션·쇼핑',sub:'패션',type:'vs',q:'올겨울 롱패딩, 이거 산다 vs 안 산다',o:['산다','안 산다'],v:[1840,2260],h:'1시간 전',img:'assets/sample/long-padding.jpg',imgFit:'contain'},
-    {id:'ph2',ex:true,cat:'패션·쇼핑',type:'photo',q:'올겨울 패딩 코디, 어떤 스타일이 제일 나아요?',o:['모노톤 패딩','시티 나이트룩','스카프 데일리룩','퍼 후드 패딩','볼캡 캐주얼룩'],v:[1420,2380,960,1110,740],h:'3시간 전',imgs:['px:15639609|black','px:19426409|charcoal','px:14469824|beige','px:11274805|black','px:19714681|navy'],credit:'Farshad Sheikhzadeh · Caner Kokcu · Jean-Daniel 외'},
+    {id:'ph2',ai:['깔끔하고 어디에나 어울린다는 쪽','도시적인 분위기가 멋있다는 쪽','포인트 하나로 세련돼 보인다는 쪽','보온과 멋을 함께 챙긴다는 쪽','편하고 캐주얼해서 좋다는 쪽'],ex:true,cat:'패션·쇼핑',type:'photo',q:'올겨울 패딩 코디, 어떤 스타일이 제일 나아요?',o:['모노톤 패딩','시티 나이트룩','스카프 데일리룩','퍼 후드 패딩','볼캡 캐주얼룩'],v:[1420,2380,960,1110,740],h:'3시간 전',imgs:['px:15639609|black','px:19426409|charcoal','px:14469824|beige','px:11274805|black','px:19714681|navy'],credit:'Farshad Sheikhzadeh · Caner Kokcu · Jean-Daniel 외'},
     {id:'yt1',ai:['재밌어서 끝까지 보게 된다는 쪽','길면 중간에 넘기게 된다는 쪽'],ex:true,cat:'연예',type:'vs',q:'이 영상, 끝까지 보게 되나요?',o:['끝까지 본다','중간에 넘긴다'],v:[1240,860],h:'방금',boost:400,link:'https://youtu.be/iEmGtIh60DE'},
-    {id:'ph3',ex:true,cat:'패션·쇼핑',type:'photo',multiSel:true,n:1650,q:'출근길 패딩 코디, 괜찮은 거 다 골라 주세요',o:['퍼 후드 패딩','블랙 숏패딩','볼캡 매치','스카프 코디'],v:[1120,890,640,380],h:'오늘',imgs:['px:11274805|black','px:15639609|charcoal','px:19714681|navy','px:14469824|ivory'],credit:'Pexels 무료 사진'},
+    {id:'ph3',ai:['따뜻하고 포근해 보인다는 쪽','가볍고 활동하기 편하다는 쪽','캐주얼한 멋이 산다는 쪽','목이 따뜻하고 포인트가 된다는 쪽'],ex:true,cat:'패션·쇼핑',type:'photo',multiSel:true,n:1650,q:'출근길 패딩 코디, 괜찮은 거 다 골라 주세요',o:['퍼 후드 패딩','블랙 숏패딩','볼캡 매치','스카프 코디'],v:[1120,890,640,380],h:'오늘',imgs:['px:11274805|black','px:15639609|charcoal','px:19714681|navy','px:14469824|ivory'],credit:'Pexels 무료 사진'},
     // 그림·재능 예시
     {id:'dr1',ai:['재능이 보일 때 키워 주자는 쪽','지금은 자유롭게 그리는 게 낫다는 쪽'],ex:true,comments:true,cat:'그림·재능',type:'vs',q:'일곱 살 아이 그림, 미술학원 보낼까요?',o:['보낸다','안 보낸다'],v:[2210,1360],h:'2시간 전',img:'px:33590129|@drawing',credit:'Çiğdem Bilgin',
       story:'아이가 혼자 그린 그림이에요. 요즘 하루에도 몇 장씩 그리는데, 색을 쓰는 게 꽤 과감해서 주변에서 미술학원을 권하네요. 좋아서 하는 걸 학원에 보내면 오히려 흥미를 잃을까 봐 고민입니다.'},
@@ -2971,9 +2971,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   // AI 쟁점 정리: 사람 한줄평이 5개 미만일 때만, 투표한 뒤에 보임 (투표 전에 보여 주면 선택에 영향을 줄 수 있음)
   function aiBlock(p,done){
     if(!done||!Array.isArray(p.ai)||!p.ai.length) return '';
-    var human=p.comments?getC(p).filter(function(c){return !c.hidden}).length:0;
-    if(human>=5) return '';
-    return '<div class="aibox"><h4>'+ic('sparkles')+'<span class="aitag">AI</span>양쪽 의견 정리 <small>· 사람 한줄평이 쌓이면 사라져요</small></h4><ul>'+
+    return '<div class="aibox"><h4>'+ic('sparkles')+'<span class="aitag">AI</span>양쪽 의견 정리</h4><ul>'+
       p.ai.map(function(t,i){ return t&&p.o[i]?'<li><span class="side-tag" style="background:'+OPC[i%OPC.length]+'">'+esc(p.o[i])+'</span><span>'+esc(t)+'</span></li>':''; }).join('')+
       '</ul>'+(p.comments&&!embedded?'<p class="aifoot">AI가 쓴 요약이에요. 내 생각은 아래 한줄평으로 남겨 주세요.</p>':'<p class="aifoot">AI가 쓴 요약이에요. 실제 참여자 의견이 아닙니다.</p>')+'</div>';
   }
