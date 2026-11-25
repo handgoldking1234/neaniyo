@@ -619,6 +619,7 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .tbest{display:inline-flex;align-items:center;gap:3px;font-size:calc(11.5px * var(--fs));font-weight:700;color:var(--a)}
 .tbest .i{width:13px;height:13px}
 .tx{margin:4px 0 0;line-height:1.5;font-size:calc(14.5px * var(--fs));white-space:pre-wrap;word-break:break-word}
+.tc.pending{opacity:.55}
 .trv{margin:4px 0 0;font-size:calc(12px * var(--fs));color:var(--muted)}
 .tc .ops{display:flex;gap:16px;margin-top:6px}
 .tc .ops button{border:0;background:none;color:var(--muted);cursor:pointer;padding:2px 0;display:inline-flex;align-items:center;gap:4px;font-size:calc(12.5px * var(--fs));font-variant-numeric:tabular-nums}
@@ -3028,7 +3029,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   // ===== 한줄평 (시안: 브라우저에만 저장) =====
   var CKEY='neaniyo-cmt', cmts={};
   try{cmts=JSON.parse(localStorage.getItem(CKEY)||'{}')||{}}catch(e){cmts={}}
-  function saveC(){try{localStorage.setItem(CKEY,JSON.stringify(cmts))}catch(e){}}
+  function saveC(){try{var o={};Object.keys(cmts).forEach(function(k){o[k]=cmts[k].filter(function(c){return !c.pending})});localStorage.setItem(CKEY,JSON.stringify(o))}catch(e){}}
   var SEEDC={
     st1:[{o:0,text:'안 온 건 그렇다 쳐도 연락이라도 제대로 했어야죠',likes:388,at:'1시간 전'},{o:1,text:'사정이 있었을 수도 있으니 한 번은 물어보세요',likes:142,at:'40분 전'}],
     st3:[{o:0,text:'금액보다 이사 계획 얘기했는데 무시한 게 문제',likes:301,at:'2시간 전'},{o:1,text:'각자 관리하기로 했으면 존중해야 한다고 봐요',likes:276,at:'1시간 전'}],
@@ -3090,7 +3091,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       else if(nrep) repHtml='<div class="treps">'+reps.map(function(r){ return cOne(p,r,false,null); }).join('')+'</div>';
       if(cReply[p.id]===c.id) repHtml+='<form class="cform tform reply" data-cform="'+p.id+'" data-pid="'+c.id+'" novalidate>'+cAv({mine:true,id:'me'+(user&&user.id||'')})+'<label class="sr" for="r-'+c.id+'" hidden>답글</label><textarea class="cin" id="r-'+c.id+'" rows="1" maxlength="'+MOD.limits.maxLength+'" placeholder="'+esc(nm||'익명')+'님에게 답글"></textarea><button class="tpost" type="submit">게시</button></form>';
     }
-    return '<div class="tc'+(best?' best':'')+(reps?'':' sub')+((reps&&(nrep&&open||cReply[p.id]===c.id))?' has-rep':'')+'" data-tc="'+c.id+'">'+cAv(c)+
+    return '<div class="tc'+(c.pending?' pending':'')+(best?' best':'')+(reps?'':' sub')+((reps&&(nrep&&open||cReply[p.id]===c.id))?' has-rep':'')+'" data-tc="'+c.id+'">'+cAv(c)+
       '<div class="tb"><div class="th"><b class="tn'+(nm?'':' anon')+'">'+(nm?esc(nm):'익명 투표러')+'</b>'+(c.op?'<span class="top-tag">작성자</span>':'')+(best?'<span class="tbest" title="대표 의견">'+ic('crown')+'대표</span>':'')+'<span class="tt">'+esc(c.at||'')+'</span></div>'+
       '<p class="tx">'+esc(c.text)+'</p>'+(c.review?'<p class="trv">검토 중이라 나에게만 보여요</p>':'')+
       '<div class="ops"><button type="button" data-act="like" data-cid="'+c.id+'" aria-pressed="'+!!c.liked+'" aria-label="공감">'+ic('heart')+(c.likes>0?fmt(c.likes):'')+'</button>'+
@@ -4236,12 +4237,24 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     };
     api.postComment=function(p,text,art,msgEl,pid){
       if(!api.token){ msgEl.textContent='로그인 후 남길 수 있어요.'; return; }
-      msgEl.textContent='등록 중…';
+      // 서버 답을 기다리지 않고 바로 보여 준 뒤, 답이 오면 진짜 글로 바꾼다
+      var tmp={id:'tmp-'+Date.now().toString(36),o:myIdx(p),text:text,likes:0,at:'올리는 중…',mine:true,ts:Date.now(),fresh:true,pending:true};
+      if(pid){ tmp.pid=pid; cReply[p.id]=null; cRepOpen[pid]=1; } else cCompose[p.id]=false;
+      var list=getC(p); list.push(tmp);
+      var cur=function(){ return document.querySelector('article.poll[data-id="'+p.id+'"]')||art; };
+      rerender(cur(),p);
+      var undo=function(msg){
+        var L0=getC(p), i=L0.indexOf(tmp); if(i>=0) L0.splice(i,1);
+        if(pid) cReply[p.id]=pid; else cCompose[p.id]=true;
+        var fr=rerender(cur(),p), ta=fr.querySelector(pid?'form[data-pid="'+pid+'"] .cin':'.cmts > form .cin');
+        if(ta){ ta.value=text; ta.focus(); var m=ta.closest('form').nextElementSibling; if(!m||!m.matches('[data-cmsg]')){ m=document.createElement('p'); m.className='cmsg'; ta.closest('form').after(m); } m.textContent=msg; }
+        else toast(msg);
+      };
       call('comments',{method:'POST',body:{pollId:p.id,text:text,parentId:pid||undefined}}).then(function(j){
-        if(!j.ok){ msgEl.textContent=j.message||'등록할 수 없어요.'; return; }
-        var c=j.comment; c.at='방금'; c.fresh=true; getC(p).push(c); saveC(); if(c.pid){ cReply[p.id]=null; cRepOpen[c.pid]=1; } else cCompose[p.id]=false;
-        rerender(art,p); toast(j.action==='review'?(j.message||'검토 후 공개돼요.'):c.pid?'답글을 달았어요.':'한줄평을 등록했습니다.');
-      }).catch(function(e){ msgEl.textContent=e.message==='vote-first'?'투표가 아직 저장되지 않았어요. 잠시 후 다시 시도해 주세요.':'등록하지 못했어요. 잠시 후 다시 시도해 주세요.'; });
+        if(!j.ok){ undo(j.message||'등록할 수 없어요.'); return; }
+        var c=j.comment; c.at='방금'; c.fresh=true; var L=getC(p), i=L.indexOf(tmp); if(i>=0) L[i]=c; else if(!L.some(function(x){return x.id===c.id})) L.push(c); saveC();
+        rerender(cur(),p); if(j.action==='review') toast(j.message||'검토 후 공개돼요.');
+      }).catch(function(e){ undo(e.message==='vote-first'?'투표가 아직 저장되지 않았어요. 잠시 후 다시 시도해 주세요.':'등록하지 못했어요. 잠시 후 다시 시도해 주세요.'); });
     };
     api.commentAct=function(c,act){
       if(!api.on||!api.token||!/^[0-9a-f-]{36}$/.test(c.id)) return false;

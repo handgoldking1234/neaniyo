@@ -43,24 +43,30 @@ export default handler(async (req, res) => {
   if (!user) return fail(res, 401, 'login');
   const b = body(req), pollId = String(b.pollId || ''), text = String(b.text || '').trim();
   if (!/^[\w-]{1,40}$/.test(pollId)) return fail(res, 400, 'pollId');
+  const pid = b.parentId ? String(b.parentId) : null;
+  if (pid && !/^[0-9a-f-]{36}$/.test(pid)) return fail(res, 400, 'parent');
+  // 확인할 것들을 한꺼번에 물어봐서 기다리는 시간을 줄인다
+  const since = new Date(Date.now() - 600000).toISOString();
+  const [pr, v, recent, mod, names, owner] = await Promise.all([
+    pid ? db(`ny_comments?select=id,parent_id,poll_id,status&id=eq.${pid}`) : null,
+    db(`ny_votes?select=choice&poll_id=eq.${pollId}&voter=eq.${encodeURIComponent('u:' + user.id)}`),
+    db(`ny_comments?select=body,created_at&user_id=eq.${user.id}&created_at=gte.${since}`),
+    moderation(),
+    namesOf([{ user_id: user.id }]),
+    ownerOf(pollId)
+  ]);
   // 답글: 같은 투표의 한줄평에만, 답글의 답글은 맨 위 한줄평 아래로 모은다
   let parent = null;
-  if (b.parentId) {
-    if (!/^[0-9a-f-]{36}$/.test(String(b.parentId))) return fail(res, 400, 'parent');
-    const pr = await db(`ny_comments?select=id,parent_id,poll_id,status&id=eq.${b.parentId}`);
+  if (pid) {
     if (!pr.length || pr[0].poll_id !== pollId || pr[0].status === 'hidden') return fail(res, 404, 'parent');
     parent = pr[0].parent_id || pr[0].id;
   }
-
-  const v = await db(`ny_votes?select=choice&poll_id=eq.${pollId}&voter=eq.${encodeURIComponent('u:' + user.id)}`);
   if (!v.length) return fail(res, 403, 'vote-first');
-  const recent = await db(`ny_comments?select=body,created_at&user_id=eq.${user.id}&created_at=gte.${new Date(Date.now() - 600000).toISOString()}`);
-  const jd = judge(text, await moderation(), recent);
+  const jd = judge(text, mod, recent);
   if (jd.action === 'block') return send(res, 200, { ok: false, action: 'block', message: jd.message });
 
   const row = { poll_id: pollId, user_id: user.id, parent_id: parent, side: v[0].choice[0], body: text, status: jd.action === 'review' ? 'review' : 'visible', rule: jd.rule || null };
   const out = await db('ny_comments', { method: 'POST', body: row, prefer: 'return=representation' });
   if (jd.action === 'review') await mailAdmin('검토 대기 한줄평', [`규칙: ${jd.name}`, `투표: ${SITE}/?p=${pollId}`, `내용: ${text}`]);
-  const [names, owner] = await Promise.all([namesOf(out), ownerOf(pollId)]);
   send(res, 200, { ok: true, action: jd.action, message: jd.message, comment: shape(out[0], user.id, false, names, owner) });
 });
