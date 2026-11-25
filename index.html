@@ -114,6 +114,12 @@ button,input,select,textarea{font:inherit;color:inherit}
 .bar span{display:flex;align-items:center;padding:0 12px;color:#fff;transition:flex-basis .7s cubic-bezier(.2,.8,.2,1);min-width:44px;white-space:nowrap}
 .bar .pa{background:var(--a)}
 .bar .pb{background:var(--b);justify-content:flex-end}
+.mypick{display:flex;margin-bottom:-6px}.mypick.r{justify-content:flex-end}
+.mypick span{position:relative;display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:999px;color:#fff;font-size:calc(12px * var(--fs));font-weight:700;background:var(--a)}
+.mypick.r span{background:var(--b)}
+.mypick span .i{width:13px;height:13px;stroke-width:3}
+.mypick span::after{content:"";position:absolute;bottom:-4px;left:16px;border:5px solid transparent;border-bottom:0;border-top-color:inherit;border-top-color:var(--a)}
+.mypick.r span::after{left:auto;right:16px;border-top-color:var(--b)}
 .labels{display:flex;justify-content:space-between;gap:10px;font-size:calc(13.5px * var(--fs))}
 
 
@@ -2217,8 +2223,8 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       if(!done){
         body='<div class="vs"><button class="side a" data-i="0">'+esc(p.o[0])+'</button><span class="vsmark">VS</span><button class="side b" data-i="1">'+esc(p.o[1])+'</button></div>';
       }else{
-        body='<div class="split"><div class="bar"><span class="pa" style="flex-basis:'+ps[0]+'%">'+ps[0]+'%</span><span class="pb" style="flex-basis:'+ps[1]+'%">'+ps[1]+'%</span></div>'+
-          '<div class="labels"><b>'+esc(p.o[0])+(mine===0?'<span class="mine-ck">'+ic('check')+'내 선택</span>':'')+'</b><b style="text-align:right">'+(mine===1?'<span class="mine-ck">'+ic('check')+'내 선택</span>':'')+esc(p.o[1])+'</b></div></div>';
+        body='<div class="split">'+(mine===0||mine===1?'<div class="mypick '+(mine===0?'l':'r')+'"><span>'+ic('check')+'내 선택</span></div>':'')+'<div class="bar"><span class="pa" style="flex-basis:'+ps[0]+'%">'+ps[0]+'%</span><span class="pb" style="flex-basis:'+ps[1]+'%">'+ps[1]+'%</span></div>'+
+          '<div class="labels"><b>'+esc(p.o[0])+'</b><b style="text-align:right">'+esc(p.o[1])+'</b></div></div>';
       }
     }else if(p.type==='photo'){
       var mx=Math.max.apply(null,p.v), pk=p.multiSel?'data-pick':'data-i';
