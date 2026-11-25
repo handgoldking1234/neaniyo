@@ -120,7 +120,7 @@
   ],
   "limits": {
     "minLength": 2,
-    "maxLength": 80,
+    "maxLength": 150,
     "sameTextBlock": true,
     "maxPerMinute": 3,
     "reportsToHide": 3,

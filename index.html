@@ -584,6 +584,46 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .cmt.best{background:var(--bg);border-radius:10px;padding:10px 12px}
 .cform{display:flex;gap:6px}
 .cform input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px}
+.cmts h4 .ttl{display:inline-flex;align-items:center;gap:6px}
+.cmts h4 small{margin-right:auto;margin-left:6px}
+.tsort{display:flex;gap:2px;background:var(--bg);border-radius:999px;padding:3px}
+.tsort button{border:0;background:none;border-radius:999px;padding:4px 10px;font-size:calc(12px * var(--fs));font-weight:600;color:var(--muted);cursor:pointer}
+.tsort button[aria-pressed="true"]{background:var(--card,#fff);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.tform{align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+.tform .cin{flex:1;min-width:0;border:0;background:none;resize:none;font:inherit;font-size:calc(14.5px * var(--fs));line-height:1.45;padding:5px 0;height:31px;overflow:hidden;max-height:160px;color:var(--ink);outline:none}
+.tpost{border:0;background:var(--ink);color:var(--bg);font-weight:700;border-radius:999px;padding:7px 14px;font-size:calc(13px * var(--fs));cursor:pointer;flex:none}
+.tform.reply{margin-top:8px;padding:8px 10px}
+.tform.reply .tav{width:26px;height:26px;font-size:12px}
+.tlist{display:flex;flex-direction:column}
+.tnote{margin:-6px 0 0;font-size:calc(11.5px * var(--fs));color:var(--muted)}
+.tc{display:flex;gap:10px;padding:12px 0;position:relative}
+.tlist>.tc+.tc{border-top:1px solid var(--line)}
+.tav{width:34px;height:34px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:hsl(var(--h,220) 55% 52%);color:#fff;font-weight:700;font-size:14px;position:relative;z-index:1}
+.tav .i{width:17px;height:17px}
+.tc.has-rep::before{content:"";position:absolute;left:16px;top:52px;bottom:14px;width:2px;background:var(--line);border-radius:2px}
+.tb{flex:1;min-width:0}
+.th{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:calc(13px * var(--fs))}
+.tn{font-weight:700;color:var(--ink)}
+.tn.anon{font-weight:600;color:var(--muted)}
+.tt{color:var(--muted);font-size:calc(12px * var(--fs))}
+.top-tag{font-size:calc(11px * var(--fs));font-weight:700;color:var(--e);border:1px solid currentColor;border-radius:6px;padding:0 5px}
+.tbest{margin-left:auto;display:inline-flex;align-items:center;gap:3px;font-size:calc(11.5px * var(--fs));font-weight:700;color:var(--a)}
+.tbest .i{width:13px;height:13px}
+.tx{margin:4px 0 0;line-height:1.5;font-size:calc(14.5px * var(--fs));white-space:pre-wrap;word-break:break-word}
+.trv{margin:4px 0 0;font-size:calc(12px * var(--fs));color:var(--muted)}
+.tc .ops{display:flex;gap:16px;margin-top:6px}
+.tc .ops button{border:0;background:none;color:var(--muted);cursor:pointer;padding:2px 0;display:inline-flex;align-items:center;gap:4px;font-size:calc(12.5px * var(--fs));font-variant-numeric:tabular-nums}
+.tc .ops .i{width:17px;height:17px}
+.tc .ops button[data-act="like"][aria-pressed="true"]{color:#ff3040;font-weight:700}
+.tc .ops button[aria-pressed="true"] .i{fill:currentColor}
+.tc .ops .trp{margin-left:auto;font-size:calc(11.5px * var(--fs));opacity:.7}
+.tc .ops .likepop .i{animation:heartpop .45s cubic-bezier(.2,.9,.3,1.4)}
+.treps{margin-top:4px}
+.tc.sub{padding:10px 0 4px}
+.tc.sub .tav{width:26px;height:26px;font-size:12px}
+.tc.sub .tav .i{width:14px;height:14px}
+.trep-more{border:0;background:none;color:var(--muted);font-weight:600;font-size:calc(13px * var(--fs));cursor:pointer;padding:8px 0 0;display:inline-flex;align-items:center;gap:8px}
+.tline-s{display:inline-block;width:22px;height:1px;background:var(--muted);opacity:.6}
 .cmts .hint{margin:0}
 .cmts .cmore{border:0;background:none;color:var(--muted);padding:2px 0;cursor:pointer;font-size:calc(13.5px * var(--fs));font-weight:600;text-align:left;align-self:flex-start}
 .cmts .cmore:hover{color:var(--ink)}
@@ -637,7 +677,7 @@ body.embedded .side-hot{display:none!important}
 @keyframes press{0%{transform:scale(1)}40%{transform:scale(.94)}100%{transform:scale(1)}}
 .cmt .ops .likepop .i{animation:heartpop .45s cubic-bezier(.2,.9,.3,1.4)}
 @keyframes heartpop{0%{transform:scale(1)}40%{transform:scale(1.6)}100%{transform:scale(1)}}
-@media (prefers-reduced-motion:reduce){.burst{display:none}.pressed,.cmt .ops .likepop .i{animation:none}}
+@media (prefers-reduced-motion:reduce){.burst{display:none}.pressed,.cmt .ops .likepop .i,.tc .ops .likepop .i{animation:none}}
 /* 순위 변동 애니메이션 */
 @keyframes flashUp{0%{background:var(--a-soft)}70%{background:var(--a-soft)}100%{background:transparent}}
 @keyframes flashDn{0%{background:var(--b-soft)}70%{background:var(--b-soft)}100%{background:transparent}}
@@ -1382,7 +1422,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
               <input id="f-pw" type="password" maxlength="20" autocomplete="new-password" placeholder="비밀번호 4자 이상" hidden style="border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px">
             </div>
             <label class="tgl" for="f-msel" id="f-msel-wrap" hidden><span>복수 선택 허용<small>보기나 사진을 여러 개 고를 수 있어요</small></span><input type="checkbox" id="f-msel"></label>
-            <label class="tgl" for="f-cmt" hidden><span>한줄평 열기<small>투표한 사람이 80자 한줄평을 남길 수 있어요</small></span><input type="checkbox" id="f-cmt" checked></label>
+            <label class="tgl" for="f-cmt" hidden><span>한줄평 열기<small>투표한 사람이 150자 한줄평을 남길 수 있어요</small></span><input type="checkbox" id="f-cmt" checked></label>
           </div>
         </details>
         <div class="make-bar">
@@ -2470,9 +2510,9 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   }
   function showNick(){
     authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>'+
-      '<h2 id="authTitle">랭킹 닉네임</h2><p>투표왕·인기 출제자 랭킹에 보일 이름이에요. 공개에 동의하지 않으면 랭킹에 \'익명\'으로 보여요. 어떤 투표에 무엇을 골랐는지는 누구에게도 보이지 않아요.</p>'+
+      '<h2 id="authTitle">닉네임</h2><p>투표왕·인기 출제자 랭킹과 한줄평에 보일 이름이에요. 공개에 동의하지 않으면 \'익명\'으로 보여요. 어떤 투표에 무엇을 골랐는지는 누구에게도 보이지 않아요.</p>'+
       '<form class="pf" id="nickF" novalidate><div class="field full"><label for="nickIn">닉네임 <small>(2~10자, 한글·영문·숫자)</small></label><input id="nickIn" maxlength="10" autocomplete="off" value="'+esc(user.nick||'')+'"></div>'+
-      '<label class="full"><input type="checkbox" id="nickPub"'+(user.rankPublic||!user.nick?' checked':'')+'> <span>랭킹에 닉네임 공개</span></label>'+
+      '<label class="full"><input type="checkbox" id="nickPub"'+(user.rankPublic||!user.nick?' checked':'')+'> <span>랭킹·한줄평에 닉네임 공개</span></label>'+
       '<p class="msg err full" id="nickMsg" role="status"></p><button class="btn dark full" type="submit">저장</button></form>';
     openDialog();
     document.getElementById('nickF').addEventListener('submit',function(e){
@@ -2983,7 +3023,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   }
   var BAN=['씨발','시발','병신','개새','좆','지랄'];
   // 운영 규칙: feed 브랜치(배포 없이 수정) → 사이트에 포함된 파일 → 최소 금칙어 순서로 사용
-  var MOD={rules:[{id:'profanity',name:'욕설',action:'block',message:'욕설이나 비방이 들어간 글은 등록할 수 없습니다.',words:BAN}],limits:{minLength:2,maxLength:80}};
+  var MOD={rules:[{id:'profanity',name:'욕설',action:'block',message:'욕설이나 비방이 들어간 글은 등록할 수 없습니다.',words:BAN}],limits:{minLength:2,maxLength:150}};
   (function loadMod(){
     var urls=['https://raw.githubusercontent.com/handgoldking1234/neaniyo/feed/data/moderation.json?t='+Math.floor(Date.now()/600000),'data/moderation.json'];
     (function next(i){ if(i>=urls.length) return; try{ fetch(urls[i],{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){ if(j&&Array.isArray(j.rules)) MOD=j; else next(i+1); }).catch(function(){next(i+1)}); }catch(e){} })(0);
@@ -3017,33 +3057,62 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       p.ai.map(function(t,i){ return t&&p.o[i]?'<li><span class="side-tag" style="background:'+OPC[i%OPC.length]+'">'+esc(p.o[i])+'</span><span>'+esc(t)+'</span></li>':''; }).join('')+
       '</ul>'+(cmtOn(p)&&!embedded?'<p class="aifoot">AI가 쓴 요약이에요. 내 생각은 아래 한줄평으로 남겨 주세요.</p>':'<p class="aifoot">AI가 쓴 요약이에요. 실제 참여자 의견이 아닙니다.</p>')+'</div>';
   }
+  // 한줄평 (스레드처럼: 프로필·이름·시간, 공감·답글, 답글은 한 단계로 모아 보기)
+  var cSort={}, cReply={}, cRepOpen={};
+  function cAv(c){
+    var nm=c.name||(c.mine&&user&&user.nick&&user.rankPublic?user.nick:''), h=typeof c.av==='number'?c.av:(String(c.id).split('').reduce(function(a,ch){return (a*31+ch.charCodeAt(0))%360},7));
+    return '<span class="tav" style="--h:'+h+'" aria-hidden="true">'+(nm?esc(nm.charAt(0)):ic('user-round'))+'</span>';
+  }
+  function cOne(p,c,best,reps){
+    var nm=c.name||(c.mine&&user&&user.nick&&user.rankPublic?user.nick:''), nrep=reps?reps.length:0, open=cRepOpen[c.id]||cReply[p.id]===c.id||(reps&&reps.some(function(r){return r.mine&&r.fresh}));
+    var repHtml='';
+    if(reps){
+      if(nrep&&!open) repHtml='<button type="button" class="trep-more" data-act="rmore" data-cid="'+c.id+'"><span class="tline-s"></span>답글 '+nrep+'개 보기</button>';
+      else if(nrep) repHtml='<div class="treps">'+reps.map(function(r){ return cOne(p,r,false,null); }).join('')+'</div>';
+      if(cReply[p.id]===c.id) repHtml+='<form class="cform tform reply" data-cform="'+p.id+'" data-pid="'+c.id+'" novalidate>'+cAv({mine:true,id:'me'+(user&&user.id||'')})+'<label class="sr" for="r-'+c.id+'" hidden>답글</label><textarea class="cin" id="r-'+c.id+'" rows="1" maxlength="'+MOD.limits.maxLength+'" placeholder="'+esc(nm||'익명')+'님에게 답글"></textarea><button class="tpost" type="submit">게시</button></form>';
+    }
+    return '<div class="tc'+(best?' best':'')+(reps?'':' sub')+((reps&&(nrep&&open||cReply[p.id]===c.id))?' has-rep':'')+'" data-tc="'+c.id+'">'+cAv(c)+
+      '<div class="tb"><div class="th"><b class="tn'+(nm?'':' anon')+'">'+(nm?esc(nm):'익명 투표러')+'</b>'+(c.op?'<span class="top-tag">작성자</span>':'')+(p.o[c.o]!=null?'<span class="side-tag" style="background:'+OPC[c.o%OPC.length]+'">'+esc(p.o[c.o])+'</span>':'')+'<span class="tt">'+esc(c.at||'')+'</span>'+(best?'<span class="tbest">'+ic('crown')+'대표</span>':'')+'</div>'+
+      '<p class="tx">'+esc(c.text)+'</p>'+(c.review?'<p class="trv">검토 중이라 나에게만 보여요</p>':'')+
+      '<div class="ops"><button type="button" data-act="like" data-cid="'+c.id+'" aria-pressed="'+!!c.liked+'" aria-label="공감">'+ic('heart')+(c.likes>0?fmt(c.likes):'')+'</button>'+
+      (reps!==null?'<button type="button" data-act="reply" data-cid="'+c.id+'" aria-label="답글 달기">'+ic('message-circle')+(nrep?nrep:'')+'</button>':'<button type="button" data-act="reply" data-cid="'+(c.pid||'')+'" data-to="'+esc(nm||'')+'" aria-label="답글 달기">'+ic('message-circle')+'</button>')+
+      (c.mine?'':'<button type="button" class="trp" data-act="report" data-cid="'+c.id+'">신고</button>')+'</div>'+repHtml+'</div></div>';
+  }
   function cmtBlock(p,done){
     if(NY&&NY.on&&cmtOn(p)) NY.needComments(p);
     var list=getC(p).filter(function(c){return !c.hidden&&(!c.review||c.mine)});
-    if(!done) return '<div class="cmts"><h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개</small></h4><p class="hint">투표하면 한줄평을 보고 남길 수 있어요.</p></div>';
-    var sorted=list.slice().sort(function(a,b){return b.likes-a.likes});
+    var tops=list.filter(function(c){return !c.pid}), reps={};
+    list.forEach(function(c){ if(c.pid){ (reps[c.pid]=reps[c.pid]||[]).push(c); } });
+    tops.forEach(function(c){ if(!reps[c.id]) reps[c.id]=[]; });
+    // 부모가 숨겨진 답글은 그냥 맨 위 글처럼 보여 준다
+    Object.keys(reps).forEach(function(k){ if(!tops.some(function(t){return t.id===k})){ reps[k].forEach(function(r){ tops.push(r); reps[r.id]=[]; }); } });
+    var head='<h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개</small></h4>';
+    if(!done) return '<div class="cmts">'+head+'<p class="hint">투표하면 한줄평을 보고 남길 수 있어요.</p></div>';
+    var srt=cSort[p.id]||'top', score=function(c){ return c.likes*2+(reps[c.id]||[]).length*3; };
     var bestIds={};
-    p.o.forEach(function(_,oi){var b=sorted.filter(function(c){return c.o===oi})[0]; if(b&&b.likes>0) bestIds[b.id]=1;});
-    var ordered=sorted.filter(function(c){return bestIds[c.id]}).concat(list.slice().reverse().filter(function(c){return !bestIds[c.id]}));
-    // 피드에서는 페이스북·인스타처럼 미리보기만: 대표 의견(최대 2개) + 내가 방금 쓴 글, 나머지는 '모두 보기'로 펼침. 공유 링크로 들어오면 전부 보임.
+    p.o.forEach(function(_,oi){var b=tops.filter(function(c){return c.o===oi}).sort(function(a,b){return score(b)-score(a)})[0]; if(b&&score(b)>0) bestIds[b.id]=1;});
+    var ordered=srt==='new'?tops.slice().sort(function(a,b){return (b.ts||0)-(a.ts||0)}).filter(function(){return true}):tops.filter(function(c){return bestIds[c.id]}).concat(tops.filter(function(c){return !bestIds[c.id]}).sort(function(a,b){return score(b)-score(a)||(b.ts||0)-(a.ts||0)}));
+    if(srt==='new'&&!tops.some(function(c){return c.ts})) ordered=tops.slice().reverse();
+    // 방금 쓴 내 글은 맨 위에
+    var fr=ordered.filter(function(c){return c.mine&&c.fresh}); if(fr.length) ordered=fr.concat(ordered.filter(function(c){return fr.indexOf(c)<0}));
+    // 피드에서는 대표 의견(최대 2개) + 내가 방금 쓴 글만, 나머지는 '모두 보기'. 공유 링크로 들어오면 전부 보임
     var total=ordered.length, open=!!shareId||!!embedded||cmtOpen[p.id];
     if(!open&&total>2){
-      var pv=ordered.filter(function(c){return bestIds[c.id]}).slice(0,2);
-      if(!pv.length) pv=ordered.slice(0,2);
-      var myLast=list.filter(function(c){return c.mine}).slice(-1)[0];
+      var pv=ordered.slice(0,2), myLast=tops.filter(function(c){return c.mine}).slice(-1)[0];
       if(myLast&&pv.indexOf(myLast)<0) pv.push(myLast);
       ordered=pv;
     }
-    var moreBtn=total>2&&!shareId&&!embedded?'<button type="button" class="cmore" data-act="cmore" aria-expanded="'+!!open+'">'+(open?'한줄평 접기':'한줄평 '+total+'개 모두 보기')+'</button>':'';
-    var form=user?'<form class="cform" data-cform="'+p.id+'" novalidate><label for="c-'+p.id+'" hidden>한줄평</label><input id="c-'+p.id+'" maxlength="80" placeholder="'+esc(p.o[myIdx(p)]||'내 선택')+' 쪽 한줄평 (80자)" autocomplete="off"><button class="btn dark" type="submit">등록</button></form><p class="cmsg" data-cmsg></p>'
+    var tabs=tops.length>1?'<div class="tsort" role="group" aria-label="정렬"><button type="button" data-act="csort" data-s="top" aria-pressed="'+(srt==='top')+'">인기순</button><button type="button" data-act="csort" data-s="new" aria-pressed="'+(srt==='new')+'">최신순</button></div>':'';
+    var moreBtn=total>2&&!shareId&&!embedded?'<button type="button" class="cmore" data-act="cmore" aria-expanded="'+!!open+'">'+(open?'접기':'한줄평 '+total+'개 모두 보기')+'</button>':'';
+    var form=user?'<form class="cform tform" data-cform="'+p.id+'" novalidate>'+cAv({mine:true,id:'me'+(user.id||'')})+'<label class="sr" for="c-'+p.id+'" hidden>한줄평</label><textarea class="cin" id="c-'+p.id+'" rows="1" maxlength="'+MOD.limits.maxLength+'" placeholder="생각을 남겨 보세요"></textarea><button class="tpost" type="submit">게시</button></form><p class="cmsg" data-cmsg></p><p class="tnote">내 한줄평에는 고른 쪽(<b>'+esc(p.o[myIdx(p)]||'')+'</b>)과 '+(user.nick&&user.rankPublic?'닉네임 <b>'+esc(user.nick)+'</b>':'<b>익명 투표러</b>')+'(으)로 보여요.</p>'
       :'<button class="btn" data-act="login">'+ic('log-in')+'로그인하고 한줄평 남기기</button>';
-    return '<div class="cmts"><h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개 · 공감 많은 대표 의견 먼저</small></h4>'+
-      ordered.map(function(c){
-        return '<div class="cmt'+(bestIds[c.id]?' best':'')+'"><span class="who"><span class="side-tag" style="background:'+OPC[c.o%OPC.length]+'">'+esc(p.o[c.o]||'')+'</span><span class="meta">'+(bestIds[c.id]?'<b>대표 의견</b> · ':'')+esc(c.at)+(c.mine?' · 내 글':'')+(c.review?' · <b>검토 중</b>':'')+'</span></span><p>'+esc(c.text)+'</p>'+
-          '<span class="ops"><button type="button" data-act="like" data-cid="'+c.id+'" aria-pressed="'+!!c.liked+'">'+ic('heart')+'공감 '+fmt(c.likes)+'</button><button type="button" data-act="report" data-cid="'+c.id+'">'+ic('flag')+'신고</button></span></div>';
-      }).join('')+moreBtn+form+'</div>';
+    return '<div class="cmts">'+head.replace('</h4>',tabs+'</h4>')+form+
+      '<div class="tlist">'+ordered.map(function(c){ return cOne(p,c,!!bestIds[c.id],reps[c.id]||[]); }).join('')+'</div>'+moreBtn+'</div>';
   }
   var cmtOpen={};
+  // 한줄평 입력칸: 글이 길어지면 늘어나고, Enter로 게시 (Shift+Enter는 줄바꿈, 한글 조합 중에는 무시)
+  document.addEventListener('input',function(e){ var t=e.target; if(t.classList&&t.classList.contains('cin')){ t.style.height='auto'; t.style.height=Math.min(t.scrollHeight,160)+'px'; } });
+  document.addEventListener('keydown',function(e){ var t=e.target; if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&e.keyCode!==229&&t.classList&&t.classList.contains('cin')){ e.preventDefault(); var f=t.closest('form'); if(f&&t.value.trim()) (f.requestSubmit?f.requestSubmit():f.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}))); } });
   function rerender(art,p){
     var tmp=document.createElement('div'); tmp.innerHTML=card(p); var fresh=tmp.firstChild; art.replaceWith(fresh); resize(); return fresh;
   }
@@ -3227,6 +3296,13 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       if(act==='cmore'){ cmtOpen[p.id]=!cmtOpen[p.id]; var top0=art.getBoundingClientRect().top; var fr0=rerender(art,p);
         if(!cmtOpen[p.id]){ var d0=fr0.getBoundingClientRect().top-top0; if(d0) window.scrollBy(0,d0); var cm=fr0.querySelector('.cmts'); if(cm&&cm.getBoundingClientRect().top<0) cm.scrollIntoView({block:'start'}); }
         return; }
+      if(act==='csort'){ cSort[p.id]=actBtn.dataset.s; rerender(art,p); return; }
+      if(act==='rmore'){ cRepOpen[actBtn.dataset.cid]=1; rerender(art,p); return; }
+      if(act==='reply'){
+        if(!user){ if(NY&&NY.openLogin) NY.openLogin(); else toast('로그인하면 답글을 달 수 있어요.'); return; }
+        var rid=actBtn.dataset.cid; if(!rid) return; cReply[p.id]=cReply[p.id]===rid&&!actBtn.dataset.to?null:rid; cRepOpen[rid]=1;
+        var fr1=rerender(art,p), ta=fr1.querySelector('form[data-pid="'+rid+'"] .cin'); if(ta){ if(actBtn.dataset.to) ta.value='@'+actBtn.dataset.to+' '; ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); }
+        return; }
       if(act==='like'||act==='report'){
         var c=getC(p).filter(function(x){return x.id===actBtn.dataset.cid})[0]; if(!c) return;
         if(act==='like'){ c.liked=!c.liked; c.likes+=c.liked?1:-1; if(NY) NY.commentAct(c,c.liked?'like':'unlike');
@@ -3325,15 +3401,17 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       return;
     }
     if(f.dataset.cform){
-      var inp=f.querySelector('input'), t=inp.value.trim(), m=art.querySelector('[data-cmsg]');
+      var inp=f.querySelector('.cin'), t=inp.value.trim(), m=f.nextElementSibling&&f.nextElementSibling.matches('[data-cmsg]')?f.nextElementSibling:art.querySelector('[data-cmsg]'), pid=f.dataset.pid||null;
+      if(!m){ m=document.createElement('p'); m.className='cmsg'; f.after(m); }
       var recent=[]; Object.keys(cmts).forEach(function(k){ (cmts[k]||[]).forEach(function(c){ if(c.mine&&c.ts&&Date.now()-c.ts<600000) recent.push(c); }); });
       var jd=modJudge(t,MOD,recent);
       if(jd.action==='block'){ m.textContent=jd.message; return; }
-      if(NY&&NY.on&&NY.isReal(p.id)) return NY.postComment(p,t,art,m);
-      var nc={id:p.id+'-'+Date.now().toString(36),o:myIdx(p),text:t,likes:0,at:'방금',mine:true,ts:Date.now()};
+      if(NY&&NY.on&&NY.isReal(p.id)) return NY.postComment(p,t,art,m,pid);
+      var nc={id:p.id+'-'+Date.now().toString(36),o:myIdx(p),text:t,likes:0,at:'방금',mine:true,ts:Date.now(),fresh:true};
+      if(pid){ nc.pid=pid; cReply[p.id]=null; cRepOpen[pid]=1; }
       if(jd.action==='review') nc.review={rule:jd.rule,name:jd.name};
       getC(p).push(nc); saveC();
-      rerender(art,p); toast(jd.action==='review'?jd.message:'한줄평을 등록했습니다.');
+      rerender(art,p); toast(jd.action==='review'?jd.message:pid?'답글을 달았어요.':'한줄평을 등록했습니다.');
     }
   });
 
@@ -4008,7 +4086,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
         .then(function(r){ return r.json().catch(function(){return {}}).then(function(j){ if(!r.ok){ var e=new Error(j.error||('HTTP '+r.status)); e.status=r.status; throw e; } return j; }); });
     }
     function cardOf(id){ return document.querySelector('.poll[data-id="'+id+'"]'); }
-    function redraw(p){ var a=cardOf(p.id); if(a&&!a.querySelector('.cform input:focus')) rerender(a,p); }
+    function redraw(p){ var a=cardOf(p.id); if(a&&!a.querySelector('.cform .cin:focus')) rerender(a,p); }
     function load(src){ return new Promise(function(ok,no){ var s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); }); }
 
     // ---- 득표 ----
@@ -4128,13 +4206,13 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
         cLoaded[p.id]=1; redraw(p);
       }).catch(function(){}).then(function(){ delete cBusy[p.id]; });
     };
-    api.postComment=function(p,text,art,msgEl){
+    api.postComment=function(p,text,art,msgEl,pid){
       if(!api.token){ msgEl.textContent='로그인 후 남길 수 있어요.'; return; }
       msgEl.textContent='등록 중…';
-      call('comments',{method:'POST',body:{pollId:p.id,text:text}}).then(function(j){
+      call('comments',{method:'POST',body:{pollId:p.id,text:text,parentId:pid||undefined}}).then(function(j){
         if(!j.ok){ msgEl.textContent=j.message||'등록할 수 없어요.'; return; }
-        var c=j.comment; c.at='방금'; getC(p).push(c); saveC();
-        rerender(art,p); toast(j.action==='review'?(j.message||'검토 후 공개돼요.'):'한줄평을 등록했습니다.');
+        var c=j.comment; c.at='방금'; c.fresh=true; getC(p).push(c); saveC(); if(c.pid){ cReply[p.id]=null; cRepOpen[c.pid]=1; }
+        rerender(art,p); toast(j.action==='review'?(j.message||'검토 후 공개돼요.'):c.pid?'답글을 달았어요.':'한줄평을 등록했습니다.');
       }).catch(function(e){ msgEl.textContent=e.message==='vote-first'?'투표가 아직 저장되지 않았어요. 잠시 후 다시 시도해 주세요.':'등록하지 못했어요. 잠시 후 다시 시도해 주세요.'; });
     };
     api.commentAct=function(c,act){

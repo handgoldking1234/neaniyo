@@ -1,32 +1,56 @@
 // GET /api/comments?poll=<id>        → 한줄평 목록 (보이는 것 + 내 검토 대기 글)
-// POST /api/comments {pollId, text}  → 등록 (로그인 + 그 투표에 참여한 사람만, 내 선택 쪽으로)
+// POST /api/comments {pollId, text, parentId?}  → 등록 (로그인 + 그 투표에 참여한 사람만, 내 선택 쪽으로). parentId가 있으면 답글
+import crypto from 'node:crypto';
 import { handler, send, fail, db, rpc, authUser, body, moderation, judge, mailAdmin, SITE } from './_lib.js';
 
-const shape = (c, uid, liked) => ({
-  id: c.id, o: c.side, text: c.body, likes: c.likes, ts: Date.parse(c.created_at),
+const COLS = 'id,user_id,parent_id,side,body,status,rule,likes,created_at';
+// 사용자 ID는 내보내지 않고, 프로필 색을 고르기 위한 짧은 값만 준다
+const avKey = uid => parseInt(crypto.createHash('sha256').update('ny-av:' + uid).digest('hex').slice(0, 6), 16) % 360;
+const shape = (c, uid, liked, names = {}, owner = null) => ({
+  id: c.id, o: c.side, text: c.body, likes: c.likes, ts: Date.parse(c.created_at), pid: c.parent_id || undefined,
+  name: names[c.user_id] || null, av: avKey(c.user_id), op: !!owner && c.user_id === owner || undefined,
   mine: !!uid && c.user_id === uid, liked: !!liked, review: c.status === 'review' ? { rule: c.rule } : undefined
 });
+// 닉네임 공개에 동의한 사람만 이름을 보여 준다
+async function namesOf(list) {
+  const ids = [...new Set(list.map(c => c.user_id))]; if (!ids.length) return {};
+  const r = await db(`ny_profiles?select=id,nickname,rank_public&id=in.(${ids.join(',')})`);
+  const m = {}; r.forEach(x => { if (x.rank_public && x.nickname) m[x.id] = x.nickname; }); return m;
+}
+async function ownerOf(poll) {
+  if (!/^u[\w-]{1,39}$/.test(poll)) return null;
+  const r = await db(`ny_user_polls?select=user_id&id=eq.${poll}`); return r.length ? r[0].user_id : null;
+}
 
 export default handler(async (req, res) => {
   const user = await authUser(req);
   if (req.method === 'GET') {
     const poll = String(req.query.poll || '');
     if (!/^[\w-]{1,40}$/.test(poll)) return fail(res, 400, 'poll');
-    const vis = await db(`ny_comments?select=id,user_id,side,body,status,rule,likes,created_at&poll_id=eq.${poll}&status=eq.visible&order=created_at.asc&limit=500`);
+    const vis = await db(`ny_comments?select=${COLS}&poll_id=eq.${poll}&status=eq.visible&order=created_at.asc&limit=500`);
     let mine = [], liked = new Set();
     if (user) {
-      mine = await db(`ny_comments?select=id,user_id,side,body,status,rule,likes,created_at&poll_id=eq.${poll}&user_id=eq.${user.id}&status=eq.review`);
+      mine = await db(`ny_comments?select=${COLS}&poll_id=eq.${poll}&user_id=eq.${user.id}&status=eq.review`);
       if (vis.length) {
         const ids = vis.map(c => c.id).join(',');
         (await db(`ny_comment_likes?select=comment_id&user_id=eq.${user.id}&comment_id=in.(${ids})`)).forEach(l => liked.add(l.comment_id));
       }
     }
-    return send(res, 200, { comments: vis.concat(mine).map(c => shape(c, user?.id, liked.has(c.id))) });
+    const all = vis.concat(mine), [names, owner] = await Promise.all([namesOf(all), ownerOf(poll)]);
+    return send(res, 200, { comments: all.map(c => shape(c, user?.id, liked.has(c.id), names, owner)) });
   }
   if (req.method !== 'POST') return fail(res, 405, 'method');
   if (!user) return fail(res, 401, 'login');
   const b = body(req), pollId = String(b.pollId || ''), text = String(b.text || '').trim();
   if (!/^[\w-]{1,40}$/.test(pollId)) return fail(res, 400, 'pollId');
+  // 답글: 같은 투표의 한줄평에만, 답글의 답글은 맨 위 한줄평 아래로 모은다
+  let parent = null;
+  if (b.parentId) {
+    if (!/^[0-9a-f-]{36}$/.test(String(b.parentId))) return fail(res, 400, 'parent');
+    const pr = await db(`ny_comments?select=id,parent_id,poll_id,status&id=eq.${b.parentId}`);
+    if (!pr.length || pr[0].poll_id !== pollId || pr[0].status === 'hidden') return fail(res, 404, 'parent');
+    parent = pr[0].parent_id || pr[0].id;
+  }
 
   const v = await db(`ny_votes?select=choice&poll_id=eq.${pollId}&voter=eq.${encodeURIComponent('u:' + user.id)}`);
   if (!v.length) return fail(res, 403, 'vote-first');
@@ -34,8 +58,9 @@ export default handler(async (req, res) => {
   const jd = judge(text, await moderation(), recent);
   if (jd.action === 'block') return send(res, 200, { ok: false, action: 'block', message: jd.message });
 
-  const row = { poll_id: pollId, user_id: user.id, side: v[0].choice[0], body: text, status: jd.action === 'review' ? 'review' : 'visible', rule: jd.rule || null };
+  const row = { poll_id: pollId, user_id: user.id, parent_id: parent, side: v[0].choice[0], body: text, status: jd.action === 'review' ? 'review' : 'visible', rule: jd.rule || null };
   const out = await db('ny_comments', { method: 'POST', body: row, prefer: 'return=representation' });
   if (jd.action === 'review') await mailAdmin('검토 대기 한줄평', [`규칙: ${jd.name}`, `투표: ${SITE}/?p=${pollId}`, `내용: ${text}`]);
-  send(res, 200, { ok: true, action: jd.action, message: jd.message, comment: shape(out[0], user.id, false) });
+  const [names, owner] = await Promise.all([namesOf(out), ownerOf(pollId)]);
+  send(res, 200, { ok: true, action: jd.action, message: jd.message, comment: shape(out[0], user.id, false, names, owner) });
 });
