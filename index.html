@@ -2971,7 +2971,9 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   // AI 쟁점 정리: 사람 한줄평이 5개 미만일 때만, 투표한 뒤에 보임 (투표 전에 보여 주면 선택에 영향을 줄 수 있음)
   function aiBlock(p,done){
     if(!done||!Array.isArray(p.ai)||!p.ai.length) return '';
-    return '<div class="aibox"><h4>'+ic('sparkles')+'<span class="aitag">AI</span>양쪽 의견 정리</h4><ul>'+
+    // 사람 한줄평이 하나라도 있으면 AI 정리는 빼고 사람 의견을 보여 줌
+    if(p.comments&&getC(p).some(function(c){return !c.hidden&&(!c.review||c.mine)})) return '';
+    return '<div class="aibox"><h4>'+ic('sparkles')+'<span class="aitag">AI</span>양쪽 의견 정리'+(p.comments?' <small>· 한줄평이 달리면 사라져요</small>':'')+'</h4><ul>'+
       p.ai.map(function(t,i){ return t&&p.o[i]?'<li><span class="side-tag" style="background:'+OPC[i%OPC.length]+'">'+esc(p.o[i])+'</span><span>'+esc(t)+'</span></li>':''; }).join('')+
       '</ul>'+(p.comments&&!embedded?'<p class="aifoot">AI가 쓴 요약이에요. 내 생각은 아래 한줄평으로 남겨 주세요.</p>':'<p class="aifoot">AI가 쓴 요약이에요. 실제 참여자 의견이 아닙니다.</p>')+'</div>';
   }
