@@ -1315,6 +1315,25 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
 .ib.plk[aria-pressed="true"] .i{fill:currentColor}
 .ib.likepop .i{animation:heartpop .45s cubic-bezier(.2,.9,.3,1.4)}
 @media (prefers-reduced-motion:reduce){.ib.likepop .i{animation:none}}
+.rlist{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:12px}
+.rlist-h{margin:0;padding:10px 14px;font-size:calc(13px * var(--fs));font-weight:700;background:var(--surface);border-bottom:1px solid var(--line)}
+.rlist-h small{font-weight:500;color:var(--muted);margin-left:4px}
+.rres.c{margin:0;padding:0;border-top:1px solid var(--line)}
+.rlist-h+.rres.c{border-top:0}
+.rrow{display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;border:0;background:none;text-align:left;cursor:pointer;color:var(--ink);font:inherit;font-size:calc(14px * var(--fs))}
+.rrow>.i{width:16px;height:16px;color:var(--muted);flex:none;transition:transform .2s}
+.rrow.open>.i{transform:rotate(180deg)}
+.rmark{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:none;background:var(--line);color:var(--muted);font-weight:800}
+.rmark .i{width:13px;height:13px;stroke-width:3}
+.rmark.ok{background:var(--ok);color:#fff}.rmark.no{background:#ef4444;color:#fff}
+.rmark.maj{background:color-mix(in srgb,var(--a) 15%,transparent);color:var(--a)}.rmark.min{background:color-mix(in srgb,var(--b) 15%,transparent);color:var(--b)}
+.rq-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rq-t b{margin-right:2px}
+.rq-r{flex:none;max-width:38%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:calc(12.5px * var(--fs));color:var(--muted)}
+.rq-r em{font-style:normal;font-weight:700;color:var(--ink)}
+.rres.c.open{background:color-mix(in srgb,var(--surface) 60%,transparent)}
+.rres.c.open .opts,.rres.c.open .qexp{margin:0 14px 12px}
+.rres.c.open .rq-t{white-space:normal}
 </style>
 </head>
 <body>
@@ -2228,6 +2247,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   var relayAns={};
   // 이상형 월드컵: 32강만 고르고 끝났던 기록은 16강부터 이어서 하게 한다
   polls.forEach(function(p){ var m=voted[p.id]; if(p.wc&&Array.isArray(m)&&m.length<relayTotal(p)){ relayAns[p.id]=m.slice(); p.wcResume=true; delete voted[p.id]; } });
+  var rOpen={};
   function relayBody(p,done){
     var mine=voted[p.id], total=relayTotal(p);
     if(!done){
@@ -2243,11 +2263,18 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     var html=p.qs.map(function(qq,k){
       var t=sum(qq.v)||1, mx=Math.max.apply(null,qq.v), my=Array.isArray(mine)?mine[k]:undefined, hasA=typeof qq.a==='number';
       if(hasA){ quiz=true; if(my===qq.a) right++; } if(my!==undefined&&qq.v[my]===mx) same++;
-      return '<div class="rres"><h4>Q'+(k+1)+'. '+esc(qq.q)+'</h4><div class="opts">'+qq.o.map(function(o,i){
+      var openK=!!rOpen[p.id+':'+k], ok=hasA?my===qq.a:(my!==undefined&&qq.v[my]===mx), myPc=my!==undefined?Math.round(qq.v[my]*1000/t)/10:null;
+      var row='<button type="button" class="rrow'+(openK?' open':'')+'" data-act="rq" data-k="'+k+'" aria-expanded="'+openK+'">'+
+        '<span class="rmark '+(my===undefined?'':hasA?(ok?'ok':'no'):(ok?'maj':'min'))+'">'+(my===undefined?'·':hasA?ic(ok?'check':'x'):ic(ok?'users':'user'))+'</span>'+
+        '<span class="rq-t"><b>Q'+(k+1)+'</b> '+esc(openK?qq.q:String(qq.q).replace(/^\[[^\]]{1,20}\]\s*/,''))+'</span>'+
+        (hasA||openK||my===undefined?'':'<span class="rq-r">'+esc(qq.o[my])+' <em>'+myPc+'%</em></span>')+ic('chevron-down')+'</button>';
+      if(!openK) return '<div class="rres c">'+row+'</div>';
+      return '<div class="rres c open">'+row+'<div class="opts">'+qq.o.map(function(o,i){
         var pc=Math.round(qq.v[i]*1000/t)/10, isA=hasA&&qq.a===i;
         return '<div class="opt'+(hasA?(isA?' ans':''):(qq.v[i]===mx?' top':''))+(my===i?' mine':'')+(hasA&&my===i&&!isA?' wrong':'')+'"><span class="fill" style="width:'+pc+'%"></span><span>'+esc(o)+(isA?'<span class="ans-tag">정답</span>':'')+(my===i?'<span class="mine-ck">'+ic('check')+'</span>':'')+'</span><span class="pct">'+pc+'%</span></div>';
       }).join('')+'</div>'+(hasA&&qq.e?'<p class="qexp">'+ic('lightbulb')+esc(qq.e)+'</p>':'')+'</div>';
     }).join('');
+    html='<div class="rlist"><p class="rlist-h">'+(p.wc?'경기별 결과':'문항별 결과')+' <small>눌러서 자세히 보기</small></p>'+html+'</div>';
     var sumLine=Array.isArray(mine)&&quiz?'<p class="rsum">'+ic('check')+'<b>'+total+'문제 중 '+right+'개</b> 맞혔어요'+(right===total?' · 만점!':right>=total*0.7?' · 잘했어요!':' · 정답을 확인해 보세요')+'</p>':Array.isArray(mine)?'<p class="rsum">'+ic('check')+'내 답 '+total+'개 중 <b>'+same+'개</b>가 다수 의견과 같아요'+(same===total?' · 완벽한 대세파!':same===0?' · 나만의 길을 가는 소수파':'')+'</p>':'';
     if(p.wc) sumLine=wcSummary(p,mine);
     return '<div class="relay done">'+sumLine+html+'</div>';
@@ -3368,6 +3395,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
         var rid=actBtn.dataset.cid; if(!rid) return; cReply[p.id]=cReply[p.id]===rid&&!actBtn.dataset.to?null:rid; cRepOpen[rid]=1;
         var fr1=rerender(art,p), ta=fr1.querySelector('form[data-pid="'+rid+'"] .cin'); if(ta){ if(actBtn.dataset.to) ta.value='@'+actBtn.dataset.to+' '; ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); }
         return; }
+      if(act==='rq'){ var rk=p.id+':'+actBtn.dataset.k; rOpen[rk]=!rOpen[rk]; rerender(art,p); return; }
       if(act==='plike'){
         var on=!plikes[p.id]; if(on) plikes[p.id]=1; else delete plikes[p.id];
         try{ localStorage.setItem(PLK,JSON.stringify(plikes)); }catch(e){}
