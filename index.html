@@ -1195,6 +1195,20 @@ a.mine-it:hover{border-color:var(--muted)}
 /* 오픈 전 BETA 표시 */
 .logo .beta{margin-left:6px;padding:2px 6px;border-radius:6px;background:color-mix(in srgb,var(--a) 12%,transparent);color:var(--a);font-size:10.5px;font-weight:800;letter-spacing:.5px;vertical-align:3px;cursor:help}
 .no-beta .logo .beta{display:none}
+/* 투표 만들기 말풍선: 가끔 나왔다 사라짐 */
+.mk-tip{position:fixed;z-index:17;right:calc(max(16px,env(safe-area-inset-right,0px)) + 64px);bottom:calc(31px + env(safe-area-inset-bottom,0px));max-width:min(240px,calc(100vw - 96px));padding:9px 14px;border:0;border-radius:14px;background:var(--ink);color:var(--surface);font:inherit;font-size:calc(13.5px * var(--fs));font-weight:600;line-height:1.35;text-align:left;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.18);opacity:0;transform:translateX(6px) scale(.96);transform-origin:right center;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
+.mk-tip::after{content:"";position:absolute;right:-6px;top:50%;margin-top:-6px;border:6px solid transparent;border-right:0;border-left-color:var(--ink)}
+.mk-tip.on{opacity:1;transform:none;pointer-events:auto}
+.mk-tip[hidden]{display:none}
+@media (min-width:1100px){.mk-tip{right:calc(max(24px,env(safe-area-inset-right,0px)) + 64px);bottom:calc(39px + env(safe-area-inset-bottom,0px))}}
+@media (max-width:720px){
+  .mk-tip{right:auto;left:50%;bottom:calc(72px + env(safe-area-inset-bottom,0px));transform:translate(-50%,6px) scale(.96);transform-origin:center bottom;white-space:nowrap}
+  .mk-tip.on{transform:translate(-50%,0)}
+  .mk-tip::after{right:auto;left:50%;top:auto;bottom:-6px;margin:0 0 0 -6px;border:6px solid transparent;border-bottom:0;border-top-color:var(--ink)}
+  body.hd-hide .mk-tip{opacity:0;pointer-events:none}
+}
+body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
+@media (prefers-reduced-motion:reduce){.mk-tip{transition:opacity .2s}}
 </style>
 </head>
 <body>
@@ -1438,6 +1452,7 @@ a.mine-it:hover{border-color:var(--muted)}
   <path d="M3 3v5h5" />
   <path d="M12 7v5l4 2" /></svg><span>내 투표</span></a>
 </nav>
+<button class="mk-tip" id="mkTip" type="button" hidden></button>
 <div class="fabs" id="fabs">
   <button class="snd fab-snd" id="sndBtn" type="button" aria-label="효과음 끄기" aria-pressed="true"></button>
   <button class="fab fab-top" id="fabTop" type="button" aria-label="맨 위로" title="맨 위로" hidden><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg></button>
@@ -4210,6 +4225,31 @@ a.mine-it:hover{border-color:var(--muted)}
     // 10분마다 새로 쌓인 예약 투표를 받아 옴 (배포 없이 갱신)
     setInterval(function(){ if(!document.hidden) loadFeeds(function(){ nextUp(); releaseDue(); }); },600000);
   }catch(e){start()}
+})();
+
+// 투표 만들기 말풍선: 잠시 뒤 나왔다 4초 뒤 사라짐, 한 번 방문에 3번까지
+(function(){
+  var tip=document.getElementById('mkTip'); if(!tip) return;
+  var msgs=['궁금한 거 있으면 직접 물어보세요!','제목만 써도 투표가 돼요','나도 투표 하나 만들어 볼까?','친구 생각이 궁금하다면 투표로!','오늘의 고민, 투표로 물어봐요'];
+  var shown=0, max=3, k=Math.floor(Math.random()*msgs.length), hideT;
+  function blocked(){ var B=document.body, h=location.hash||'#vote';
+    if(h==='#create'||B.classList.contains('embedded')||B.classList.contains('shared')||B.classList.contains('hd-hide')||document.hidden) return true;
+    var dr=document.getElementById('drawer'), sb=document.getElementById('srchBar');
+    if((dr&&!dr.hidden)||(sb&&!sb.hidden)) return true;
+    var a=document.activeElement; if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return true;
+    return !!document.querySelector('dialog[open]'); }
+  function hide(){ clearTimeout(hideT); tip.classList.remove('on'); setTimeout(function(){ if(!tip.classList.contains('on')) tip.hidden=true; },300); }
+  function show(){
+    if(shown>=max) return;
+    if(blocked()){ setTimeout(show,15000); return; }
+    shown++; tip.textContent=msgs[k++%msgs.length]; tip.hidden=false;
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ tip.classList.add('on'); }); });
+    hideT=setTimeout(hide,4000);
+    if(shown<max) setTimeout(show,60000+Math.random()*30000);
+  }
+  tip.onclick=function(){ hide(); shown=max; location.hash='#create'; };
+  window.addEventListener('hashchange',function(){ if(location.hash==='#create') hide(); });
+  setTimeout(show,12000);
 })();
 </script>
 </body>
