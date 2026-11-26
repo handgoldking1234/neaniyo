@@ -25,7 +25,14 @@ async function moveImages(id, data) {
   for (const k of ['gal', 'imgs']) if (Array.isArray(data[k])) data[k] = await Promise.all(data[k].map((v, i) => toStorage(id, v, `${k}${i}`)));
 }
 const KEEP = ['id', 'cat', 'sub', 'q', 'o', 'type', 'qs', 'a', 'n', 'vis', 'comments', 'story', 'img', 'gal', 'imgs', 'link', 'multiSel', 'pw', 'created', 'wc'];
-const out = r => ({ ...r.data, id: r.id, vis: r.vis, status: r.status, created: Date.parse(r.created_at) });
+// 만든 사람: 사용자 ID 대신 되돌릴 수 없는 짧은 키(ck)와, 닉네임 공개에 동의한 경우의 이름(by)만 내보낸다 (팔로우용)
+export const ckOf = uid => uid ? crypto.createHash('sha256').update('ny-ck:' + uid).digest('hex').slice(0, 12) : undefined;
+const out = (r, names = {}) => ({ ...r.data, id: r.id, vis: r.vis, status: r.status, created: Date.parse(r.created_at), ck: ckOf(r.user_id), by: names[r.user_id] || undefined });
+async function namesFor(rows) {
+  const ids = [...new Set(rows.map(r => r.user_id).filter(Boolean))]; if (!ids.length) return {};
+  const pr = await db(`ny_profiles?select=id,nickname,rank_public&id=in.(${ids.join(',')})`).catch(() => []);
+  const m = {}; pr.forEach(x => { if (x.rank_public && x.nickname) m[x.id] = x.nickname; }); return m;
+}
 
 export default handler(async (req, res) => {
   if (req.method === 'GET') {
@@ -33,7 +40,7 @@ export default handler(async (req, res) => {
       const id = String(req.query.id);
       if (!/^u[\w-]{1,39}$/.test(id)) return fail(res, 400, 'id');
       const r = await db(`ny_user_polls?select=*&id=eq.${id}&status=eq.approved`);
-      return r.length ? send(res, 200, { poll: out(r[0]) }, 'public, s-maxage=30') : fail(res, 404, 'not-found');
+      return r.length ? send(res, 200, { poll: out(r[0], await namesFor(r)) }, 'public, s-maxage=30') : fail(res, 404, 'not-found');
     }
     if (req.query.mine) {
       const user = await authUser(req); if (!user) return fail(res, 401, 'login');
@@ -41,7 +48,8 @@ export default handler(async (req, res) => {
       return send(res, 200, { polls: r.map(out) });
     }
     const r = await db('ny_user_polls?select=*&status=eq.approved&vis=eq.public&order=created_at.desc&limit=300');
-    return send(res, 200, { polls: r.map(out) }, 'public, s-maxage=60, stale-while-revalidate=300');
+    const names = await namesFor(r);
+    return send(res, 200, { polls: r.map(x => out(x, names)) }, 'public, s-maxage=60, stale-while-revalidate=300');
   }
   if (req.method !== 'POST') return fail(res, 405, 'method');
   const user = await authUser(req); if (!user) return fail(res, 401, 'login');
