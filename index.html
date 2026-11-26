@@ -1344,6 +1344,9 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
 .lg .lg-big button:active{transform:scale(.98)}
 .lg .lg-big .recent{position:absolute;top:-10px;right:14px;background:var(--ink);color:var(--surface);font-size:calc(10.5px * var(--fs));font-weight:700;border-radius:999px;padding:2px 8px}
 .lg .lg-mail-s{margin:16px auto 0;border:0;background:none;color:var(--muted);font-size:calc(13px * var(--fs));text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.ib.aib b{font-size:calc(12px * var(--fs));font-weight:800;letter-spacing:.3px}
+.ib.aib{color:var(--b)}
+.ib.aib[aria-pressed="true"]{background:color-mix(in srgb,var(--b) 12%,transparent)}
 </style>
 </head>
 <body>
@@ -2203,7 +2206,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       '<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+credit+aiBlock(p,done)+
       (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
       '<div class="foot">'+
-      '<span class="acts">'+(!embedded?'<button type="button" class="ib plk" data-act="plike" aria-pressed="'+!!plikes[p.id]+'" aria-label="좋아요" title="좋아요">'+ic('heart')+(likeN(p)?'<span>'+fmt(likeN(p))+'</span>':'')+'</button>':'')+(cmtOn(p)&&!embedded?'<button type="button" class="ib" data-act="cmtgo" aria-label="한줄평 달기" title="한줄평">'+ic('message-circle')+(cCount(p)?'<span>'+fmt(cCount(p))+'</span>':'')+'</button>':'')+'<button type="button" class="ib" data-act="copy" aria-label="공유" title="공유">'+ic('send')+'</button>'+(done&&p.type!=='relay'?'<button type="button" class="ib" data-act="stats" aria-label="상세 통계" title="상세 통계">'+ic('chart-column')+'</button>':'')+'</span>'+
+      '<span class="acts">'+(!embedded?'<button type="button" class="ib plk" data-act="plike" aria-pressed="'+!!plikes[p.id]+'" aria-label="좋아요" title="좋아요">'+ic('heart')+(likeN(p)?'<span>'+fmt(likeN(p))+'</span>':'')+'</button>':'')+(done&&Array.isArray(p.ai)&&p.ai.length&&hasHuman(p)?'<button type="button" class="ib aib" data-act="aitog" aria-pressed="'+!!aiOpen[p.id]+'" aria-label="AI 양쪽 의견 정리 보기" title="AI 의견 정리">'+ic('sparkles')+'<b>AI</b></button>':'')+(cmtOn(p)&&!embedded?'<button type="button" class="ib" data-act="cmtgo" aria-label="한줄평 달기" title="한줄평">'+ic('message-circle')+(cCount(p)?'<span>'+fmt(cCount(p))+'</span>':'')+'</button>':'')+'<button type="button" class="ib" data-act="copy" aria-label="공유" title="공유">'+ic('send')+'</button>'+(done&&p.type!=='relay'?'<button type="button" class="ib" data-act="stats" aria-label="상세 통계" title="상세 통계">'+ic('chart-column')+'</button>':'')+'</span>'+
       (embedded?'<a class="egoto" href="'+SITE+'?p='+p.id+'" target="_blank" rel="noopener">'+(done?'다른 투표 보기':'네아니요에서 보기')+ic('external-link')+'</a>':'')+
       '<span class="n">'+(voters(p)?fmt(voters(p))+'명 참여':'첫 투표자가 되어 보세요')+(p.closed?' · 마감':done?'':' · 투표하면 결과 공개')+'</span></div>'+
       '<div class="stats" hidden></div><div class="embed" hidden></div>'+(cmtOn(p)&&!embedded?cmtBlock(p,done):'')+'</article>';
@@ -3004,11 +3007,14 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     return rv||mk('allow','','','');
   }
   // AI 쟁점 정리: 사람 한줄평이 5개 미만일 때만, 투표한 뒤에 보임 (투표 전에 보여 주면 선택에 영향을 줄 수 있음)
+  // 한줄평이 있으면 AI 정리는 접어 두고, 아이콘 줄의 AI 버튼으로 펼쳐 본다
+  var aiOpen={};
+  function hasHuman(p){ return cmtOn(p)&&getC(p).some(function(c){return !c.hidden&&(!c.review||c.mine)}); }
   function aiBlock(p,done){
     if(!done||!Array.isArray(p.ai)||!p.ai.length) return '';
-    // 사람 한줄평이 하나라도 있으면 AI 정리는 빼고 사람 의견을 보여 줌
-    if(cmtOn(p)&&getC(p).some(function(c){return !c.hidden&&(!c.review||c.mine)})) return '';
-    return '<div class="aibox"><h4>'+ic('sparkles')+'<span class="aitag">AI</span>양쪽 의견 정리'+(cmtOn(p)?' <small>· 한줄평이 달리면 사라져요</small>':'')+'</h4><ul>'+
+    var folded=hasHuman(p);
+    if(folded&&!aiOpen[p.id]) return '';
+    return '<div class="aibox"><h4>'+ic('sparkles')+'<span class="aitag">AI</span>양쪽 의견 정리'+(folded?'':cmtOn(p)?' <small>· 한줄평이 달리면 접혀요</small>':'')+'</h4><ul>'+
       p.ai.map(function(t,i){ return t&&p.o[i]?'<li><span class="side-tag" style="background:'+OPC[i%OPC.length]+'">'+esc(p.o[i])+'</span><span>'+esc(t)+'</span></li>':''; }).join('')+
       '</ul>'+(cmtOn(p)&&!embedded?'<p class="aifoot">AI가 쓴 요약이에요. 내 생각은 아래 한줄평으로 남겨 주세요.</p>':'<p class="aifoot">AI가 쓴 요약이에요. 실제 참여자 의견이 아닙니다.</p>')+'</div>';
   }
@@ -3288,6 +3294,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
         var rid=actBtn.dataset.cid; if(!rid) return; cReply[p.id]=cReply[p.id]===rid&&!actBtn.dataset.to?null:rid; cRepOpen[rid]=1;
         var fr1=rerender(art,p), ta=fr1.querySelector('form[data-pid="'+rid+'"] .cin'); if(ta){ if(actBtn.dataset.to) ta.value='@'+actBtn.dataset.to+' '; ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); }
         return; }
+      if(act==='aitog'){ aiOpen[p.id]=!aiOpen[p.id]; var fa=rerender(art,p), ab=fa.querySelector('.aibox'); if(ab) ab.scrollIntoView({block:'nearest',behavior:'smooth'}); return; }
       if(act==='rq'){ var rk=p.id+':'+actBtn.dataset.k; rOpen[rk]=!rOpen[rk]; rerender(art,p); return; }
       if(act==='plike'){
         var on=!plikes[p.id]; if(on) plikes[p.id]=1; else delete plikes[p.id];
