@@ -4438,13 +4438,15 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   // ===== 첫 화면 빠르게: 지난번 받은 데이터(최대 1일)를 먼저 그리고, 서버 응답이 오면 조용히 갱신 =====
   var BOOT_KEY='ny_boot_v1', bootFeed=[], bootData=(function(){ try{ var c=JSON.parse(localStorage.getItem(BOOT_KEY)||'null'); return c&&Date.now()-c.t<864e5?c:null; }catch(e){ return null; } })()||{};
   function bootSave(k,v){ try{ bootData[k]=v; bootData.t=Date.now(); localStorage.setItem(BOOT_KEY,JSON.stringify(bootData)); }catch(e){} }
+  // 공유 링크로 들어온 투표가 방금 받은 파일에 있으면, 나머지(피드·로그인·집계)를 기다리지 않고 바로 그린다
+  function quickStart(){ try{ var w=params.get('p')||params.get('embed'); if(w&&!started&&polls.some(function(p){return p.id===w})){ polls.sort(function(a,b){return a.t-b.t}); start(); } }catch(e){} }
   function loadFeeds(done){
     var left=FEEDS.length+1, fin=function(){ if(--left===0){ var all=[].concat.apply([],bootFeed.filter(Boolean)); if(all.length) bootSave('f',all.slice(-400)); done(); } };
     var dataLeft=FEEDS.length, afterFiles=function(){ if(--dataLeft===0) NY.loadPolls(fin); };
     FEEDS.forEach(function(u,i){
       try{
         fetch(u+(i?'?t='+Math.floor(Date.now()/300000):''),{cache:'no-store'}).then(function(r){return r.ok?r.json():[]})
-          .then(function(list){ if(Array.isArray(list)){ try{ bootFeed[i]=JSON.parse(JSON.stringify(list)); }catch(e){} list.forEach(addDaily); } afterFiles(); fin(); }).catch(function(){ afterFiles(); fin(); });
+          .then(function(list){ if(Array.isArray(list)){ try{ bootFeed[i]=JSON.parse(JSON.stringify(list)); }catch(e){} list.forEach(addDaily); quickStart(); } afterFiles(); fin(); }).catch(function(){ afterFiles(); fin(); });
       }catch(e){ afterFiles(); fin(); }
     });
   }
