@@ -1583,7 +1583,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   <a href="./#vote" data-v="vote"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="3"/><path d="m9 12 2 2 4-4"/></svg><span>투표</span></a>
   <a href="./#ranking" data-v="ranking"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg><span>랭킹</span></a>
   <a href="./#create" data-v="create" class="bt-mk" aria-label="투표 만들기"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg></a>
-<a href="./#vote" data-v="follow" id="btFollow" aria-label="팔로잉"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>팔로잉</span></a>
+<a href="./#vote" data-v="search" id="btSearch" aria-label="검색"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>검색</span></a>
   <a href="./#mine" data-v="mine"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
   <path d="M3 3v5h5" />
   <path d="M12 7v5l4 2" /></svg><span>내 투표</span></a>
@@ -1611,6 +1611,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   // 관심사: 고른 대분류 위주로 추천(관심 약 70% + 나머지 섞기). 로그인 없이 브라우저에 저장, 로그인하면 계정 정보에도 함께 저장.
   var IKEY='neaniyo-interests', intr={cats:[],skip:0};
   try{var _ir=JSON.parse(localStorage.getItem(IKEY)||'null'); if(_ir&&Array.isArray(_ir.cats)) intr=_ir;}catch(e){}
+  intr.cats=intr.cats.map(function(c){return ({'스포츠':'연예','정치':'사회','패션·쇼핑':'경제','IT·게임':'경제'})[c]||c}).filter(function(c,i,a){return a.indexOf(c)===i});
   function saveIntr(){try{localStorage.setItem(IKEY,JSON.stringify(intr))}catch(e){}}
 
   var polls=[
@@ -1950,19 +1951,31 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   document.addEventListener('error',function(e){ var t=e.target; if(t&&t.tagName==='IMG'&&FALLBACK[t.getAttribute('src')]){ t.src=FALLBACK[t.getAttribute('src')]; } },true);
   // ===== 카테고리: 대분류(cat) + 소분류(sub) =====
   var TAX=[
-    {c:'연예',l:'연예',s:['아이돌·K팝','배우·드라마','예능·방송','영화','유튜버·인플루언서']},
-    {c:'사회',l:'사회',s:['직장·노동','교육·입시','생활·소비','교통·안전','환경·날씨']},
-    {c:'경제',l:'경제',s:['주식','부동산','금리·환율','코인','재테크·소비']},
+    // 2026-11-26 분류 축소: 12개 → 8개 (스포츠·게임→연예, 정치→사회, IT·패션·쇼핑→경제)
+    {c:'연예',l:'연예·스포츠',s:['아이돌·K팝','드라마·영화','예능·유튜버','스포츠','게임']},
+    {c:'사회',l:'사회·정치',s:['직장·노동','생활·안전','정치·정책','환경·날씨']},
+    {c:'경제',l:'경제·IT',s:['주식·코인','부동산','재테크·소비','쇼핑·패션','AI·테크']},
     {c:'라이프',l:'라이프',s:['연애·결혼','육아·가족','음식·맛집','여행·여가','건강·운동']},
+    {c:'사연',l:'사연·고민',s:['연애','가족','직장','친구·인간관계','돈']},
     {c:'교육',l:'교육',s:['교육 이슈','유아','초등','중등','고등']},
     {c:'퀴즈',l:'퀴즈',s:['초등','중·고등','수능','상식']},
-    {c:'사연',l:'사연·고민',s:['연애','가족','직장','친구·인간관계','돈']},
-    {c:'패션·쇼핑',l:'패션·쇼핑',s:['패션','뷰티','물건·가전']},
-    {c:'스포츠',l:'스포츠',s:['야구','축구','농구·배구','골프·기타','e스포츠']},
-    {c:'IT·게임',l:'IT·게임',s:['AI·테크','스마트폰','게임']},
-    {c:'정치',l:'정치·정책',s:['제도','예산·세금','외교·국제']},
     {c:'밸런스',l:'밸런스',s:['밸런스게임','취향']}
   ];
+  // 예전 분류(자동 수집 피드·이용자 투표)를 새 분류로 옮기는 표
+  function mergeCat(c,sub){
+    var M={
+      '스포츠':['연예','스포츠'], '정치':['사회','정치·정책'], '패션·쇼핑':['경제','쇼핑·패션'],
+      'IT·게임':sub==='게임'?['연예','게임']:['경제','AI·테크']
+    };
+    if(M[c]) return M[c];
+    var S={
+      '연예':{'배우·드라마':'드라마·영화','영화':'드라마·영화','예능·방송':'예능·유튜버','유튜버·인플루언서':'예능·유튜버'},
+      '사회':{'생활·소비':'생활·안전','교통·안전':'생활·안전','교육·입시':'교육 이슈'},
+      '경제':{'주식':'주식·코인','코인':'주식·코인','금리·환율':'재테크·소비'}
+    };
+    if(c==='사회'&&sub==='교육·입시') return ['교육','교육 이슈'];
+    return [c,(S[c]&&S[c][sub])||sub];
+  }
   var CATIC={"all": "sparkles", "new": "clock", "교육": "graduation-cap", "퀴즈": "lightbulb", "연예": "mic-vocal", "사회": "users", "경제": "trending-up", "라이프": "coffee", "사연": "message-circle-heart", "패션·쇼핑": "shirt", "스포츠": "volleyball", "IT·게임": "gamepad-2", "그림·재능": "palette", "정치": "landmark", "밸런스": "scale"};
   var CATCOL={"all": "#F59E0B", "new": "#06B6D4", "교육": "#6366F1", "퀴즈": "#84CC16", "연예": "#EC4899", "사회": "#3B82F6", "경제": "#10B981", "라이프": "#B45309", "사연": "#F43F5E", "패션·쇼핑": "#A855F7", "스포츠": "#F97316", "IT·게임": "#6366F1", "그림·재능": "#14B8A6", "정치": "#475569", "밸런스": "#84CC16"};
   function catIc(c){ return CATIC[c]?'<span class="cic" style="--cc:'+(CATCOL[c]||'var(--muted)')+'">'+ic(CATIC[c])+'</span>':''; }
@@ -1984,6 +1997,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
       if(hasAns) p.cat='퀴즈';
       else p.sub={'수능':'고등','중·고등':'고등','학부모':'교육 이슈','학교생활':'교육 이슈','상식':'교육 이슈'}[p.sub]||p.sub;
     }
+    var mc=mergeCat(p.cat,p.sub); p.cat=mc[0]; p.sub=mc[1];
     var t=TAX.filter(function(x){return x.c===p.cat})[0];
     if(t&&p.sub&&t.s.indexOf(p.sub)<0) p.sub='';
   }
@@ -2762,8 +2776,8 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   window.addEventListener('scroll',onScrollFab,{passive:true}); onScrollFab();
   fabTop.onclick=function(){ var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches; window.scrollTo({top:0,behavior:rm?'auto':'smooth'}); };
   function startTrial(){ return; if(!user){ auth.dataset.next='pro'; return openAuth(); } user.pro=true; saveUser(); authUI(); toast('프리미엄 7일 체험을 시작했습니다.'); refreshOpenStats(); }
-  // 하단 탭 '팔로잉': 투표 화면의 팔로잉 탭으로 (검색은 위쪽 돋보기)
-  document.getElementById('btFollow').addEventListener('click',function(e){ e.preventDefault(); if(location.hash!=='#vote'&&location.hash!=='') location.hash='vote'; setTimeout(function(){ setFilter('follow',''); var fc=document.querySelector('#catchips .chip[data-c="follow"]'); if(fc) fc.scrollIntoView({inline:'center',block:'nearest'}); window.scrollTo({top:0,behavior:'smooth'}); },60); });
+  // 하단 탭 '검색': 투표 화면으로 가서 검색창 열기
+  document.getElementById('btSearch').addEventListener('click',function(e){ e.preventDefault(); if(location.hash!=='#vote') location.hash='vote'; setTimeout(function(){ var sb=document.getElementById('srchBtn'); if(sb) sb.click(); },60); });
 
   // ===== 상세 통계 (시안: 전체 결과를 기준으로 만든 예시 분포) =====
   var OPC=['var(--a)','var(--b)','var(--c)','var(--d)','var(--e)','var(--f)'];
@@ -3060,8 +3074,9 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   var FOL={keys:{},me:'',followers:0}; try{ var fs0=JSON.parse(localStorage.getItem('ny-follow')||'null'); if(fs0) FOL=fs0; }catch(e){}
   function saveFol(){ try{ localStorage.setItem('ny-follow',JSON.stringify(FOL)); }catch(e){} }
   function folN(){ return Object.keys(FOL.keys).length; }
+  var FOLLOW_ON=false; // 팔로우 기능은 잠시 숨김 (켜려면 true)
   function byline(p){
-    if(!p.ck||embedded) return '';
+    if(!FOLLOW_ON||!p.ck||embedded) return '';
     var nm=p.by||'', h=parseInt(p.ck.slice(0,4),16)%360, mine=p.own||(FOL.me&&FOL.me===p.ck), on=!!FOL.keys[p.ck];
     return '<div class="byline"><span class="tav sm" style="--h:'+h+'" aria-hidden="true">'+(nm?esc(nm.charAt(0)):ic('user-round'))+'</span><b>'+(nm?esc(nm):'익명 출제자')+'</b>'+
       (mine?'<span class="by-me">내 투표</span>':'<button type="button" class="fbtn'+(on?' on':'')+'" data-act="follow" aria-pressed="'+on+'">'+(on?'팔로잉':'팔로우')+'</button>')+'</div>';
@@ -3487,7 +3502,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   });
 
   var subFilter='', catChips=document.getElementById('catchips'), subChips=document.getElementById('subchips');
-  catChips.innerHTML='<button class="chip" style="--cc:#F59E0B" data-c="all" aria-pressed="true">추천</button><button class="chip" style="--cc:#06B6D4" data-c="new" aria-pressed="false">최신</button><button class="chip" style="--cc:#8B5CF6" data-c="follow" aria-pressed="false">팔로잉</button>'+TAX.map(function(t){return '<button class="chip" style="--cc:'+(CATCOL[t.c]||'')+'" data-c="'+t.c+'" aria-pressed="false">'+t.l+'</button>'}).join('')+'<button class="chip intset" type="button" data-int-open aria-label="관심사 설정">'+ic('settings-2')+'관심사</button>';
+  catChips.innerHTML='<button class="chip" style="--cc:#F59E0B" data-c="all" aria-pressed="true">추천</button><button class="chip" style="--cc:#06B6D4" data-c="new" aria-pressed="false">최신</button>'+TAX.map(function(t){return '<button class="chip" style="--cc:'+(CATCOL[t.c]||'')+'" data-c="'+t.c+'" aria-pressed="false">'+t.l+'</button>'}).join('')+'<button class="chip intset" type="button" data-int-open aria-label="관심사 설정">'+ic('settings-2')+'관심사</button>';
   function intChipUI(){ var b=catChips.querySelector('[data-int-open]'); if(b) b.classList.toggle('on',!!intr.cats.length); }
   intChipUI();
   function drawSubs(){
@@ -3562,7 +3577,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   // 카테고리
   catSel.innerHTML=TAX.map(function(t){return '<option value="'+t.c+'">'+t.l+'</option>'}).join('');
   function fillSubs(){ var t=TAX.filter(function(x){return x.c===catSel.value})[0]; subSel.innerHTML=t.s.map(function(x){return '<option>'+x+'</option>'}).join(''); }
-  function setCat(c,sub){ if(catTouched) return; if(catSel.value!==c){ catSel.value=c; fillSubs(); } if(sub) subSel.value=sub; }
+  function setCat(c,sub){ if(catTouched) return; var mc=mergeCat(c,sub); c=mc[0]; sub=mc[1]; if(catSel.value!==c){ catSel.value=c; fillSubs(); } if(sub) subSel.value=sub; }
   catSel.addEventListener('change',function(){ catTouched=true; fillSubs(); sync(); });
   catSel.value='밸런스'; fillSubs();
 
