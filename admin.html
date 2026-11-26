@@ -480,7 +480,8 @@ function vDash(){
     bars.push({v:c,f:a>now,lab:kk.h%6===0?p2(kk.h)+'시':'',tip:md(a)+' '+p2(kk.h)+'시 · '+c+'개'+(a>now?' (예약)':'')})}
   // 카테고리 비율 (최근 7일 + 예약)
   var from=now-7*864e5, cnt={},tot=0;
-  L.forEach(function(x){var m=tms(x.p);if(m>=from&&TARGET[x.p.cat]!=null){cnt[x.p.cat]=(cnt[x.p.cat]||0)+1;tot++}});
+  var MC={'스포츠':'연예','IT·게임':'경제','패션·쇼핑':'경제','정치':'사회'};
+  L.forEach(function(x){var m=tms(x.p),c=MC[x.p.cat]||x.p.cat;if(m>=from&&TARGET[c]!=null){cnt[c]=(cnt[c]||0)+1;tot++}});
   var rows=Object.keys(TARGET).map(function(c){var v=tot?Math.round((cnt[c]||0)/tot*1000)/10:0;return {l:c,v:v,vl:v+'%',t:TARGET[c],tip:c+' · '+(cnt[c]||0)+'개 ('+v+'%), 목표 '+TARGET[c]+'%'}});
   return '<div class="grid kpis">'+
     kpi('전체 투표',L.length.toLocaleString(),'기본 '+S.main.length+' · 피드 '+(feedL.length))+
