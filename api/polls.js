@@ -24,7 +24,7 @@ async function moveImages(id, data) {
   if (data.img) data.img = await toStorage(id, data.img, 'img');
   for (const k of ['gal', 'imgs']) if (Array.isArray(data[k])) data[k] = await Promise.all(data[k].map((v, i) => toStorage(id, v, `${k}${i}`)));
 }
-const KEEP = ['id', 'cat', 'sub', 'q', 'o', 'type', 'qs', 'a', 'n', 'vis', 'comments', 'story', 'img', 'gal', 'imgs', 'link', 'multiSel', 'pw', 'created', 'wc', 'galSplit'];
+const KEEP = ['id', 'cat', 'sub', 'q', 'o', 'type', 'qs', 'a', 'n', 'vis', 'comments', 'story', 'img', 'gal', 'imgs', 'link', 'multiSel', 'pw', 'created', 'wc', 'galSplit', 'imgFit'];
 // 만든 사람: 사용자 ID 대신 되돌릴 수 없는 짧은 키(ck)와, 닉네임 공개에 동의한 경우의 이름(by)만 내보낸다 (팔로우용)
 export const ckOf = uid => uid ? crypto.createHash('sha256').update('ny-ck:' + uid).digest('hex').slice(0, 12) : undefined;
 const out = (r, names = {}) => ({ ...r.data, id: r.id, vis: r.vis, status: r.status, created: Date.parse(r.created_at), ck: ckOf(r.user_id), by: names[r.user_id] || undefined });
@@ -64,8 +64,22 @@ export default handler(async (req, res) => {
   await moveImages(p.id, data);
   if (JSON.stringify(data).length > MAX) return fail(res, 413, 'too-large');
   const vis = ['public', 'link', 'secret'].includes(p.vis) ? p.vis : 'public';
-  const prev = await db(`ny_user_polls?select=user_id,status&id=eq.${p.id}`);
+  const prev = await db(`ny_user_polls?select=user_id,status,data&id=eq.${p.id}`);
   if (prev.length && prev[0].user_id !== user.id) return fail(res, 403, 'not-owner');
+  // 투표가 시작된 뒤에는 보기·사진·정답·형식을 바꿀 수 없다 (결과 조작 방지). 제목·설명·분류·공개 범위만 고칠 수 있음
+  if (prev.length) {
+    const od = prev[0].data || {};
+    const has = await db(`ny_votes?select=poll_id&poll_id=eq.${p.id}&limit=1`);
+    if (has.length) {
+      const LOCK = ['type', 'o', 'qs', 'a', 'img', 'gal', 'imgs', 'galSplit', 'multiSel', 'wc'];
+      const norm = v => JSON.stringify(v === undefined ? null : v);
+      const qsKey = q => Array.isArray(q) ? q.map(x => ({ q: x.q, o: x.o, a: x.a })) : q;
+      const changed = LOCK.filter(k => k === 'qs' ? norm(qsKey(od.qs)) !== norm(qsKey(data.qs)) : norm(od[k]) !== norm(data[k]));
+      if (changed.length) return fail(res, 409, 'locked:' + changed.join(','));
+      if (od.q && data.q !== od.q) { data.q0 = od.q0 || od.q; data.edited = new Date().toISOString(); }
+      else { if (od.q0) data.q0 = od.q0; if (od.edited) data.edited = od.edited; }
+    }
+  }
   // 제목·보기·내용을 한줄평과 같은 운영 규칙으로 검사 (길이 제한은 제외)
   const mod = await moderation();
   const text = [data.q, ...(data.o || []), ...((data.qs || []).flatMap(x => [x.q, ...(x.o || [])])), data.story || ''].join(' ');

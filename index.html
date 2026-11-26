@@ -1377,6 +1377,8 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
 .vw-x .i{width:22px;height:22px}
 .vw-n{position:fixed;top:20px;left:16px;color:#fff;font-size:13px;font-weight:700;opacity:.8}
 html.vw-lock,html.vw-lock body{overflow:hidden}
+#make.edit-locked #f-opt-wrap,#make.edit-locked #f-relay-wrap,#make.edit-locked #f-wc-wrap,#make.edit-locked .mtoggles,#make.edit-locked #modeSeg,#make.edit-locked #f-photo-wrap,#make.edit-locked [data-fold="f-photo-wrap"],#make.edit-locked #f-msel-wrap,#make.edit-locked #phow{display:none!important}
+.edtag{border:0;background:none;padding:0 2px;color:var(--muted);font-size:calc(11.5px * var(--fs));text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -2203,7 +2205,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     var credit=p.credit?'<p class="credit">사진: '+esc(p.credit)+' · <a href="https://www.pexels.com" target="_blank" rel="noopener">Pexels</a></p>':'';
     return '<article class="poll'+(done?' done':'')+'" data-id="'+p.id+'">'+
       (embedded?embedBrand(p):'')+
-      '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+catIc(p.cat)+catLabel(p.cat)+(p.sub?' <span class="sub">› '+esc(p.sub)+'</span>':'')+'</span>'+(isQuiz(p)?'<span class="ex qz">문제</span>':'')+(p.type==='relay'?'<span class="ex rl">'+(p.wc?'월드컵 '+p.qs.length*2+'강':'릴레이 '+p.qs.length+'문항')+'</span>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'<span class="when"><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+'</span>'+(p.own&&!embedded?'<span class="own-acts"><button type="button" data-act="edit">'+ic('pencil')+'수정</button><button type="button" data-act="del">'+ic('trash-2')+'삭제</button></span>':'')+'</div>'+
+      '<div class="meta"><span class="cat'+(p.story?' story-cat':'')+'">'+catIc(p.cat)+catLabel(p.cat)+(p.sub?' <span class="sub">› '+esc(p.sub)+'</span>':'')+'</span>'+(isQuiz(p)?'<span class="ex qz">문제</span>':'')+(p.type==='relay'?'<span class="ex rl">'+(p.wc?'월드컵 '+p.qs.length*2+'강':'릴레이 '+p.qs.length+'문항')+'</span>':'')+(p.edited&&p.q0?'<button type="button" class="edtag" data-act="edinfo" title="원래 제목: '+esc(p.q0)+'">수정됨</button>':'')+(p.ex?'<span class="ex">'+(p.cat==='사연'?'예시 사연':'예시')+'</span>':'')+(p.vis==='link'?'<span class="vis">· '+ic('link')+' 링크 공유</span>':p.vis==='secret'?'<span class="vis">· '+ic('lock')+' 비밀방</span>':'')+(p.cat==='경제'?'<span>· 투자 판단 근거 아님</span>':p.cat==='정치'?'<span>· 참여자 기준, 표본 조사 아님</span>':'')+'<span class="when"><span>'+p.h+'</span>'+(p.closed?'<span class="closed">마감</span>':'<span class="live">진행 중</span>')+'</span>'+(p.own&&!embedded?'<span class="own-acts"><button type="button" data-act="edit">'+ic('pencil')+'수정</button><button type="button" data-act="del">'+ic('trash-2')+'삭제</button></span>':'')+'</div>'+
       byline(p)+'<h3 class="q">'+esc(p.q)+'</h3>'+(p.story?'<div class="story'+(p.story.length<160?' short':'')+'"><div class="story-in"><p>'+esc(p.story)+'</p></div><button type="button" data-act="more" aria-expanded="false">'+ic('chevron-down')+'<span>더보기</span></button></div>':'')+(p.desc?'<p class="desc">'+esc(p.desc)+'</p>':'')+media+body+credit+aiBlock(p,done)+
       (p.src&&p.src.length?'<div class="src">참고: '+p.src.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow">'+esc(x.title)+'</a>'}).join(' · ')+'</div>':'')+
       '<div class="foot">'+
@@ -3333,6 +3335,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
         var rid=actBtn.dataset.cid; if(!rid) return; cReply[p.id]=cReply[p.id]===rid&&!actBtn.dataset.to?null:rid; cRepOpen[rid]=1;
         var fr1=rerender(art,p), ta=fr1.querySelector('form[data-pid="'+rid+'"] .cin'); if(ta){ if(actBtn.dataset.to) ta.value='@'+actBtn.dataset.to+' '; ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); }
         return; }
+      if(act==='edinfo'){ toast('제목이 고쳐졌어요. 원래 제목: '+p.q0); return; }
       if(act==='follow'){
         if(!user){ if(NY&&NY.openLogin) NY.openLogin(); else toast('로그인하면 팔로우할 수 있어요.'); return; }
         var fon=!FOL.keys[p.ck]; if(fon) FOL.keys[p.ck]=1; else delete FOL.keys[p.ck]; saveFol();
@@ -3549,7 +3552,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   var thumbs=document.getElementById('thumbs'), photoIn=document.getElementById('f-photo'), drop=document.getElementById('drop');
   var relayWrap=document.getElementById('f-relay-wrap'), rbuild=document.getElementById('rbuild'), raddq=document.getElementById('raddq'), relayToggle=document.getElementById('relayToggle');
   var optWrap=document.getElementById('f-opt-wrap'), photoWrap=document.getElementById('f-photo-wrap'), mselWrap=document.getElementById('f-msel-wrap'), pwIn=document.getElementById('f-pw');
-  var galSplit=false, MAXP=10, MAXPICK=6, photoAsk=false, editId=null, phow=document.getElementById('phow'), upImgs=[], relayMode=false, catTouched=false, linkIn=document.getElementById('f-link'), linkPrev=document.getElementById('linkprev'), linkWrap=document.getElementById('f-link-wrap');
+  var editLock=false, galSplit=false, MAXP=10, MAXPICK=6, photoAsk=false, editId=null, phow=document.getElementById('phow'), upImgs=[], relayMode=false, catTouched=false, linkIn=document.getElementById('f-link'), linkPrev=document.getElementById('linkprev'), linkWrap=document.getElementById('f-link-wrap');
   document.getElementById('drop-ic').innerHTML=ic('image-plus');
   add.innerHTML=ic('plus')+'보기 추가'; raddq.innerHTML=ic('plus')+'질문 추가';
 
@@ -3953,6 +3956,11 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     if(old){
       // 수정: 같은 주소 유지. 보기가 바뀌면 표는 초기화
       np.id=old.id; np.created=old.created; np.h=old.h; np.t=old.t;
+      if(editLock){
+        // 투표가 시작된 투표: 보기·사진·정답·형식은 예전 그대로, 제목을 바꾸면 '수정됨' 표시
+        ['type','o','v','qs','a','n','img','gal','imgs','galSplit','multiSel','wc','imgFit'].forEach(function(k){ if(old[k]===undefined) delete np[k]; else np[k]=JSON.parse(JSON.stringify(old[k])); });
+        if(np.q!==old.q){ np.q0=old.q0||old.q; np.edited=new Date().toISOString(); } else { if(old.q0) np.q0=old.q0; if(old.edited) np.edited=old.edited; }
+      }
       var sameO=old.type===np.type&&JSON.stringify(old.o)===JSON.stringify(np.o)&&JSON.stringify((old.qs||[]).map(function(x){return [x.q,x.o]}))===JSON.stringify((np.qs||[]).map(function(x){return [x.q,x.o]}));
       if(sameO){ np.v=old.v; if(old.n!=null) np.n=old.n; if(old.qs&&np.qs) np.qs.forEach(function(x,i){x.v=old.qs[i].v}); }
       else{ delete voted[old.id]; try{localStorage.setItem(KEY,JSON.stringify(voted))}catch(err){} }
@@ -3960,7 +3968,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
       location.href='?p='+np.id; return;
     }
     polls.unshift(np); saveMine(); if(NY) NY.submitPoll(np);
-    form.reset(); upImgs=[]; photoAsk=false; galSplit=false; relayMode=false; wcReset(); catTouched=false; sync.key=''; ansrow.dataset.a=''; setQuiz(false); ['f-photo-wrap','f-link-wrap','f-cat-wrap','f-story-wrap'].forEach(function(id){openFold(id,false)}); form.classList.remove('st-open'); rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='밸런스'; fillSubs();
+    form.reset(); upImgs=[]; photoAsk=false; galSplit=false; editLock=false; form.classList.remove('edit-locked'); relayMode=false; wcReset(); catTouched=false; sync.key=''; ansrow.dataset.a=''; setQuiz(false); ['f-photo-wrap','f-link-wrap','f-cat-wrap','f-story-wrap'].forEach(function(id){openFold(id,false)}); form.classList.remove('st-open'); rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='밸런스'; fillSubs();
     document.getElementById('f-story-n').textContent='0'; syncVis();
     // 전체 공개는 바로 메인 맨 위로, 링크·비밀방은 주소를 보여 줌
     if(vis==='public'){ document.getElementById('made').hidden=true; pinId=np.id; setFilter('all',''); location.hash='#vote'; window.scrollTo({top:0}); toast('투표를 올렸어요! 메인 맨 위에 있어요.'); }
@@ -3969,7 +3977,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   function endEdit(silent){
     editId=null; document.getElementById('editbar').hidden=true; document.getElementById('f-submit').textContent='투표 올리기';
     pwIn.placeholder='비밀번호 4자 이상';
-    if(!silent){ form.reset(); upImgs=[]; photoAsk=false; galSplit=false; relayMode=false; wcReset(); catTouched=false; sync.key=''; ['f-photo-wrap','f-link-wrap','f-cat-wrap','f-story-wrap'].forEach(function(id){openFold(id,false)}); form.classList.remove('st-open'); rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='밸런스'; fillSubs(); syncVis(); }
+    if(!silent){ form.reset(); upImgs=[]; photoAsk=false; galSplit=false; editLock=false; form.classList.remove('edit-locked'); relayMode=false; wcReset(); catTouched=false; sync.key=''; ['f-photo-wrap','f-link-wrap','f-cat-wrap','f-story-wrap'].forEach(function(id){openFold(id,false)}); form.classList.remove('st-open'); rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='밸런스'; fillSubs(); syncVis(); }
   }
   function startEdit(p){
     location.hash='#create';
@@ -3991,8 +3999,9 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
       document.getElementById('f-cmt').checked=!!p.comments; document.getElementById('f-msel').checked=!!p.multiSel;
       openFold('f-photo-wrap',upImgs.length>0); openFold('f-link-wrap',!!p.link); openFold('f-cat-wrap',false); openFold('f-story-wrap',!!p.story); form.classList.add('st-open');
       syncVis(); sync(); sync.filling=false;
+      editLock=voters(p)>0; form.classList.toggle('edit-locked',editLock);
       var votes=sum(p.v||[]), bar=document.getElementById('editbar');
-      bar.innerHTML=ic('pencil')+'<span><b>내 투표 수정 중</b><small>'+(votes?'보기를 바꾸면 지금까지 받은 '+fmt(votes)+'표가 초기화돼요. 제목·내용·설정만 바꾸면 그대로 남아요.':'주소는 그대로 유지돼요.')+'</small></span><button type="button" id="editCancel">취소</button>';
+      bar.innerHTML=ic('pencil')+'<span><b>내 투표 수정 중</b><small>'+(editLock?'투표가 시작돼서 보기·사진·정답은 바꿀 수 없어요. 제목(오타)·설명·분류만 고칠 수 있고, 제목을 고치면 "수정됨"이 표시돼요.':votes?'보기를 바꾸면 지금까지 받은 '+fmt(votes)+'표가 초기화돼요. 제목·내용·설정만 바꾸면 그대로 남아요.':'주소는 그대로 유지돼요.')+'</small></span><button type="button" id="editCancel">취소</button>';
       bar.hidden=false; document.getElementById('editCancel').onclick=function(){ endEdit(false); };
       document.getElementById('f-submit').textContent='수정 저장';
       window.scrollTo({top:0}); qIn.focus();
