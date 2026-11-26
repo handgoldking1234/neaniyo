@@ -4226,7 +4226,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
         '<h2 id="authTitle">3초 만에 시작하기</h2><p class="lg-sub2">한 번 누르면 가입까지 끝나요</p>'+
         // SNS 버튼을 크게, 카카오를 맨 위에. 이메일은 맨 아래 작은 글씨로
         (sso.length?'<div class="lg-big">'+sso.map(function(x){return '<button class="'+x+'" type="button" data-ny-sso="'+x+'">'+(last===x?'<span class="recent">최근 로그인</span>':'')+'<span class="c">'+ICO[x]+'</span>'+NAME[x]+'로 시작하기</button>'}).join('')+'</div>':'')+
-        (hasMail?'<button type="button" class="lg-mail-s" data-ny-mail>이메일로 시작하기</button>':'')+<p class="lg-foot"><a href="terms" target="_blank" rel="noopener">이용약관</a> · <a href="privacy" target="_blank" rel="noopener"><b>개인정보처리방침</b></a></p>';
+        (hasMail?'<button type="button" class="lg-mail-s" data-ny-mail>이메일로 시작하기</button>':'')+'<p class="lg-foot"><a href="terms" target="_blank" rel="noopener">이용약관</a> · <a href="privacy" target="_blank" rel="noopener"><b>개인정보처리방침</b></a></p>';
       openDialog();
       var mb=authBody.querySelector('[data-ny-mail]');
       if(mb) mb.onclick=function(){
