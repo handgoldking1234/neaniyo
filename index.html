@@ -4399,21 +4399,24 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     function par(p){
       if(p._dp) return p._dp;
       var r=rnd(String(p.id)+'|demo');
-      return p._dp={sp:0.6+r()*0.8, first:1+Math.floor(r()*10), hundred:70+Math.floor(r()*60), g:25+r()*45, ph:Math.floor(r()*BK),
+      return p._dp={sp:0.6+r()*0.8, first:1+Math.floor(r()*3), ten:12+Math.floor(r()*18), hundred:60+Math.floor(r()*70), g:20+r()*35, ph:Math.floor(r()*BK),
         w:p.o.map(function(){ return Math.pow(r(),1.3)+0.25; })};
     }
     // 매끈한 기본 곡선(분 단위): 1분 안 1~10명 → 5~10분 100명 안팎 → 이후 완만히
+    // 천천히 퍼지는 곡선(분 단위): 1분 안 1~3명 → 5분 안팎 10~30명 → 30분 60~130명 → 이후 완만히
+    function sm(k){ return k*k*(3-2*k); }
     function curve(P,m){
       m*=P.sp; if(m<=0) return 0;
-      if(m<1) return P.first*m;
-      if(m<8){ var k=(m-1)/7, e=k*k*(3-2*k); return P.first+(P.hundred-P.first)*e; }
-      return P.hundred+P.g*Math.log(1+(m-8)/20);
+      if(m<1) return P.first*m*m;
+      if(m<5) return P.first+(P.ten-P.first)*sm((m-1)/4);
+      if(m<30) return P.ten+(P.hundred-P.ten)*sm((m-5)/25);
+      return P.hundred+P.g*Math.log(1+(m-30)/60);
     }
     // 칸마다 들어오는 수: 기대값에 잠잠함·몰림을 섞음 (같은 투표·같은 칸이면 누가 봐도 같은 값)
     function inc(p,P,bi,t0){
       var r=rnd(p.id+'|b'+bi), m1=((bi*BK+P.ph)-t0)/6e4, m0=m1-BK/6e4, ex=Math.max(0,curve(P,m1)-curve(P,m0)), x=r();
       var mult=x<0.28?0:x<0.88?0.4+r()*1.4:2.2+r()*2.6; // 28% 잠잠, 12% 몰림
-      var k=Math.floor(ex*mult+r()), out=P.w.map(function(){return 0});
+      var v=ex*mult, k=Math.floor(v)+(r()<v-Math.floor(v)?1:0), out=P.w.map(function(){return 0});
       if(!k) return out;
       // 칸마다 기울기가 조금씩 흔들림 → 비율이 살아 움직임
       var w=P.w.map(function(v){ return Math.max(0.05,v*(0.55+r()*0.9)); }), t=w.reduce(function(a,c){return a+c},0);
