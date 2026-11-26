@@ -1367,6 +1367,16 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
 .fol-empty b{display:block;color:var(--ink);font-size:calc(16px * var(--fs));margin-bottom:6px}
 .fol-empty p{margin:0;line-height:1.6;word-break:keep-all}
 .fol-empty .btn{margin-top:12px}
+.pimg:not(.yt) img,.pgal-track img{cursor:zoom-in}
+.pgal.split .pgal-track img{aspect-ratio:3/4;object-fit:cover;object-position:top;background:#fff}
+#viewer{position:fixed;inset:0;z-index:2147483000;background:#0b0b0c;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#viewer[hidden]{display:none}
+.vw-in{max-width:760px;margin:0 auto;padding:60px 0 40px;display:flex;flex-direction:column;gap:0}
+.vw-in img{display:block;width:100%;height:auto;background:#fff}
+.vw-x{position:fixed;top:12px;right:12px;z-index:2;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.16);color:#fff;display:grid;place-items:center;cursor:pointer}
+.vw-x .i{width:22px;height:22px}
+.vw-n{position:fixed;top:20px;left:16px;color:#fff;font-size:13px;font-weight:700;opacity:.8}
+html.vw-lock,html.vw-lock body{overflow:hidden}
 </style>
 </head>
 <body>
@@ -2183,7 +2193,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     if(p.multiSel&&!done) body='<p class="hint pick-hint">'+ic('check')+'복수 선택 · 마음에 드는 걸 모두 고르세요</p>'+body;
     var lk=p.link||null, media='';
     if(p.gal&&p.gal.length>1&&!p.img){
-      media='<div class="pgal"><div class="pgal-track">'+p.gal.map(function(src,i){return '<img src="'+src+'" alt="'+esc(p.q)+' 사진 '+(i+1)+'" loading="lazy" referrerpolicy="no-referrer">'}).join('')+'</div>'+
+      media='<div class="pgal'+(p.galSplit?' split':'')+'"><div class="pgal-track">'+p.gal.map(function(src,i){return '<img src="'+src+'" alt="'+esc(p.q)+' 사진 '+(i+1)+'" loading="lazy" referrerpolicy="no-referrer">'}).join('')+'</div>'+
         '<span class="pgal-n">1 / '+p.gal.length+'</span><span class="pgal-dots">'+p.gal.map(function(_,i){return '<i'+(i?'':' class="on"')+'></i>'}).join('')+'</span>'+
         '<button type="button" class="pgal-nav l" aria-label="이전 사진">'+ic('chevron-left')+'</button><button type="button" class="pgal-nav r" aria-label="다음 사진">'+ic('chevron-right')+'</button></div>';
     }
@@ -3012,6 +3022,22 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   // 한줄평 (스레드처럼: 프로필·이름·시간, 공감·답글, 답글은 한 단계로 모아 보기)
   var cSort={}, cReply={}, cRepOpen={}, cCompose={}, cEdit={};
   document.addEventListener('click',function(e){ if(e.target.closest('[data-act-login]')){ if(NY&&NY.openLogin) NY.openLogin(); else if(typeof openAuth==='function') openAuth(); } });
+  // 사진 크게 보기: 카드의 사진을 누르면 화면 가득, 여러 장이면 위아래로 이어서 (긴 캡처를 나눈 경우 그대로 읽힘)
+  function openViewer(srcs,start,alt){
+    var v=document.getElementById('viewer'); if(!v){ v=document.createElement('div'); v.id='viewer'; v.setAttribute('role','dialog'); v.setAttribute('aria-modal','true'); v.setAttribute('aria-label','사진 크게 보기'); document.body.appendChild(v); }
+    v.innerHTML='<button type="button" class="vw-x" aria-label="닫기">'+ic('x')+'</button><div class="vw-in">'+srcs.map(function(s,i){ return '<img src="'+esc(s)+'" alt="'+esc(alt||'')+' '+(i+1)+'" referrerpolicy="no-referrer">'; }).join('')+'</div>'+(srcs.length>1?'<span class="vw-n">'+srcs.length+'장</span>':'');
+    v.hidden=false; document.documentElement.classList.add('vw-lock');
+    var imgs=v.querySelectorAll('.vw-in img'); if(start&&imgs[start]) setTimeout(function(){ imgs[start].scrollIntoView({block:'start'}); },30);
+    v.querySelector('.vw-x').focus();
+  }
+  function closeViewer(){ var v=document.getElementById('viewer'); if(v&&!v.hidden){ v.hidden=true; v.innerHTML=''; document.documentElement.classList.remove('vw-lock'); } }
+  document.addEventListener('click',function(e){
+    if(e.target.closest('#viewer')){ if(e.target.closest('.vw-x')||!e.target.closest('img')) closeViewer(); return; }
+    var im=e.target.closest('.pimg:not(.yt) img, .pgal-track img'); if(!im||e.target.closest('.tallbtn')) return;
+    var tr=im.closest('.pgal-track'), list=tr?[].map.call(tr.querySelectorAll('img'),function(x){return x.getAttribute('src')}):[im.getAttribute('src')];
+    openViewer(list,tr?[].indexOf.call(tr.querySelectorAll('img'),im):0,im.alt);
+  });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeViewer(); });
   // 세로로 긴 사진: 위쪽만 보여 주고 '전체 보기'로 펼침 (사진을 억지로 자르거나 늘리지 않음)
   document.addEventListener('load',function(e){
     var im=e.target; if(!im||im.tagName!=='IMG') return; var box=im.parentNode;
@@ -3523,7 +3549,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   var thumbs=document.getElementById('thumbs'), photoIn=document.getElementById('f-photo'), drop=document.getElementById('drop');
   var relayWrap=document.getElementById('f-relay-wrap'), rbuild=document.getElementById('rbuild'), raddq=document.getElementById('raddq'), relayToggle=document.getElementById('relayToggle');
   var optWrap=document.getElementById('f-opt-wrap'), photoWrap=document.getElementById('f-photo-wrap'), mselWrap=document.getElementById('f-msel-wrap'), pwIn=document.getElementById('f-pw');
-  var MAXP=10, MAXPICK=6, photoAsk=false, editId=null, phow=document.getElementById('phow'), upImgs=[], relayMode=false, catTouched=false, linkIn=document.getElementById('f-link'), linkPrev=document.getElementById('linkprev'), linkWrap=document.getElementById('f-link-wrap');
+  var galSplit=false, MAXP=10, MAXPICK=6, photoAsk=false, editId=null, phow=document.getElementById('phow'), upImgs=[], relayMode=false, catTouched=false, linkIn=document.getElementById('f-link'), linkPrev=document.getElementById('linkprev'), linkWrap=document.getElementById('f-link-wrap');
   document.getElementById('drop-ic').innerHTML=ic('image-plus');
   add.innerHTML=ic('plus')+'보기 추가'; raddq.innerHTML=ic('plus')+'질문 추가';
 
@@ -3600,8 +3626,26 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
     if(!files.length){ toast('이미지 파일만 올릴 수 있어요.'); return; }
     if(room<=0){ toast('사진은 최대 '+MAXP+'장까지예요.'); return; }
     if(files.length>room) toast('최대 '+MAXP+'장이라 '+room+'장만 넣었어요.');
-    files=files.slice(0,room); var left=files.length;
-    files.forEach(function(f){ shrink(f,function(d){ if(d) upImgs.push(d); else toast('읽을 수 없는 이미지가 있어요.'); if(--left===0){ photoIn.value=''; drawThumbs(); } }); });
+    files=files.slice(0,room); var left=files.length, splitN=0;
+    files.forEach(function(f){ splitTall(f,function(list){
+      if(!list||!list.length) toast('읽을 수 없는 이미지가 있어요.');
+      else { if(list.length>1){ splitN=list.length; galSplit=true; photoAsk=true; } list.forEach(function(d){ if(upImgs.length<MAXP) upImgs.push(d); }); }
+      if(--left===0){ photoIn.value=''; drawThumbs(); sync(); if(splitN) toast('긴 사진을 '+splitN+'장으로 나눠 넣었어요. 투표에서 사진을 누르면 크게 이어 볼 수 있어요.'); }
+    }); });
+  }
+  // 세로로 아주 긴 캡처(세로가 가로의 2배 넘게)는 위에서부터 최대 4장으로 나눈다. 그 외는 그대로 한 장
+  function splitTall(file,cb){
+    var rd=new FileReader(); rd.onload=function(){ var im=new Image(); im.onload=function(){
+      var w=im.width, h=im.height;
+      if(h<=w*2) return shrink(file,function(d){ cb(d?[d]:[]); });
+      var n=Math.min(4,Math.max(2,Math.ceil(h/(w*1.4)))), ph=Math.ceil(h/n), k=Math.min(1,1080/w), out=[];
+      for(var i=0;i<n;i++){
+        var sh=Math.min(ph,h-i*ph), c=document.createElement('canvas'); c.width=Math.round(w*k); c.height=Math.round(sh*k);
+        var g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(im,0,i*ph,w,sh,0,0,c.width,c.height);
+        out.push(c.toDataURL('image/jpeg',0.8));
+      }
+      cb(out); }; im.onerror=function(){cb([])}; im.src=rd.result; };
+    rd.onerror=function(){cb([])}; rd.readAsDataURL(file);
   }
   // 붙여넣기 버튼: 클립보드의 이미지를 바로 가져옴. 브라우저가 막으면 길게 눌러 붙여넣는 칸을 보여 줌
   var pasteBtn=document.getElementById('pasteBtn'), pasteBox=document.getElementById('pasteBox');
@@ -3893,7 +3937,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
         var dup=dupOf(o); if(dup){ fail('보기 "'+dup+'"이(가) 두 번 들어가 있어요. 하나를 바꾸거나 지워 주세요.'); return; }
         np.type=o.length>2?'multi':'vs';
         if(upImgs.length===1) np.img=upImgs[0];
-        else if(upImgs.length>1) np.gal=upImgs.slice();
+        else if(upImgs.length>1){ np.gal=upImgs.slice(); if(galSplit) np.galSplit=true; }
       }
       if(quizMode){
         if(np.type!=='photo'&&vals.filter(Boolean).length<2){ fail('문제는 보기를 2개 이상 직접 입력해 주세요.'); return; }
@@ -3916,7 +3960,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       location.href='?p='+np.id; return;
     }
     polls.unshift(np); saveMine(); if(NY) NY.submitPoll(np);
-    form.reset(); upImgs=[]; photoAsk=false; relayMode=false; wcReset(); catTouched=false; sync.key=''; ansrow.dataset.a=''; setQuiz(false); ['f-photo-wrap','f-link-wrap','f-cat-wrap','f-story-wrap'].forEach(function(id){openFold(id,false)}); form.classList.remove('st-open'); rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='밸런스'; fillSubs();
+    form.reset(); upImgs=[]; photoAsk=false; galSplit=false; relayMode=false; wcReset(); catTouched=false; sync.key=''; ansrow.dataset.a=''; setQuiz(false); ['f-photo-wrap','f-link-wrap','f-cat-wrap','f-story-wrap'].forEach(function(id){openFold(id,false)}); form.classList.remove('st-open'); rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='밸런스'; fillSubs();
     document.getElementById('f-story-n').textContent='0'; syncVis();
     // 전체 공개는 바로 메인 맨 위로, 링크·비밀방은 주소를 보여 줌
     if(vis==='public'){ document.getElementById('made').hidden=true; pinId=np.id; setFilter('all',''); location.hash='#vote'; window.scrollTo({top:0}); toast('투표를 올렸어요! 메인 맨 위에 있어요.'); }
@@ -3925,7 +3969,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
   function endEdit(silent){
     editId=null; document.getElementById('editbar').hidden=true; document.getElementById('f-submit').textContent='투표 올리기';
     pwIn.placeholder='비밀번호 4자 이상';
-    if(!silent){ form.reset(); upImgs=[]; photoAsk=false; relayMode=false; wcReset(); catTouched=false; sync.key=''; ['f-photo-wrap','f-link-wrap','f-cat-wrap','f-story-wrap'].forEach(function(id){openFold(id,false)}); form.classList.remove('st-open'); rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='밸런스'; fillSubs(); syncVis(); }
+    if(!silent){ form.reset(); upImgs=[]; photoAsk=false; galSplit=false; relayMode=false; wcReset(); catTouched=false; sync.key=''; ['f-photo-wrap','f-link-wrap','f-cat-wrap','f-story-wrap'].forEach(function(id){openFold(id,false)}); form.classList.remove('st-open'); rbuild.innerHTML=''; setOptCount(2); drawThumbs(); catSel.value='밸런스'; fillSubs(); syncVis(); }
   }
   function startEdit(p){
     location.hash='#create';
@@ -3933,7 +3977,7 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
       sync.filling=true;
       form.reset(); document.getElementById('made').hidden=true;
       editId=p.id; qIn.value=p.q; storyIn.value=p.story||''; document.getElementById('f-story-n').textContent=String(storyIn.value.length);
-      upImgs=p.wc?[]:(p.imgs||p.gal||(p.img?[p.img]:[])).slice(); photoAsk=!!p.gal;
+      upImgs=p.wc?[]:(p.imgs||p.gal||(p.img?[p.img]:[])).slice(); photoAsk=!!p.gal; galSplit=!!p.galSplit;
       wcReset(); if(p.wc){ wcMode=true; wcN=p.qs.length*2; wcItems=[]; p.qs.forEach(function(x,k){ x.o.forEach(function(nm,j){ wcItems.push({name:nm,img:(p.imgs&&p.imgs[k*2+j])||''}); }); }); wcDraw(); }
       relayMode=p.type==='relay'&&!p.wc; rbuild.innerHTML='';
       if(relayMode){ p.qs.forEach(function(x,i){ var b=rblock(i); rbuild.appendChild(b); b.querySelector('.rqi').value=x.q; var ro=b.querySelectorAll('.roi'); x.o.forEach(function(o,k){ if(ro[k]) ro[k].value=o; }); b.querySelector('.rans').dataset.a=typeof x.a==='number'?x.a:''; }); renumber(); }

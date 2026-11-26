@@ -24,7 +24,7 @@ async function moveImages(id, data) {
   if (data.img) data.img = await toStorage(id, data.img, 'img');
   for (const k of ['gal', 'imgs']) if (Array.isArray(data[k])) data[k] = await Promise.all(data[k].map((v, i) => toStorage(id, v, `${k}${i}`)));
 }
-const KEEP = ['id', 'cat', 'sub', 'q', 'o', 'type', 'qs', 'a', 'n', 'vis', 'comments', 'story', 'img', 'gal', 'imgs', 'link', 'multiSel', 'pw', 'created', 'wc'];
+const KEEP = ['id', 'cat', 'sub', 'q', 'o', 'type', 'qs', 'a', 'n', 'vis', 'comments', 'story', 'img', 'gal', 'imgs', 'link', 'multiSel', 'pw', 'created', 'wc', 'galSplit'];
 // 만든 사람: 사용자 ID 대신 되돌릴 수 없는 짧은 키(ck)와, 닉네임 공개에 동의한 경우의 이름(by)만 내보낸다 (팔로우용)
 export const ckOf = uid => uid ? crypto.createHash('sha256').update('ny-ck:' + uid).digest('hex').slice(0, 12) : undefined;
 const out = (r, names = {}) => ({ ...r.data, id: r.id, vis: r.vis, status: r.status, created: Date.parse(r.created_at), ck: ckOf(r.user_id), by: names[r.user_id] || undefined });
