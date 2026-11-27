@@ -4276,22 +4276,54 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
       if(mb) mb.onclick=function(){
         var w=document.createElement('div');
         w.innerHTML='<form class="pf" id="nyMail" novalidate><div class="field full"><label for="nyMailIn">이메일</label><input id="nyMailIn" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required></div>'+
-          '<p class="msg full" id="nyMailMsg" role="status"></p><button class="btn dark full" type="submit">로그인 링크 받기</button><p class="full" style="font-size:calc(12px * var(--fs))">비밀번호 없이, 메일로 받은 링크를 누르면 로그인돼요.</p></form>';
+          '<p class="msg full" id="nyMailMsg" role="status"></p><button class="btn dark full" type="submit">로그인 코드 받기</button><p class="full" style="font-size:calc(12px * var(--fs))">비밀번호 없이, 메일로 받은 숫자 코드를 넣거나 메일의 버튼을 누르면 로그인돼요.</p></form>';
         mb.replaceWith(w.firstChild); var f=document.getElementById('nyMail'); document.getElementById('nyMailIn').focus();
         f.addEventListener('submit',function(e){
-          e.preventDefault();
+          e.preventDefault(); if(f.dataset.step==='code') return;
           var em=document.getElementById('nyMailIn').value.trim(), m=document.getElementById('nyMailMsg'), b=f.querySelector('button');
           if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){ m.className='msg err full'; m.textContent='이메일 주소를 확인해 주세요.'; return; }
           b.disabled=true; m.className='msg full'; m.textContent='보내는 중…';
-          api.sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:location.origin+location.pathname+location.search}}).then(function(r){
+          var back=new URL(location.href); back.searchParams.set('auth','email'); back.hash='';
+          api.sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:back.toString()}}).then(function(r){
             b.disabled=false;
-            if(r.error){ m.className='msg err full'; m.textContent=/rate|seconds/i.test(r.error.message)?'잠시 후 다시 시도해 주세요.':'메일을 보내지 못했어요. 잠시 후 다시 시도해 주세요.'; return; }
-            m.className='msg ok full'; m.textContent=em+' 으로 로그인 링크를 보냈어요. 메일함(스팸함 포함)을 확인해 주세요.';
+            if(r.error){ m.className='msg err full'; m.textContent=/rate|seconds/i.test(r.error.message)?'잠시 후 다시 시도해 주세요. (1분에 한 번 보낼 수 있어요)':'메일을 보내지 못했어요. 잠시 후 다시 시도해 주세요.'; return; }
+            // 코드 입력 칸으로 바꿈
+            f.dataset.step='code'; f.innerHTML='<p class="full" style="margin:0 0 4px"><b>'+esc(em)+'</b> 으로 메일을 보냈어요.<br><small>스팸함도 확인해 주세요.</small></p>'+
+              '<div class="field full"><label for="nyCode">메일의 숫자 코드</label><input id="nyCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="8" placeholder="숫자 6자리" style="font-size:22px;letter-spacing:6px;text-align:center"></div>'+
+              '<p class="msg full" id="nyCodeMsg" role="status"></p><button class="btn dark full" type="submit">로그인</button>'+
+              '<button type="button" class="lg-mail-s" id="nyResend">코드 다시 받기</button>';
+            var ci=document.getElementById('nyCode'); ci.focus();
+            ci.addEventListener('input',function(){ ci.value=ci.value.replace(/\D/g,''); if(ci.value.length===6) f.requestSubmit?f.requestSubmit():null; });
+            document.getElementById('nyResend').onclick=function(){ api.sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:back.toString()}}).then(function(r2){ var cm=document.getElementById('nyCodeMsg'); cm.className='msg '+(r2.error?'err':'ok')+' full'; cm.textContent=r2.error?'잠시 후 다시 시도해 주세요. (1분에 한 번)':'새 코드를 보냈어요.'; }); };
+            f.onsubmit=function(ev){
+              ev.preventDefault(); ev.stopImmediatePropagation();
+              var code=ci.value.trim(), cm=document.getElementById('nyCodeMsg'), cb=f.querySelector('button[type=submit]');
+              if(!/^\d{6,8}$/.test(code)){ cm.className='msg err full'; cm.textContent='메일에 있는 숫자 코드를 넣어 주세요.'; return; }
+              cb.disabled=true; cm.className='msg full'; cm.textContent='확인 중…';
+              api.sb.auth.verifyOtp({email:em,token:code,type:'email'}).then(function(r3){
+                cb.disabled=false;
+                if(r3.error){ cm.className='msg err full'; cm.textContent='코드가 맞지 않거나 만료됐어요. 다시 확인하거나 새 코드를 받아 주세요.'; return; }
+                try{ localStorage.setItem('ny_last_via','email'); }catch(e){} closeDialog(); toast('로그인했어요.');
+              });
+            };
           });
         });
       };
       authBody.querySelectorAll('[data-ny-sso]').forEach(function(b){ b.onclick=function(){ api.oauth(b.dataset.nySso); }; });
     };
+    function mailConfirm(th,type){
+      var clean=function(){ var cu=new URL(location.href); ['token_hash','type','auth'].forEach(function(k){cu.searchParams.delete(k)}); history.replaceState(null,'',cu.pathname+cu.search+cu.hash); };
+      authBody.innerHTML='<div><div class="lg-brand"><span class="lg-logo">'+ic('circle-check')+'</span>네아니요</div><h2 id="authTitle">로그인을 마무리할게요</h2><p class="lg-sub2">아래 버튼을 누르면 로그인돼요.</p>'+
+        '<div class="lg-big"><button type="button" class="kakao" id="mcGo" style="background:var(--ink);border-color:var(--ink);color:var(--bg)">로그인하기</button></div><p class="msg full" id="mcMsg" role="status"></p></div>';
+      openDialog(auth);
+      document.getElementById('mcGo').onclick=function(){
+        var b=this, m=document.getElementById('mcMsg'); b.disabled=true; b.textContent='확인 중…';
+        api.sb.auth.verifyOtp({token_hash:th,type:type}).then(function(r){
+          if(r.error){ b.disabled=false; b.textContent='로그인하기'; m.className='msg err full'; m.textContent='링크가 만료됐거나 이미 사용됐어요. 로그인 창에서 코드를 다시 받아 주세요.'; return; }
+          try{ localStorage.setItem('ny_last_via','email'); }catch(e){} clean(); closeDialog(); toast('로그인했어요.');
+        });
+      };
+    }
     api.oauth=function(pv){ try{ localStorage.setItem('ny_last_via',pv); }catch(e){} api.sb.auth.signInWithOAuth({provider:pv==='naver'?'custom:naver':pv,options:{redirectTo:location.origin+location.pathname+location.search}}); };
     api.signOut=function(){ if(api.sb) api.sb.auth.signOut(); api.token=null; api.uid=null; };
     // 이번 방문 경로, 없으면 30일 안에 처음 들어온 경로
@@ -4481,6 +4513,8 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
           else if(session&&ev==='TOKEN_REFRESHED') api.token=session.access_token;
           else if(ev==='SIGNED_OUT'||(ev==='INITIAL_SESSION'&&!session)){ api.token=null; api.uid=null; if(user){ user=null; saveUser(); authUI(); if(started) reRenderKeep(); } }
         });
+        // 메일의 '로그인하기' 버튼(token_hash): 메일 회사가 미리 열어도 쓰이지 않게, 화면에서 한 번 더 눌러야 로그인
+        if(params.get('token_hash')) mailConfirm(params.get('token_hash'),params.get('type')||'email');
       }).catch(function(){ toast('로그인 기능을 불러오지 못했어요. 새로고침해 주세요.'); });
     }).catch(function(){ api.on=false; });
     api.ready=ready; api.call=call;
