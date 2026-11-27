@@ -1309,7 +1309,7 @@ a.mine-it:hover{border-color:var(--muted)}
 @keyframes justIn{from{transform:translateY(-8px);opacity:.3}to{transform:none;opacity:1}}
 
 /* 오픈 전 BETA 표시 */
-.logo .beta{margin-left:6px;padding:2px 6px;border-radius:6px;background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--muted);font-size:10.5px;font-weight:800;letter-spacing:.5px;vertical-align:3px;cursor:help}
+.logo .beta{margin-left:6px;padding:2px 6px;border-radius:6px;background:color-mix(in srgb,var(--a) 12%,transparent);color:var(--a);font-size:10.5px;font-weight:800;letter-spacing:.5px;vertical-align:3px;cursor:help}
 .no-beta .logo .beta{display:none}
 /* 투표 만들기 말풍선: 가끔 나왔다 사라짐 */
 .mk-tip{position:fixed;z-index:17;right:calc(max(16px,env(safe-area-inset-right,0px)) + 64px);bottom:calc(31px + env(safe-area-inset-bottom,0px));max-width:min(240px,calc(100vw - 96px));padding:9px 14px;border:0;border-radius:14px;background:var(--ink);color:var(--surface);font:inherit;font-size:calc(13.5px * var(--fs));font-weight:600;line-height:1.35;text-align:left;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.18);opacity:0;transform:translateX(6px) scale(.96);transform-origin:right center;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
@@ -1406,7 +1406,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
 <header class="hd gut">
   <div class="hd-in">
     <div class="pg-hd"><button class="pg-back" id="pgBack" type="button" aria-label="뒤로"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><h1 class="pg-ttl">투표 만들기</h1></div>
-    <a class="logo" href="./" aria-label="네아니요 홈"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><clipPath id="lg"><rect width="32" height="32" rx="9"/></clipPath></defs><rect width="32" height="32" rx="9" fill="var(--ink)"/><circle cx="9.5" cy="16" r="4.2" fill="none" stroke="var(--surface)" stroke-width="2.6"/><path d="M19.5 12l7 8M26.5 12l-7 8" stroke="var(--surface)" stroke-width="2.6" stroke-linecap="round"/></svg><span class="word">네아니요</span><span class="beta" title="정식 오픈 전 시험 운영 중이에요. 참여 수에는 시험용 예시 참여가 포함돼 있어요.">BETA</span></a>
+    <a class="logo" href="./" aria-label="네아니요 홈"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><clipPath id="lg"><rect width="32" height="32" rx="9"/></clipPath></defs><g clip-path="url(#lg)"><rect width="16" height="32" fill="var(--a)"/><rect x="16" width="16" height="32" fill="var(--b)"/></g><circle cx="9" cy="16" r="4.2" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M20 12l7 8M27 12l-7 8" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg><span class="word">네아니요</span><span class="beta" title="정식 오픈 전 시험 운영 중이에요. 참여 수에는 시험용 예시 참여가 포함돼 있어요.">BETA</span></a>
     <nav class="tabs" aria-label="메뉴">
       <a href="./#vote" data-v="vote">투표</a>
       <a href="./#ranking" data-v="ranking">랭킹</a>
@@ -3093,7 +3093,16 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     openViewer(imgs,0,(box.querySelector('img')||{}).alt||'');
   });
   // 쓰던 한줄평 보관: 새 글이 들어와 화면을 다시 그려도 쓰던 글과 커서가 남게
-  var cDraft={};
+  // 쓰던 한줄평은 이 기기에 잠깐(3시간) 저장: 로그인하러 다녀와도(페이지가 새로 열려도) 그대로 되살린다
+  var cDraft={}, CDK='ny-cdraft', cResume=null;
+  try{ var cd0=JSON.parse(localStorage.getItem(CDK)||'null');
+    if(cd0&&cd0.d&&Date.now()-cd0.at<3*36e5){ cDraft=cd0.d; Object.keys(cDraft).forEach(function(k){ var m=k.match(/^(.+):top$/); if(m&&cDraft[k]) cCompose[m[1]]=true; });
+      if(cd0.poll&&cd0.login&&Date.now()-cd0.at<15*6e4) cResume=cd0.poll; } }catch(e){}
+  function saveDraft(poll,login){ try{
+    var has=Object.keys(cDraft).some(function(k){return cDraft[k]});
+    if(!has) return localStorage.removeItem(CDK);
+    localStorage.setItem(CDK,JSON.stringify({d:cDraft,at:Date.now(),poll:poll||'',login:!!login}));
+  }catch(e){} }
   // 팔로우: 내가 팔로우하는 출제자 키(ck) — 서버에서 받아 오고, 이 기기에도 기억
   var FOL={keys:{},me:'',followers:0}; try{ var fs0=JSON.parse(localStorage.getItem('ny-follow')||'null'); if(fs0) FOL=fs0; }catch(e){}
   function saveFol(){ try{ localStorage.setItem('ny-follow',JSON.stringify(FOL)); }catch(e){} }
@@ -3167,7 +3176,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     var tabs=tops.length>1?'<div class="tsort" role="group" aria-label="정렬"><button type="button" data-act="csort" data-s="top" aria-pressed="'+(srt==='top')+'">인기순</button><button type="button" data-act="csort" data-s="new" aria-pressed="'+(srt==='new')+'">최신순</button></div>':'';
     var moreBtn=total>2&&!shareId&&!embedded?'<button type="button" class="cmore" data-act="cmore" aria-expanded="'+!!open+'">'+(open?'접기':'한줄평 '+total+'개 모두 보기')+'</button>':'';
     var form=!comp?'':user?'<form class="cform tform" data-cform="'+p.id+'" novalidate>'+cAv({mine:true,id:'me'+(user.id||'')})+'<label class="sr" for="c-'+p.id+'" hidden>한줄평</label><textarea class="cin" id="c-'+p.id+'" rows="1" maxlength="'+MOD.limits.maxLength+'" placeholder="생각을 남겨 보세요">'+esc(cDr(p.id+':top'))+'</textarea><button class="tpost" type="submit">게시</button></form><p class="cmsg" data-cmsg></p><p class="tnote">내 한줄평에는 고른 쪽(<b>'+esc(p.o[myIdx(p)]||'')+'</b>)과 '+(user.nick&&user.rankPublic?'닉네임 <b>'+esc(user.nick)+'</b>':'<b>익명 투표러</b>')+'(으)로 보여요.</p>'
-      :'<button class="btn" data-act="login">'+ic('log-in')+'로그인하고 한줄평 남기기</button>';
+      :'<form class="cform tform" data-cform="'+p.id+'" novalidate>'+cAv({id:'guest'})+'<label class="sr" for="c-'+p.id+'" hidden>한줄평</label><textarea class="cin" id="c-'+p.id+'" rows="1" maxlength="'+MOD.limits.maxLength+'" placeholder="생각을 남겨 보세요">'+esc(cDr(p.id+':top'))+'</textarea><button class="tpost" type="submit">게시</button></form><p class="cmsg" data-cmsg></p><p class="tnote">게시하려면 로그인이 필요해요. 쓴 글은 로그인하고 돌아와도 그대로 있어요.</p>';
     return '<div class="cmts">'+head.replace('</h4>',tabs+'</h4>')+form+
       '<div class="tlist">'+ordered.map(function(c){ return cOne(p,c,!!bestIds[c.id],reps[c.id]||[]); }).join('')+'</div>'+moreBtn+'</div>'+aiH;
   }
@@ -3186,7 +3195,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   }
   var cmtOpen={};
   // 한줄평 입력칸: 글이 길어지면 늘어나고, Enter로 게시 (Shift+Enter는 줄바꿈, 한글 조합 중에는 무시)
-  document.addEventListener('input',function(e){ var t=e.target; if(t.classList&&t.classList.contains('cin')){ var ff=t.closest('form'); if(ff&&ff.dataset.cform) cDraft[cKey(ff)]=t.value; t.style.height='auto'; t.style.height=Math.min(t.scrollHeight,160)+'px'; } });
+  document.addEventListener('input',function(e){ var t=e.target; if(t.classList&&t.classList.contains('cin')){ var ff=t.closest('form'); if(ff&&ff.dataset.cform){ cDraft[cKey(ff)]=t.value; saveDraft(ff.dataset.cform); } t.style.height='auto'; t.style.height=Math.min(t.scrollHeight,160)+'px'; } });
   document.addEventListener('keydown',function(e){ var t=e.target; if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&e.keyCode!==229&&t.classList&&t.classList.contains('cin')){ e.preventDefault(); var f=t.closest('form'); if(f&&t.value.trim()) (f.requestSubmit?f.requestSubmit():f.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}))); } });
   function rerender(art,p){
     return keepFocus(function(){ var tmp=document.createElement('div'); tmp.innerHTML=card(p); var fresh=tmp.firstChild; art.replaceWith(fresh); resize(); return fresh; });
@@ -3389,7 +3398,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
         return; }
       if(act==='cmtgo'){
         if(!art.classList.contains('done')){ toast('투표하면 한줄평을 보고 남길 수 있어요.'); return; }
-        if(!user){ if(NY&&NY.openLogin) NY.openLogin(); else toast('로그인하면 한줄평을 남길 수 있어요.'); return; }
+        // 로그인 전에도 먼저 써 볼 수 있게: 게시를 누를 때 로그인 (쓴 글은 저장해 둠)
         cCompose[p.id]=!cCompose[p.id]; cReply[p.id]=null;
         var fc=rerender(art,p), ci=fc.querySelector('.cmts > form .cin');
         if(ci){ ci.focus({preventScroll:true}); ci.scrollIntoView({block:'center',behavior:'smooth'}); }
@@ -3527,11 +3536,17 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
       var ei=f.querySelector('.cin'), et=ei.value.trim(), ec=getC(p).filter(function(x){return x.id===f.dataset.eid})[0];
       var em=f.nextElementSibling&&f.nextElementSibling.matches('[data-cmsg]')?f.nextElementSibling:null; if(!em){ em=document.createElement('p'); em.className='cmsg'; f.after(em); }
       if(!ec) return; var ejd=modJudge(et,MOD,[]); if(ejd.action==='block'){ em.textContent=ejd.message; return; }
-      var ek=cKey(f); delete cDraft[ek]; ei.blur();
+      var ek=cKey(f); delete cDraft[ek]; saveDraft(); ei.blur();
       if(et===ec.text){ cEdit[ec.id]=false; rerender(art,p); return; }
       var old=ec.text; ec.text=et; ec.ed=1; cEdit[ec.id]=false; saveC(); rerender(art,p);
       if(NY&&NY.commentEdit) NY.commentEdit(ec,et,function(ok,msg){ if(!ok){ cDraft[ek]=et; ec.text=old; cEdit[ec.id]=true; saveC(); var a2=document.querySelector('article.poll[data-id="'+p.id+'"]'); if(a2) rerender(a2,p); toast(msg||'고치지 못했어요. 잠시 후 다시 시도해 주세요.'); } else if(msg) toast(msg); });
       return;
+    }
+    if(f.dataset.cform&&!user){
+      var gi=f.querySelector('.cin'); if(!gi||!gi.value.trim()) return;
+      cDraft[cKey(f)]=gi.value; saveDraft(f.dataset.cform,true);
+      if(NY&&NY.openLogin) return NY.openLogin();
+      return openAuth();
     }
     if(f.dataset.cform){
       var inp=f.querySelector('.cin'), t=inp.value.trim(), m=f.nextElementSibling&&f.nextElementSibling.matches('[data-cmsg]')?f.nextElementSibling:art.querySelector('[data-cmsg]'), pid=f.dataset.pid||null;
@@ -3539,7 +3554,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
       var recent=[]; Object.keys(cmts).forEach(function(k){ (cmts[k]||[]).forEach(function(c){ if(c.mine&&c.ts&&Date.now()-c.ts<600000) recent.push(c); }); });
       var jd=modJudge(t,MOD,recent);
       if(jd.action==='block'){ m.textContent=jd.message; return; }
-      delete cDraft[cKey(f)]; inp.blur();
+      delete cDraft[cKey(f)]; saveDraft(); inp.blur();
       if(NY&&NY.on&&NY.isReal(p.id)) return NY.postComment(p,t,art,m,pid);
       var nc={id:p.id+'-'+Date.now().toString(36),o:myIdx(p),text:t,likes:0,at:'방금',mine:true,ts:Date.now(),fresh:true};
       if(pid){ nc.pid=pid; cReply[p.id]=null; cRepOpen[pid]=1; } else cCompose[p.id]=false;
@@ -4136,6 +4151,16 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     if(sv){ recOrder=null; if(filter==='all'&&!searchQ&&document.body.classList.contains('v-vote')){ feedShown=PAGE; render(); window.scrollTo({top:0,behavior:'smooth'}); } }
   });
 
+  function resumeDraft(){
+    if(!cResume) return; var id=cResume, tries=0;
+    (function tick(){
+      tries++; var a=user&&document.querySelector('article.poll[data-id="'+id+'"]'), ta=a&&a.querySelector('textarea.cin');
+      if(ta){ cResume=null; saveDraft(id); a.scrollIntoView({block:'center'}); try{ ta.focus({preventScroll:true}); ta.setSelectionRange(ta.value.length,ta.value.length); }catch(e){} toast('쓰던 한줄평을 되살렸어요. 게시를 눌러 주세요.'); return; }
+      if(user&&a&&!ta){ var pp=polls.find(function(x){return x.id===id}); if(pp){ cCompose[id]=true; rerender(a,pp); } }
+      if(tries<40) setTimeout(tick,500); else if(user){ cResume=null; toast('쓰던 한줄평은 그 투표의 한줄평 칸에 남아 있어요.'); }
+    })();
+  }
+  setTimeout(resumeDraft,800);
   function init(){
   if(exists(params.get('report'))){ renderReport(polls.find(function(x){return x.id===params.get('report')})); return; }
   if(exists(params.get('embed'))){
