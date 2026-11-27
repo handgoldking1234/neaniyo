@@ -24,6 +24,27 @@ async function ownerOf(poll) {
 
 export default handler(async (req, res) => {
   const user = await authUser(req);
+  // GET /api/comments?mine=1 → 내 한줄평 현황(내가 쓴 글 · 받은 공감·답글)과 내가 만든 투표에 달린 한줄평 수
+  if (req.method === 'GET' && req.query.mine) {
+    if (!user) return fail(res, 401, 'login');
+    const [mineC, myPolls] = await Promise.all([
+      db(`ny_comments?select=id,poll_id,parent_id,side,body,status,likes,created_at,edited_at&user_id=eq.${user.id}&status=neq.hidden&order=created_at.desc&limit=200`),
+      db(`ny_user_polls?select=id&user_id=eq.${user.id}&limit=300`)
+    ]);
+    const myIds = mineC.map(c => c.id), pollIds = myPolls.map(x => x.id);
+    const [reps, onMade] = await Promise.all([
+      myIds.length ? db(`ny_comments?select=parent_id,created_at,user_id&parent_id=in.(${myIds.join(',')})&status=eq.visible&limit=2000`) : [],
+      pollIds.length ? db(`ny_comments?select=poll_id,created_at,user_id&poll_id=in.(${pollIds.join(',')})&status=eq.visible&limit=5000`) : []
+    ]);
+    const rc = {}, rl = {};
+    reps.forEach(r => { if (r.user_id === user.id) return; rc[r.parent_id] = (rc[r.parent_id] || 0) + 1; const t = Date.parse(r.created_at); if (!rl[r.parent_id] || t > rl[r.parent_id]) rl[r.parent_id] = t; });
+    const made = {};
+    onMade.forEach(c => { if (c.user_id === user.id) return; const m = made[c.poll_id] || (made[c.poll_id] = { n: 0, last: 0 }); m.n++; const t = Date.parse(c.created_at); if (t > m.last) m.last = t; });
+    return send(res, 200, {
+      comments: mineC.map(c => ({ id: c.id, poll: c.poll_id, pid: c.parent_id || undefined, o: c.side, text: c.body, likes: c.likes, ts: Date.parse(c.created_at), review: c.status === 'review' || undefined, ed: c.edited_at ? 1 : undefined, replies: rc[c.id] || 0, lastReply: rl[c.id] || 0 })),
+      made
+    });
+  }
   if (req.method === 'GET') {
     const poll = String(req.query.poll || '');
     if (!/^[\w-]{1,40}$/.test(poll)) return fail(res, 400, 'poll');

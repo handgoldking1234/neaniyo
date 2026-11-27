@@ -1381,6 +1381,9 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
 html.vw-lock,html.vw-lock body{overflow:hidden}
 #make.edit-locked #f-opt-wrap,#make.edit-locked #f-relay-wrap,#make.edit-locked #f-wc-wrap,#make.edit-locked .mtoggles,#make.edit-locked #modeSeg,#make.edit-locked #f-photo-wrap,#make.edit-locked [data-fold="f-photo-wrap"],#make.edit-locked #f-msel-wrap,#make.edit-locked #phow{display:none!important}
 .edtag{border:0;background:none;padding:0 2px;color:var(--muted);font-size:calc(11.5px * var(--fs));text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer}
+.mi-new{display:inline-block;background:#ff3040;color:#fff;border-radius:999px;padding:1px 7px;font-size:calc(11px * var(--fs));font-weight:700;line-height:1.5;vertical-align:1px}
+.mi-q2{display:block;font-size:calc(12.5px * var(--fs));color:var(--muted);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mine-it .mi-c .i{width:14px;height:14px;vertical-align:-2px;margin-right:2px}
 </style>
 </head>
 <body>
@@ -1432,6 +1435,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
         <button class="chip" data-m="maj" aria-pressed="false">다수 편</button>
         <button class="chip" data-m="min" aria-pressed="false">소수 편</button>
         <button class="chip" data-m="made" aria-pressed="false">내가 만든 것</button>
+        <button class="chip" data-m="cmt" aria-pressed="false">내 한줄평</button>
       </div>
       <ul class="mine-list" id="mineList"></ul>
       <button type="button" class="btn morebtn" id="mineMore" hidden></button>
@@ -4149,8 +4153,16 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     var ps=pct(p), mx=Math.max.apply(null,ps); if(!sum(p.v)) return null;
     return {maj:ps[c]>=mx, pc:ps[c]};
   }
+  // 한줄평 현황: 내가 쓴 한줄평(받은 공감·답글)과 내가 만든 투표에 달린 한줄평 — 로그인하면 서버에서
+  var MYC={comments:[],made:{},at:0,busy:false}, MYC_SEEN=0; try{ MYC_SEEN=+localStorage.getItem('ny-myc-seen')||0; }catch(e){}
+  function loadMyC(force){
+    if(!(NY&&NY.uid&&NY.call)||MYC.busy||(!force&&Date.now()-MYC.at<60000)) return;
+    MYC.busy=true;
+    NY.call('comments?mine=1').then(function(j){ MYC.busy=false; if(!j||!Array.isArray(j.comments)) return; MYC.comments=j.comments; MYC.made=j.made||{}; MYC.at=Date.now(); if(!document.getElementById('v-mine').hidden) renderMine(); }).catch(function(){ MYC.busy=false; });
+  }
+  function mycNew(){ var n=0; MYC.comments.forEach(function(c){ if(c.lastReply>MYC_SEEN) n++; }); Object.keys(MYC.made).forEach(function(k){ if(MYC.made[k].last>MYC_SEEN) n++; }); return n; }
   function renderMine(){
-    logVotes();
+    logVotes(); loadMyC();
     var list=document.getElementById('mineList'), sumEl=document.getElementById('mineSum'), note=document.getElementById('mineNote'), more=document.getElementById('mineMore');
     var ids=Object.keys(voted).sort(function(a,b){ return ((vlog[b]&&vlog[b].t)||0)-((vlog[a]&&vlog[a].t)||0); });
     var rows=ids.map(function(id){ var p=polls.find(function(x){return x.id===id}); return {id:id,p:p,c:voted[id],s:sideOf(p,voted[id]),snap:vlog[id]||{}}; });
@@ -4158,12 +4170,25 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     var made=polls.filter(function(p){return p.own});
     sumEl.innerHTML='<span><b>'+fmt(rows.length)+'</b>개 투표</span>'+(known.length?'<span>다수 편 <b>'+maj+'</b> · 소수 편 <b>'+(known.length-maj)+'</b></span><span>다수와 같은 선택 <b>'+Math.round(maj*100/known.length)+'%</b></span>':'')+(made.length?'<span>만든 투표 <b>'+made.length+'</b></span>':'');
     [].forEach.call(document.querySelectorAll('#v-mine [data-m]'),function(b){ b.setAttribute('aria-pressed',String(b.dataset.m===mineTab)); });
+    var cchip=document.querySelector('#v-mine [data-m="cmt"]'), nn=mycNew(); if(cchip) cchip.innerHTML='내 한줄평'+(nn&&mineTab!=='cmt'?' <span class="mi-new">'+nn+'</span>':'');
     var html='', items;
-    if(mineTab==='made'){
+    if(mineTab==='cmt'){
+      items=(NY&&NY.uid)?MYC.comments:[];
+      html=items.slice(0,mineShown).map(function(c){
+        var p=polls.find(function(x){return x.id===c.poll}), side=p&&p.o[c.o]!=null?'<span class="mi-side" style="background:'+OPC[c.o%OPC.length]+';color:#fff">'+esc(p.o[c.o])+'</span>':'';
+        var fresh=c.lastReply>MYC_SEEN;
+        return '<li><a class="mine-it" href="?p='+encodeURIComponent(c.poll)+'"><span class="mi-top">'+(p?catIc(p.cat)+'<span>'+catLabel(p.cat)+'</span>':'')+'<span class="mi-t">'+ago((Date.now()-c.ts)/36e5)+(c.pid?' 답글':' 한줄평')+'</span></span>'+
+          '<span class="mi-q2">'+esc(p?p.q:'(목록에서 내려간 투표)')+'</span><b class="mi-q">'+esc(c.text)+'</b>'+
+          '<span class="mi-row">'+side+'<span class="mi-c">'+ic('heart')+fmt(c.likes||0)+'</span><span class="mi-c">'+ic('message-circle')+'답글 '+fmt(c.replies||0)+'</span>'+(fresh?'<span class="mi-new">새 답글</span>':'')+(c.review?'<span class="mi-b">검토 중</span>':'')+(c.ed?'<span class="mi-b">수정됨</span>':'')+'</span></a></li>';
+      }).join('');
+      if(!(NY&&NY.uid)) html='<li class="mine-empty">로그인하면 내가 쓴 한줄평과 받은 공감·답글을 모아 볼 수 있어요.<button type="button" class="btn dark" id="mineLogin2">로그인</button></li>';
+      else if(!items.length) html='<li class="mine-empty">'+(MYC.at?'아직 쓴 한줄평이 없어요. 투표하고 생각을 남겨 보세요.':'불러오는 중…')+'</li>';
+      if(NY&&NY.uid&&MYC.at){ setTimeout(function(){ MYC_SEEN=Date.now(); try{ localStorage.setItem('ny-myc-seen',String(MYC_SEEN)); }catch(e){} },1500); }
+    }else if(mineTab==='made'){
       items=made;
       html=items.slice(0,mineShown).map(function(p){
         var v=p.type==='relay'?(p.n||0):voters(p);
-        return '<li><a class="mine-it" href="?p='+p.id+'"><span class="mi-top">'+catIc(p.cat)+'<span>'+catLabel(p.cat)+'</span><span class="mi-t">'+ago(p.t||0)+'</span></span><b class="mi-q">'+esc(p.q)+'</b><span class="mi-row"><span class="mi-c">참여 '+fmt(v)+'명</span>'+(p.vis==='secret'?'<span class="mi-b">비밀방</span>':p.vis==='link'?'<span class="mi-b">링크 공유</span>':'')+'</span></a></li>';
+        return '<li><a class="mine-it" href="?p='+p.id+'"><span class="mi-top">'+catIc(p.cat)+'<span>'+catLabel(p.cat)+'</span><span class="mi-t">'+ago(p.t||0)+'</span></span><b class="mi-q">'+esc(p.q)+'</b><span class="mi-row"><span class="mi-c">참여 '+fmt(v)+'명</span>'+(MYC.made[p.id]?'<span class="mi-c">'+ic('message-circle')+'한줄평 '+fmt(MYC.made[p.id].n)+'</span>'+(MYC.made[p.id].last>MYC_SEEN?'<span class="mi-new">새 글</span>':''):'')+(p.vis==='secret'?'<span class="mi-b">비밀방</span>':p.vis==='link'?'<span class="mi-b">링크 공유</span>':'')+'</span></a></li>';
       }).join('');
       if(!items.length) html='<li class="mine-empty">아직 만든 투표가 없어요.<a class="btn dark" href="./#create">'+ic('plus')+'투표 만들기</a></li>';
     }else{
@@ -4181,6 +4206,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     more.hidden=items.length<=mineShown; if(!more.hidden) more.innerHTML=ic('chevron-down')+'더보기 ('+Math.min(mineShown,items.length)+' / '+items.length+')';
     note.innerHTML=(NY&&NY.uid)?'로그인한 계정의 투표 기록이에요. 다른 기기에서 한 투표도 함께 보여요.':'지금은 이 브라우저에서 한 투표만 보여요. <button type="button" class="linkbtn" id="mineLogin">로그인</button>하면 다른 기기에서도 내 투표 내역을 볼 수 있어요.';
     var lb=document.getElementById('mineLogin'); if(lb) lb.onclick=function(){ loginBtn.click(); };
+    var lb2=document.getElementById('mineLogin2'); if(lb2) lb2.onclick=function(){ loginBtn.click(); };
   }
   document.querySelector('#v-mine .chips').addEventListener('click',function(e){ var b=e.target.closest('[data-m]'); if(!b) return; mineTab=b.dataset.m; mineShown=20; renderMine(); });
   document.getElementById('mineMore').onclick=function(){ mineShown+=20; renderMine(); };
