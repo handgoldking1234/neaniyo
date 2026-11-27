@@ -270,8 +270,8 @@ var REPO='handgoldking1234/neaniyo', FEED_BRANCH='feed', PATH='data/polls.json';
 var RAW_FEED='https://raw.githubusercontent.com/'+REPO+'/'+FEED_BRANCH+'/'+PATH;
 var RAW_MAIN='https://raw.githubusercontent.com/'+REPO+'/main/'+PATH;
 var TKEY='neaniyo-admin-token';
-var CATS={"연예":["아이돌·K팝","드라마·영화","예능·유튜버","스포츠","게임"],"사회":["직장·노동","생활·안전","정치·정책","환경·날씨"],"경제":["주식·코인","부동산","재테크·소비","쇼핑·패션","AI·테크"],"라이프":["연애·결혼","육아·가족","음식·맛집","여행·여가","건강·운동"],"사연":["연애","가족","직장","친구·인간관계","돈"],"교육":["교육 이슈","유아","초등","중등","고등"],"퀴즈":["초등","중·고등","수능","상식"],"밸런스":["밸런스게임","취향"]};
-var TARGET={"연예":36,"사회":42,"라이프":12,"밸런스":4,"사연":6};
+var CATS={"연예":["음악·공연","드라마·영화","예능·유튜버","스포츠","게임"],"사회":["직장·노동","생활·안전","정치·정책","경제·재테크","부동산","IT·테크"],"라이프":["연애·결혼","육아·가족","음식·맛집","여행·여가","건강·운동"],"사연":["연애","가족","직장","친구·인간관계","돈"],"교육":["교육 이슈","유아","초등","중등","고등"],"밸런스":["밸런스게임","취향"]};
+var TARGET={"연예":24,"사회":24,"라이프":16,"사연":12,"교육":12,"밸런스":12};
 var VIEWS=[
   {id:'dash',name:'대시보드',grp:'운영'},
   {id:'content',name:'콘텐츠 관리',grp:'운영'},
@@ -774,7 +774,7 @@ var dlg=$('#dlg'),editing=null;
 function find(id){var L=all();for(var i=0;i<L.length;i++)if(L[i].p.id===id)return L[i];return null}
 function openEdit(id,newAt){
   var x=id?find(id):null,ro=x&&x.src==='main';
-  var p=x?JSON.parse(JSON.stringify(x.p)):{id:idFor(newAt),at:atStr(newAt),cat:'연예',sub:'아이돌·K팝',type:'vs',q:'',o:['',''],desc:'',src:[]};
+  var p=x?JSON.parse(JSON.stringify(x.p)):{id:idFor(newAt),at:atStr(newAt),cat:'연예',sub:'음악·공연',type:'vs',q:'',o:['',''],desc:'',src:[]};
   editing={orig:x?x.p.id:null,isNew:!x,ro:ro};
   $('#dlgTitle').textContent=ro?'기본 투표 (읽기 전용)':x?'피드 투표 편집':'새 피드 투표';
   var srcTxt=(p.src||[]).map(function(s){return s.title+' | '+s.url}).join('\n');
