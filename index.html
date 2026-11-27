@@ -3163,7 +3163,16 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   // ===== 공유하기: 카카오톡·다른 앱·페이스북·X·밴드·링크 복사 =====
   var KAKAO_SDK='https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js';
   function shareMsg(p){ if(isQuiz(p)) return p.q+' 한번 풀어 보세요!'; return p.q+' 어떻게 생각하세요?'; }  // 내가 고른 보기는 공유 문구에 넣지 않음
+  // 카카오 공유: 카카오 개발자 콘솔에 사이트 도메인 등록이 확인되기 전까지(KAKAO_DIRECT=false)
+  // 휴대폰은 기기 공유창(카톡이 맨 앞)으로, PC는 링크 복사로 보낸다. 등록 확인 뒤 true로 바꾸면 카톡으로 바로 공유
+  var KAKAO_DIRECT=false;
   function kakaoShare(p){
+    if(!KAKAO_DIRECT){
+      var u=shareUrl(p,'kakao_share'), t=shareMsg(p);
+      if(navigator.share){ navigator.share({title:'네아니요',text:t,url:u}).catch(function(){}); }
+      else copy(t+' '+u,'링크를 복사했어요. 카카오톡 대화방에 붙여 넣어 주세요.');
+      return true;
+    }
     var key=NY&&NY.kakaoKey; if(!key) return false;
     var go=function(){ try{ if(!window.Kakao.isInitialized()) window.Kakao.init(key); window.Kakao.Share.sendScrap({requestUrl:shareUrl(p,'kakao_share')}); }catch(e){ copy(shareMsg(p)+' '+shareUrl(p),'카카오톡을 열지 못해 링크를 복사했어요. 카톡에 붙여 넣어 주세요.'); } };
     if(window.Kakao) go(); else { var sc=document.createElement('script'); sc.src=KAKAO_SDK; sc.onload=go; sc.onerror=function(){ copy(shareMsg(p)+' '+shareUrl(p),'카카오톡을 열지 못해 링크를 복사했어요.'); }; document.head.appendChild(sc); }
