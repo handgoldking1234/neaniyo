@@ -1365,7 +1365,13 @@ body.v-create .mk-tip,body.embedded .mk-tip,body.shared .mk-tip{display:none}
 .lg .lg-big .naver{background:#03C75A;border-color:#03C75A;color:#fff}.lg .lg-big .naver svg path{fill:#fff}
 .lg .lg-big button:active{transform:scale(.98)}
 .lg .lg-big .recent{position:absolute;top:-10px;right:14px;background:var(--ink);color:var(--surface);font-size:calc(10.5px * var(--fs));font-weight:700;border-radius:999px;padding:2px 8px}
-.lg .lg-mail-s{margin:16px auto 0;border:0;background:none;color:var(--muted);font-size:calc(13px * var(--fs));text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.lg .otp{position:relative}
+.otp-box{display:flex;gap:8px;justify-content:center}
+.otp-box span{flex:1 1 0;max-width:48px;height:56px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);display:grid;place-items:center;font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}
+.otp-box span.fill{border-color:color-mix(in srgb,var(--ink) 35%,var(--line))}
+.otp-box span.on{border-color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--ink) 12%,transparent)}
+.otp input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;border:0;padding:0;cursor:text}
+.lg-mail-s{margin:16px auto 0;border:0;background:none;color:var(--muted);font-size:calc(13px * var(--fs));text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .ib.aib b{font-size:calc(12px * var(--fs));font-weight:800;letter-spacing:.3px}
 .ib.aib{color:var(--b)}
 .ib.aib[aria-pressed="true"]{background:color-mix(in srgb,var(--b) 12%,transparent)}
@@ -4386,11 +4392,19 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
             if(r.error){ m.className='msg err full'; m.textContent=/rate|seconds/i.test(r.error.message)?'잠시 후 다시 시도해 주세요. (1분에 한 번 보낼 수 있어요)':'메일을 보내지 못했어요. 잠시 후 다시 시도해 주세요.'; return; }
             // 코드 입력 칸으로 바꿈
             f.dataset.step='code'; f.innerHTML='<p class="full" style="margin:0 0 4px"><b>'+esc(em)+'</b> 으로 메일을 보냈어요.<br><small>스팸함도 확인해 주세요.</small></p>'+
-              '<div class="field full"><label for="nyCode">메일의 숫자 코드</label><input id="nyCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="8" placeholder="숫자 6자리" style="font-size:22px;letter-spacing:6px;text-align:center"></div>'+
+              '<div class="field full"><label for="nyCode">메일의 숫자 코드</label><div class="otp"><div class="otp-box" aria-hidden="true"></div><input id="nyCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="8" aria-describedby="nyCodeMsg"></div></div>'+
+              (navigator.clipboard&&navigator.clipboard.readText?'<button type="button" class="btn full" id="nyPaste">'+ic('clipboard-paste')+'복사한 코드 붙여넣기</button>':'')+
               '<p class="msg full" id="nyCodeMsg" role="status"></p><button class="btn dark full" type="submit">로그인</button>'+
               '<button type="button" class="lg-mail-s" id="nyResend">코드 다시 받기</button>';
-            var ci=document.getElementById('nyCode'); ci.focus();
-            ci.addEventListener('input',function(){ ci.value=ci.value.replace(/\D/g,''); if(ci.value.length===6) f.requestSubmit?f.requestSubmit():null; });
+            var ci=document.getElementById('nyCode'), ob=f.querySelector('.otp-box');
+            // 6칸에 한 글자씩 보여 주기 (실제 입력은 투명한 칸 하나: 붙여넣기·자동 채우기가 한 번에 됨)
+            var drawOtp=function(){ var v=ci.value, n=Math.max(6,v.length), h=''; for(var k=0;k<n;k++) h+='<span class="'+(k===v.length&&document.activeElement===ci?'on':'')+(v[k]?' fill':'')+'">'+(v[k]||'')+'</span>'; ob.innerHTML=h; };
+            var setCode=function(t){ ci.value=String(t||'').replace(/\D/g,'').slice(0,8); drawOtp(); if(ci.value.length===6&&f.requestSubmit) f.requestSubmit(); };
+            ci.addEventListener('input',function(){ setCode(ci.value); });
+            ci.addEventListener('focus',drawOtp); ci.addEventListener('blur',drawOtp);
+            ci.focus(); drawOtp();
+            var pb=document.getElementById('nyPaste');
+            if(pb) pb.onclick=function(){ navigator.clipboard.readText().then(function(t){ var d=String(t||'').replace(/\D/g,''); if(d.length<6){ var cm=document.getElementById('nyCodeMsg'); cm.className='msg err full'; cm.textContent='복사한 내용에 숫자 코드가 없어요. 메일에서 코드를 복사해 주세요.'; return; } setCode(d); }).catch(function(){ ci.focus(); toast('길게 눌러 붙여넣어 주세요.'); }); };
             document.getElementById('nyResend').onclick=function(){ api.sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:back.toString()}}).then(function(r2){ var cm=document.getElementById('nyCodeMsg'); cm.className='msg '+(r2.error?'err':'ok')+' full'; cm.textContent=r2.error?'잠시 후 다시 시도해 주세요. (1분에 한 번)':'새 코드를 보냈어요.'; }); };
             f.onsubmit=function(ev){
               ev.preventDefault(); ev.stopImmediatePropagation();
