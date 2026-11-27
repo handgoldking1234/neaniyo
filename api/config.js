@@ -1,6 +1,6 @@
 // 브라우저가 로그인에 쓸 공개 설정 (anon 키는 공개해도 되는 키)
 import { send, configured, SUPA_URL } from './_lib.js';
-const NAVER_LIVE = false;
+const NAVER_LIVE = true; // 2026-11-27 바로웹툰처럼 네이버 버튼 켬 (같은 네이버 앱·같은 Supabase)
 export default function (req, res) {
   if (!configured()) return send(res, 200, { enabled: false }, 'public, max-age=60');
   send(res, 200, {
