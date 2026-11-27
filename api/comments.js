@@ -22,6 +22,19 @@ async function ownerOf(poll) {
   const r = await db(`ny_user_polls?select=user_id&id=eq.${poll}`); return r.length ? r[0].user_id : null;
 }
 
+// AI 캐릭터 의견 (iux-comment 서비스가 cc_ 표에 넣어 둔 것). 사람 한줄평과 따로 보여 주고, 공개 시각이 된 것만, 최대 3개.
+// 캐릭터는 투표하지 않으므로 참여 수·한줄평 수에 들어가지 않는다. 실패해도 한줄평은 그대로 보여 준다.
+const AI_ON = process.env.AI_CHARACTERS !== 'off';
+async function aiOf(poll) {
+  if (!AI_ON) return [];
+  try {
+    const rows = await db(`cc_comments?select=id,character_name,character_label,body,visible_at,cc_posts!inner(external_id),cc_sites!inner(public_key)` +
+      `&cc_posts.external_id=eq.${encodeURIComponent(poll)}&cc_sites.public_key=eq.neaniyo&is_hidden=eq.false` +
+      `&visible_at=lte.${encodeURIComponent(new Date().toISOString())}&order=visible_at.asc&limit=3`);
+    return rows.map(r => ({ id: r.id, name: r.character_name, label: r.character_label, text: r.body, ts: Date.parse(r.visible_at) }));
+  } catch { return []; }
+}
+
 export default handler(async (req, res) => {
   const user = await authUser(req);
   // GET /api/comments?mine=1 → 내 한줄평 현황(내가 쓴 글 · 받은 공감·답글)과 내가 만든 투표에 달린 한줄평 수
@@ -57,8 +70,8 @@ export default handler(async (req, res) => {
         (await db(`ny_comment_likes?select=comment_id&user_id=eq.${user.id}&comment_id=in.(${ids})`)).forEach(l => liked.add(l.comment_id));
       }
     }
-    const all = vis.concat(mine), [names, owner] = await Promise.all([namesOf(all), ownerOf(poll)]);
-    return send(res, 200, { comments: all.map(c => shape(c, user?.id, liked.has(c.id), names, owner)) });
+    const all = vis.concat(mine), [names, owner, ai] = await Promise.all([namesOf(all), ownerOf(poll), aiOf(poll)]);
+    return send(res, 200, { comments: all.map(c => shape(c, user?.id, liked.has(c.id), names, owner)), ai });
   }
   if (req.method !== 'POST') return fail(res, 405, 'method');
   if (!user) return fail(res, 401, 'login');

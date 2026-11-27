@@ -598,6 +598,18 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .cform input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px}
 .cmts h4 .ttl{display:inline-flex;align-items:center;gap:6px}
 .cmts h4 small{margin-right:auto;margin-left:6px}
+.ccbox{margin-top:14px;padding:12px 14px;border-radius:14px;background:var(--soft,#f4f5f8);display:flex;flex-direction:column;gap:8px}
+.ccbox h5{margin:0;display:flex;align-items:center;gap:6px;font-size:calc(13px * var(--fs));color:var(--muted)}
+.ccbox .i{width:14px;height:14px}
+.ccbox ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.cc-it{display:flex;gap:10px;align-items:flex-start}
+.cc-av{flex:0 0 28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#ede9fe;color:#6d28d9}
+.cc-who{margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:calc(13px * var(--fs))}
+.cc-badge{padding:1px 7px;border-radius:999px;background:#ede9fe;color:#6d28d9;font-size:calc(11px * var(--fs));font-weight:700}
+.cc-lbl{color:var(--muted);font-size:calc(11.5px * var(--fs))}
+.cc-txt{margin:2px 0 0;font-size:calc(14px * var(--fs));line-height:1.5;word-break:break-word}
+.cc-note{margin:0;color:var(--muted);font-size:calc(11.5px * var(--fs))}
+.cc-more{border:0;background:none;padding:0;color:var(--muted);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;align-self:flex-start;font-size:calc(13px * var(--fs))}
 .tsort{display:flex;gap:2px;background:var(--bg);border-radius:999px;padding:3px}
 .tsort button{border:0;background:none;border-radius:999px;padding:4px 10px;font-size:calc(12px * var(--fs));font-weight:600;color:var(--muted);cursor:pointer}
 .tsort button[aria-pressed="true"]{background:var(--card,#fff);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
@@ -2990,7 +3002,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   sndUI();
 
   // ===== 한줄평 (시안: 브라우저에만 저장) =====
-  var CKEY='neaniyo-cmt', cmts={};
+  var CKEY='neaniyo-cmt', cmts={}, aiC={};
   try{cmts=JSON.parse(localStorage.getItem(CKEY)||'{}')||{}}catch(e){cmts={}}
   function saveC(){try{var o={};Object.keys(cmts).forEach(function(k){o[k]=cmts[k].filter(function(c){return !c.pending})});localStorage.setItem(CKEY,JSON.stringify(o))}catch(e){}}
   var SEEDC={
@@ -3127,8 +3139,9 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     // 부모가 숨겨진 답글은 그냥 맨 위 글처럼 보여 준다
     Object.keys(reps).forEach(function(k){ if(!tops.some(function(t){return t.id===k})){ reps[k].forEach(function(r){ tops.push(r); reps[r.id]=[]; }); } });
     var head='<h4><span class="ttl">'+ic('message-square-text')+'한줄평</span> <small>'+list.length+'개</small></h4>';
-    var comp=!!cCompose[p.id];
-    if(!done||(!list.length&&!comp)) return '';
+    var comp=!!cCompose[p.id], aiH=ccBlock(p,list.length>0);
+    if(!done) return '';
+    if(!list.length&&!comp) return aiH;
     var srt=cSort[p.id]||'top', score=function(c){ return c.likes*2+(reps[c.id]||[]).length*3; };
     var bestIds={};
     p.o.forEach(function(_,oi){var b=tops.filter(function(c){return c.o===oi}).sort(function(a,b){return score(b)-score(a)})[0]; if(b&&score(b)>0) bestIds[b.id]=1;});
@@ -3148,7 +3161,19 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     var form=!comp?'':user?'<form class="cform tform" data-cform="'+p.id+'" novalidate>'+cAv({mine:true,id:'me'+(user.id||'')})+'<label class="sr" for="c-'+p.id+'" hidden>한줄평</label><textarea class="cin" id="c-'+p.id+'" rows="1" maxlength="'+MOD.limits.maxLength+'" placeholder="생각을 남겨 보세요">'+esc(cDr(p.id+':top'))+'</textarea><button class="tpost" type="submit">게시</button></form><p class="cmsg" data-cmsg></p><p class="tnote">내 한줄평에는 고른 쪽(<b>'+esc(p.o[myIdx(p)]||'')+'</b>)과 '+(user.nick&&user.rankPublic?'닉네임 <b>'+esc(user.nick)+'</b>':'<b>익명 투표러</b>')+'(으)로 보여요.</p>'
       :'<button class="btn" data-act="login">'+ic('log-in')+'로그인하고 한줄평 남기기</button>';
     return '<div class="cmts">'+head.replace('</h4>',tabs+'</h4>')+form+
-      '<div class="tlist">'+ordered.map(function(c){ return cOne(p,c,!!bestIds[c.id],reps[c.id]||[]); }).join('')+'</div>'+moreBtn+'</div>';
+      '<div class="tlist">'+ordered.map(function(c){ return cOne(p,c,!!bestIds[c.id],reps[c.id]||[]); }).join('')+'</div>'+moreBtn+'</div>'+aiH;
+  }
+  // AI 캐릭터 의견: 사람 한줄평과 다른 칸, 모든 글에 'AI 캐릭터' 표시. 사람 한줄평이 있으면 접어 둔다
+  var aiOpen2={};
+  function ccBlock(p,hasHuman){
+    var L=aiC[p.id]||[]; if(!L.length) return '';
+    var items=L.map(function(c){
+      var at=c.ts?ago(Math.max(0,(Date.now()-c.ts)/36e5)):'';
+      return '<li class="cc-it"><span class="cc-av" aria-hidden="true">'+ic('sparkles')+'</span><div><p class="cc-who"><b>'+esc(c.name)+'</b><span class="cc-badge">AI 캐릭터</span><span class="cc-lbl">'+esc(c.label||'')+(at?' · '+esc(at):'')+'</span></p><p class="cc-txt">'+esc(c.text)+'</p></div></li>';
+    }).join('');
+    var note='<p class="cc-note">네아니요 AI 캐릭터가 쓴 의견이에요. 캐릭터는 투표하지 않고 참여 수에도 들어가지 않아요.</p>';
+    if(hasHuman&&!aiOpen2[p.id]) return '<div class="ccbox"><button type="button" class="cc-more" data-act="aiopen" aria-expanded="false">'+ic('sparkles')+'AI 캐릭터 의견 '+L.length+'개 보기</button></div>';
+    return '<div class="ccbox" aria-label="AI 캐릭터 의견"><h5>'+ic('sparkles')+'AI 캐릭터 의견</h5><ul>'+items+'</ul>'+note+(hasHuman?'<button type="button" class="cc-more" data-act="aiopen" aria-expanded="true">접기</button>':'')+'</div>';
   }
   var cmtOpen={};
   // 한줄평 입력칸: 글이 길어지면 늘어나고, Enter로 게시 (Shift+Enter는 줄바꿈, 한글 조합 중에는 무시)
@@ -3349,6 +3374,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
         setTimeout(resize,520); return;
       }
       if(act==='pickgo'){ submitPicks(art,p,actBtn,e); return; }
+      if(act==='aiopen'){ aiOpen2[p.id]=!aiOpen2[p.id]; rerender(art,p); return; }
       if(act==='cmore'){ cmtOpen[p.id]=!cmtOpen[p.id]; var top0=art.getBoundingClientRect().top; var fr0=rerender(art,p);
         if(!cmtOpen[p.id]){ var d0=fr0.getBoundingClientRect().top-top0; if(d0) window.scrollBy(0,d0); var cm=fr0.querySelector('.cmts'); if(cm&&cm.getBoundingClientRect().top<0) cm.scrollIntoView({block:'start'}); }
         return; }
@@ -4398,6 +4424,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
       cBusy[p.id]=1;
       call('comments?poll='+encodeURIComponent(p.id)).then(function(j){
         cmts[p.id]=(j.comments||[]).map(function(c){ c.at=c.ts?ago(Math.max(0,(Date.now()-c.ts)/36e5)):''; return c; });
+        aiC[p.id]=Array.isArray(j.ai)?j.ai:[];
         cLoaded[p.id]=1; redraw(p);
       }).catch(function(){}).then(function(){ delete cBusy[p.id]; });
     };
