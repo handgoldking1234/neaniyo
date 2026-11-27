@@ -28,10 +28,13 @@ const AI_ON = process.env.AI_CHARACTERS !== 'off';
 async function aiOf(poll) {
   if (!AI_ON) return [];
   try {
-    const rows = await db(`cc_comments?select=id,character_name,character_label,body,visible_at,cc_posts!inner(external_id),cc_sites!inner(public_key)` +
+    const rows = await db(`cc_comments?select=id,parent_id,character_name,character_label,body,visible_at,cc_posts!inner(external_id),cc_sites!inner(public_key)` +
       `&cc_posts.external_id=eq.${encodeURIComponent(poll)}&cc_sites.public_key=eq.neaniyo&is_hidden=eq.false` +
-      `&visible_at=lte.${encodeURIComponent(new Date().toISOString())}&order=visible_at.asc&limit=3`);
-    return rows.map(r => ({ id: r.id, name: r.character_name, label: r.character_label, text: r.body, ts: Date.parse(r.visible_at) }));
+      `&visible_at=lte.${encodeURIComponent(new Date().toISOString())}&order=visible_at.asc&limit=12`);
+    // 맨 위 의견 최대 3개 + 그 아래 답글(각 2개까지)
+    const tops = rows.filter(r => !r.parent_id).slice(0, 3), ids = new Set(tops.map(r => r.id)), n = {};
+    const reps = rows.filter(r => r.parent_id && ids.has(r.parent_id) && (n[r.parent_id] = (n[r.parent_id] || 0) + 1) <= 2);
+    return tops.concat(reps).map(r => ({ id: r.id, pid: r.parent_id || undefined, name: r.character_name, label: r.character_label, text: r.body, ts: Date.parse(r.visible_at) }));
   } catch { return []; }
 }
 

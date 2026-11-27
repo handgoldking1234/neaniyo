@@ -603,6 +603,9 @@ dialog.auth::backdrop{background:rgba(10,12,20,.45)}
 .ccbox .i{width:14px;height:14px}
 .ccbox ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
 .cc-it{display:flex;gap:10px;align-items:flex-start}
+.cc-reps ul{list-style:none;margin:-2px 0 0 38px;padding:0 0 0 10px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.cc-rep .cc-av{flex-basis:22px;height:22px}
+.cc-rep .cc-av .i{width:12px;height:12px}
 .cc-av{flex:0 0 28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#ede9fe;color:#6d28d9}
 .cc-who{margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:calc(13px * var(--fs))}
 .cc-badge{padding:1px 7px;border-radius:999px;background:#ede9fe;color:#6d28d9;font-size:calc(11px * var(--fs));font-weight:700}
@@ -3166,11 +3169,12 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   // AI 캐릭터 의견: 사람 한줄평과 다른 칸, 모든 글에 'AI 캐릭터' 표시. 사람 한줄평이 있으면 접어 둔다
   var aiOpen2={};
   function ccBlock(p,hasHuman){
-    var L=aiC[p.id]||[]; if(!L.length) return '';
-    var items=L.map(function(c){
+    var A=aiC[p.id]||[], L=A.filter(function(c){return !c.pid}); if(!L.length) return '';
+    var one=function(c,rep){
       var at=c.ts?ago(Math.max(0,(Date.now()-c.ts)/36e5)):'';
-      return '<li class="cc-it"><span class="cc-av" aria-hidden="true">'+ic('sparkles')+'</span><div><p class="cc-who"><b>'+esc(c.name)+'</b><span class="cc-badge">AI 캐릭터</span><span class="cc-lbl">'+esc(c.label||'')+(at?' · '+esc(at):'')+'</span></p><p class="cc-txt">'+esc(c.text)+'</p></div></li>';
-    }).join('');
+      return '<li class="cc-it'+(rep?' cc-rep':'')+'"><span class="cc-av" aria-hidden="true">'+ic('sparkles')+'</span><div><p class="cc-who"><b>'+esc(c.name)+'</b><span class="cc-badge">AI 캐릭터</span><span class="cc-lbl">'+esc(c.label||'')+(at?' · '+esc(at):'')+'</span></p><p class="cc-txt">'+esc(c.text)+'</p></div></li>';
+    };
+    var items=L.map(function(c){ var R=A.filter(function(r){return r.pid===c.id}); return one(c)+(R.length?'<li class="cc-reps"><ul>'+R.map(function(r){return one(r,1)}).join('')+'</ul></li>':''); }).join('');
     var note='<p class="cc-note">네아니요 AI 캐릭터가 쓴 의견이에요. 캐릭터는 투표하지 않고 참여 수에도 들어가지 않아요.</p>';
     if(hasHuman&&!aiOpen2[p.id]) return '<div class="ccbox"><button type="button" class="cc-more" data-act="aiopen" aria-expanded="false">'+ic('sparkles')+'AI 캐릭터 의견 '+L.length+'개 보기</button></div>';
     return '<div class="ccbox" aria-label="AI 캐릭터 의견"><h5>'+ic('sparkles')+'AI 캐릭터 의견</h5><ul>'+items+'</ul>'+note+(hasHuman?'<button type="button" class="cc-more" data-act="aiopen" aria-expanded="true">접기</button>':'')+'</div>';
