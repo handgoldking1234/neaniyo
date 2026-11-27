@@ -2316,10 +2316,10 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   function render(){
     setTimeout(function(){ if(!pinId) return; var c=document.querySelector('#feed .poll[data-id="'+pinId+'"]'); if(c&&!c.classList.contains('just')){ c.classList.add('just'); } },0);
     var only=embedded?embedId:shareId;
-    var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return isPublic(p)&&!p.closed&&(searchQ?matchQ(p):(filter==='all'||filter==='new'||(filter==='follow'?!!(p.ck&&FOL.keys[p.ck]):p.cat===filter))&&(!subFilter||p.sub===subFilter))});
-    if(!only&&!searchQ&&filter!=='new'&&filter!=='follow') list=recommend(list);
+    var list=only?polls.filter(function(p){return p.id===only}):polls.filter(function(p){return isPublic(p)&&!p.closed&&(searchQ?matchQ(p):(filter==='all'||filter==='new'||(filter==='news'?!!p.news:filter==='follow'?!!(p.ck&&FOL.keys[p.ck]):p.cat===filter))&&(!subFilter||p.sub===subFilter))});
+    if(!only&&!searchQ&&filter!=='new'&&filter!=='follow'&&filter!=='news') list=recommend(list);
     // 최신: 만든 시각 기준 최신순 (나중에 불러온 사용자 투표도 제자리로)
-    if(!only&&!searchQ&&(filter==='new'||filter==='follow')) list=list.map(function(p,i){return {p:p,i:i,at:newAt(p)}}).sort(function(a,b){return b.at-a.at||a.i-b.i}).map(function(x){return x.p});
+    if(!only&&!searchQ&&(filter==='new'||filter==='follow'||filter==='news')) list=list.map(function(p,i){return {p:p,i:i,at:newAt(p)}}).sort(function(a,b){return b.at-a.at||a.i-b.i}).map(function(x){return x.p});
     var sr=document.getElementById('srchRes'); if(sr){ sr.hidden=!searchQ||!!only; if(searchQ&&!only) sr.innerHTML='<span><b>\''+esc(searchQ)+'\'</b> 검색 결과 '+list.length+'개</span><button type="button" data-srch-clear>검색 지우기</button>'; }
     if(pinId&&!only&&!searchQ){ var pi=list.findIndex(function(p){return p.id===pinId}); if(pi>0) list.splice(0,0,list.splice(pi,1)[0]); }
     feedList=list;
@@ -3571,7 +3571,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   });
 
   var subFilter='', catChips=document.getElementById('catchips'), subChips=document.getElementById('subchips');
-  catChips.innerHTML='<button class="chip" style="--cc:#06B6D4" data-c="new" aria-pressed="true">전체</button><button class="chip" style="--cc:#F59E0B" data-c="all" aria-pressed="false">인기</button>'+TAX.map(function(t){return '<button class="chip" style="--cc:'+(CATCOL[t.c]||'')+'" data-c="'+t.c+'" aria-pressed="false">'+t.l+'</button>'}).join('');
+  catChips.innerHTML='<button class="chip" style="--cc:#06B6D4" data-c="new" aria-pressed="true">전체</button><button class="chip" style="--cc:#F59E0B" data-c="all" aria-pressed="false">인기</button><button class="chip" style="--cc:#EF4444" data-c="news" aria-pressed="false">뉴스</button>'+TAX.map(function(t){return '<button class="chip" style="--cc:'+(CATCOL[t.c]||'')+'" data-c="'+t.c+'" aria-pressed="false">'+t.l+'</button>'}).join('');
   function intChipUI(){ var b=catChips.querySelector('[data-int-open]'); if(b) b.classList.toggle('on',!!intr.cats.length); }
   intChipUI();
   function drawSubs(){
