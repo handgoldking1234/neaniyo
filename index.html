@@ -4233,10 +4233,21 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     function saveSent(){ try{localStorage.setItem(SENT,JSON.stringify(sent))}catch(e){} }
     api.isReal=function(id){ return REAL.test(String(id||'')); };
 
-    function call(path,opt){
-      opt=opt||{}; var h={'Content-Type':'application/json'}; if(api.token) h.Authorization='Bearer '+api.token;
-      return fetch('/api/'+path,{method:opt.method||'GET',headers:h,body:opt.body?JSON.stringify(opt.body):undefined,cache:'no-store'})
-        .then(function(r){ return r.json().catch(function(){return {}}).then(function(j){ if(!r.ok){ var e=new Error(j.error||('HTTP '+r.status)); e.status=r.status; throw e; } return j; }); });
+    // 로그인 토큰은 1시간이면 만료돼요. 휴대폰에서 화면이 꺼져 있으면 자동 갱신이 늦어지니, 보내기 전에 새 토큰을 받아 둔다
+    function freshToken(force){
+      if(!api.sb||!api.token) return Promise.resolve(api.token);
+      var p; try{ p=force?api.sb.auth.refreshSession():api.sb.auth.getSession(); }catch(e){ return Promise.resolve(api.token); }
+      return p.then(function(r){ var s=r&&r.data&&r.data.session; if(s&&s.access_token) api.token=s.access_token; return api.token; }).catch(function(){ return api.token; });
+    }
+    function call(path,opt,retried){
+      opt=opt||{};
+      return freshToken(!!retried).then(function(tok){
+        var h={'Content-Type':'application/json'}; if(tok) h.Authorization='Bearer '+tok;
+        return fetch('/api/'+path,{method:opt.method||'GET',headers:h,body:opt.body?JSON.stringify(opt.body):undefined,cache:'no-store'})
+          .then(function(r){ return r.json().catch(function(){return {}}).then(function(j){
+            if(r.status===401&&tok&&!retried) return call(path,opt,true);
+            if(!r.ok){ var e=new Error(j.error||('HTTP '+r.status)); e.status=r.status; throw e; } return j; }); });
+      });
     }
     function cardOf(id){ return document.querySelector('.poll[data-id="'+id+'"]'); }
     function redraw(p){ var a=cardOf(p.id); if(a&&!a.querySelector('.cform .cin:focus')) rerender(a,p); }
@@ -4409,7 +4420,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
         if(!j.ok){ undo(j.message||'등록할 수 없어요.'); return; }
         var c=j.comment; c.at='방금'; c.fresh=true; var L=getC(p), i=L.indexOf(tmp); if(i>=0) L[i]=c; else if(!L.some(function(x){return x.id===c.id})) L.push(c); saveC();
         rerender(cur(),p); if(j.action==='review') toast(j.message||'검토 후 공개돼요.');
-      }).catch(function(e){ undo(e.message==='vote-first'?'투표가 아직 저장되지 않았어요. 잠시 후 다시 시도해 주세요.':'등록하지 못했어요. 잠시 후 다시 시도해 주세요.'); });
+      }).catch(function(e){ undo(e.message==='vote-first'?'투표가 아직 저장되지 않았어요. 잠시 후 다시 시도해 주세요.':e.status===401?'로그인이 풀렸어요. 다시 로그인한 뒤 게시해 주세요. 쓴 글은 그대로 있어요.':'등록하지 못했어요. 잠시 후 다시 시도해 주세요.'); });
     };
     api.commentAct=function(c,act){
       if(!api.on||!api.token||!/^[0-9a-f-]{36}$/.test(c.id)) return false;
