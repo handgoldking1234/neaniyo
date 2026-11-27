@@ -4379,7 +4379,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
       var mb=authBody.querySelector('[data-ny-mail]');
       if(mb) mb.onclick=function(){
         var w=document.createElement('div');
-        w.innerHTML='<form class="pf" id="nyMail" novalidate><div class="field full"><label for="nyMailIn">이메일</label><input id="nyMailIn" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required></div>'+
+        w.innerHTML='<form class="pf" id="nyMail" style="margin-top:22px" novalidate><div class="field full"><label for="nyMailIn">이메일</label><input id="nyMailIn" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required></div>'+
           '<p class="msg full" id="nyMailMsg" role="status"></p><button class="btn dark full" type="submit">로그인 코드 받기</button><p class="full" style="font-size:calc(12px * var(--fs))">비밀번호 없이, 메일로 받은 숫자 코드를 넣거나 메일의 버튼을 누르면 로그인돼요.</p></form>';
         mb.replaceWith(w.firstChild); var f=document.getElementById('nyMail'); document.getElementById('nyMailIn').focus();
         f.addEventListener('submit',function(e){
