@@ -1630,7 +1630,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   // 관심사: 고른 대분류 위주로 추천(관심 약 70% + 나머지 섞기). 로그인 없이 브라우저에 저장, 로그인하면 계정 정보에도 함께 저장.
   var IKEY='neaniyo-interests', intr={cats:[],skip:0};
   try{var _ir=JSON.parse(localStorage.getItem(IKEY)||'null'); if(_ir&&Array.isArray(_ir.cats)) intr=_ir;}catch(e){}
-  intr.cats=intr.cats.map(function(c){return ({'스포츠':'연예','정치':'사회','패션·쇼핑':'경제','IT·게임':'경제'})[c]||c}).filter(function(c,i,a){return a.indexOf(c)===i});
+  intr.cats=intr.cats.map(function(c){return ({'스포츠':'연예','정치':'사회','패션·쇼핑':'사회','IT·게임':'사회','경제':'사회','퀴즈':'교육'})[c]||c}).filter(function(c,i,a){return a.indexOf(c)===i});
   function saveIntr(){try{localStorage.setItem(IKEY,JSON.stringify(intr))}catch(e){}}
 
   var polls=[
@@ -1970,29 +1970,30 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   document.addEventListener('error',function(e){ var t=e.target; if(t&&t.tagName==='IMG'&&FALLBACK[t.getAttribute('src')]){ t.src=FALLBACK[t.getAttribute('src')]; } },true);
   // ===== 카테고리: 대분류(cat) + 소분류(sub) =====
   var TAX=[
-    // 2026-11-26 분류 축소: 12개 → 8개 (스포츠·게임→연예, 정치→사회, IT·패션·쇼핑→경제)
-    {c:'연예',l:'연예·스포츠',s:['아이돌·K팝','드라마·영화','예능·유튜버','스포츠','게임']},
-    {c:'사회',l:'사회·정치',s:['직장·노동','생활·안전','정치·정책','환경·날씨']},
-    {c:'경제',l:'경제·IT',s:['주식·코인','부동산','재테크·소비','쇼핑·패션','AI·테크']},
-    {c:'라이프',l:'라이프',s:['연애·결혼','육아·가족','음식·맛집','여행·여가','건강·운동']},
+    // 2026-11-27 탭 정리: 사회·정치·경제·IT → 사회 하나로, 퀴즈 탭 없앰(퀴즈 글은 교육으로). 순서 = 상단 탭 순서
     {c:'사연',l:'사연·고민',s:['연애','가족','직장','친구·인간관계','돈']},
+    {c:'연예',l:'연예',s:['아이돌·K팝','드라마·영화','예능·유튜버','스포츠','게임']},
     {c:'교육',l:'교육',s:['교육 이슈','유아','초등','중등','고등']},
-    {c:'퀴즈',l:'퀴즈',s:['초등','중·고등','수능','상식']},
-    {c:'밸런스',l:'밸런스',s:['밸런스게임','취향']}
+    {c:'밸런스',l:'밸런스',s:['밸런스게임','취향']},
+    {c:'라이프',l:'라이프',s:['연애·결혼','육아·가족','음식·맛집','여행·여가','건강·운동']},
+    {c:'사회',l:'사회',s:['직장·노동','생활·안전','정치·정책','경제·재테크','부동산','IT·테크']}
   ];
   // 예전 분류(자동 수집 피드·이용자 투표)를 새 분류로 옮기는 표
   function mergeCat(c,sub){
-    var M={
-      '스포츠':['연예','스포츠'], '정치':['사회','정치·정책'], '패션·쇼핑':['경제','쇼핑·패션'],
-      'IT·게임':sub==='게임'?['연예','게임']:['경제','AI·테크']
-    };
-    if(M[c]) return M[c];
+    // 경제·IT는 사회로 합침
+    var EC={'주식·코인':'경제·재테크','주식':'경제·재테크','코인':'경제·재테크','재테크·소비':'경제·재테크','금리·환율':'경제·재테크','쇼핑·패션':'경제·재테크','부동산':'부동산','AI·테크':'IT·테크'};
+    if(c==='경제') return ['사회',EC[sub]||''];
+    if(c==='패션·쇼핑') return ['사회','경제·재테크'];
+    if(c==='IT·게임') return sub==='게임'?['연예','게임']:['사회','IT·테크'];
+    if(c==='스포츠') return ['연예','스포츠'];
+    if(c==='정치') return ['사회','정치·정책'];
+    // 퀴즈 탭 폐지: 정답 있는 문제는 교육의 학년 분류로
+    if(c==='퀴즈') return ['교육',{'초등':'초등','중·고등':'중등','수능':'고등','상식':'교육 이슈'}[sub]||'교육 이슈'];
+    if(c==='사회'&&sub==='교육·입시') return ['교육','교육 이슈'];
     var S={
       '연예':{'배우·드라마':'드라마·영화','영화':'드라마·영화','예능·방송':'예능·유튜버','유튜버·인플루언서':'예능·유튜버'},
-      '사회':{'생활·소비':'생활·안전','교통·안전':'생활·안전','교육·입시':'교육 이슈'},
-      '경제':{'주식':'주식·코인','코인':'주식·코인','금리·환율':'재테크·소비'}
+      '사회':{'생활·소비':'생활·안전','교통·안전':'생활·안전','환경·날씨':'생활·안전'}
     };
-    if(c==='사회'&&sub==='교육·입시') return ['교육','교육 이슈'];
     return [c,(S[c]&&S[c][sub])||sub];
   }
   var CATIC={"all": "sparkles", "new": "clock", "교육": "graduation-cap", "퀴즈": "lightbulb", "연예": "mic-vocal", "사회": "users", "경제": "trending-up", "라이프": "coffee", "사연": "message-circle-heart", "패션·쇼핑": "shirt", "스포츠": "volleyball", "IT·게임": "gamepad-2", "그림·재능": "palette", "정치": "landmark", "밸런스": "scale"};
@@ -2012,18 +2013,18 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     if(p.cat==='그림·재능'){ p.cat='밸런스'; p.sub='취향'; }
     // 교육·퀴즈 분리(2026-11-26): 정답 있는 문제는 퀴즈로, 예전 교육 세부 분류는 새 분류로
     if(p.cat==='교육'){
-      var hasAns=p.a!=null||(Array.isArray(p.qs)&&p.qs.some(function(q){return q&&q.a!=null}));
-      if(hasAns) p.cat='퀴즈';
-      else p.sub={'수능':'고등','중·고등':'고등','학부모':'교육 이슈','학교생활':'교육 이슈','상식':'교육 이슈'}[p.sub]||p.sub;
+      p.sub={'수능':'고등','중·고등':'고등','학부모':'교육 이슈','학교생활':'교육 이슈','상식':'교육 이슈'}[p.sub]||p.sub;
     }
     var mc=mergeCat(p.cat,p.sub); p.cat=mc[0]; p.sub=mc[1];
     var t=TAX.filter(function(x){return x.c===p.cat})[0];
     if(t&&p.sub&&t.s.indexOf(p.sub)<0) p.sub='';
   }
+  // 2026-11-27 퀴즈 탭을 없애면서 기본 예시 퀴즈도 뺌
+  polls=polls.filter(function(p){ return ['sci3','sn-kor','sp-e'].indexOf(p.id)<0; });
   polls.forEach(normCat);
   var HRS={'방금':0,'1시간 전':1,'2시간 전':2,'3시간 전':3,'4시간 전':4,'5시간 전':5,'오늘':8,'어제':26,'2일 전':50,'3일 전':74};
   polls.forEach(function(p){ if(p.t===undefined) p.t=HRS[p.h]!==undefined?HRS[p.h]:0; });
-  var filter='all', searchQ='';
+  var filter='new', searchQ='';
   function norm(t){return String(t||'').toLowerCase().replace(/\s+/g,'')}
   function matchQ(p){ var q=norm(searchQ); if(!q) return true; return norm([p.q,p.desc,p.cat,p.sub,(p.o||[]).join(' ')].join(' ')).indexOf(q)>=0; }
   var feed=document.getElementById('feed');
@@ -2664,6 +2665,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
       '<h2 id="authTitle">내 정보 '+(user.pro?'<span class="pbadge">프리미엄 체험 중</span>':'')+'</h2>'+
       '<div class="me"><div><span>로그인</span><b>'+viaName(user.via)+'</b></div><div><span>성별</span><b>'+esc(user.gender)+'</b></div><div><span>연령대</span><b>'+age+'</b></div><div><span>지역</span><b>'+esc(user.region)+'</b></div><div><span>학력</span><b>'+(esc(user.edu)||'응답 안 함')+'</b></div><div><span>참여한 투표</span><b>'+Object.keys(voted).length+'개</b></div></div>'+
       (NY&&NY.on?'<div class="me"><div><span>랭킹 닉네임</span><b>'+(user.nick?esc(user.nick)+(user.rankPublic?'':' <small>(비공개)</small>'):'없음')+'</b> <button type="button" class="linkbtn" data-me="nick">'+(user.nick?'바꾸기':'정하기')+'</button></div></div>':'')+'<p style="font-size:calc(12px * var(--fs))">프로필은 30일에 한 번만 바꿀 수 있습니다.</p>'+
+      '<div class="me"><div><span>관심사</span><b>'+(intr.cats&&intr.cats.length?intr.cats.map(function(c){return esc(catLabel(c))}).join(', '):'고르지 않음')+'</b> <button type="button" class="linkbtn" data-me="int">바꾸기</button></div></div>'+
       '<div class="row">'+(user.pro?'<button class="btn" type="button" data-me="unpro">체험 종료</button>':'')+'<button class="btn" type="button" data-me="logout">로그아웃</button></div>'+
       '<p class="hint" style="margin-top:14px"><a href="privacy">개인정보처리방침</a> · <a href="terms">이용약관</a> · <button type="button" data-me="withdraw" style="background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit">회원 탈퇴</button></p>';
     openDialog();
@@ -2675,6 +2677,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     if(t.closest('[data-close]')) return closeDialog();
     var sso=t.closest('[data-sso]'); if(sso){ auth.dataset.via=sso.dataset.sso; return showProfile(); }
     var me=t.closest('[data-me]'); if(!me) return;
+    if(me.dataset.me==='int') return showIntDialog('dlg');
     if(me.dataset.me==='withdraw'){
       if(!confirm('탈퇴하면 프로필·한줄평·내가 만든 투표가 삭제되고 되돌릴 수 없어요. 탈퇴할까요?')) return;
       if(!NY||!NY.withdraw) return toast('지금은 탈퇴를 처리할 수 없어요.');
@@ -2698,6 +2701,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     }else{
       acctMenu.innerHTML='<div class="am-hd"><b>'+viaName(user.via)+' 계정'+(user.pro?' <span class="pro" style="font-size:calc(10.5px * var(--fs));font-weight:700;color:#fff;background:var(--gold);border-radius:4px;padding:1px 5px">PRO</span>':'')+'</b><small>'+esc(user.gender)+' · '+(user.birth?ageBand(user.birth):'-')+' · '+esc(user.region)+' · 참여 '+Object.keys(voted).length+'개</small></div>'+
         '<ul><li><button type="button" data-am="me">'+ic('user-round')+'내 정보</button></li>'+
+        '<li><button type="button" data-am="int">'+ic('sparkles')+'관심사 설정</button></li>'+
         '<li class="sep" aria-hidden="true"></li>'+
         '<li><button type="button" data-am="logout">'+ic('log-out')+'로그아웃</button></li></ul>';
     }
@@ -2710,6 +2714,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     if(a==='mail') return NY.openLogin();
     if(a==='kakao'||a==='naver'||a==='google'){ if(NY&&NY.on) return NY.openLogin(a); auth.dataset.next=''; auth.dataset.via=a; return showProfile(); }
     if(a==='me') return showMe();
+    if(a==='int') return showIntDialog('dlg');
     if(a==='pro') return startTrial();
     if(a==='unpro'){ user.pro=false; saveUser(); authUI(); toast('프리미엄 체험을 종료했습니다.'); return refreshOpenStats(); }
     if(a==='logout'){ if(NY) NY.signOut(); user=null; saveUser(); authUI(); toast('로그아웃했습니다.'); return reRenderKeep(); }
@@ -3545,7 +3550,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   });
 
   var subFilter='', catChips=document.getElementById('catchips'), subChips=document.getElementById('subchips');
-  catChips.innerHTML='<button class="chip" style="--cc:#F59E0B" data-c="all" aria-pressed="true">추천</button><button class="chip" style="--cc:#06B6D4" data-c="new" aria-pressed="false">최신</button>'+TAX.map(function(t){return '<button class="chip" style="--cc:'+(CATCOL[t.c]||'')+'" data-c="'+t.c+'" aria-pressed="false">'+t.l+'</button>'}).join('')+'<button class="chip intset" type="button" data-int-open aria-label="관심사 설정">'+ic('settings-2')+'관심사</button>';
+  catChips.innerHTML='<button class="chip" style="--cc:#06B6D4" data-c="new" aria-pressed="true">전체</button><button class="chip" style="--cc:#F59E0B" data-c="all" aria-pressed="false">인기</button>'+TAX.map(function(t){return '<button class="chip" style="--cc:'+(CATCOL[t.c]||'')+'" data-c="'+t.c+'" aria-pressed="false">'+t.l+'</button>'}).join('');
   function intChipUI(){ var b=catChips.querySelector('[data-int-open]'); if(b) b.classList.toggle('on',!!intr.cats.length); }
   intChipUI();
   function drawSubs(){
@@ -3569,7 +3574,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   catChips.addEventListener('click',function(e){
     if(e.target.closest('[data-int-open]')) return showIntDialog('dlg');
     var c=e.target.closest('[data-c]'); if(!c) return;
-    if(c.dataset.c==='all'&&filter==='all'){ recSeed=String(Math.random()); recOrder=null; window.scrollTo({top:0,behavior:'smooth'}); toast('추천을 새로 섞었어요'); }
+    if(c.dataset.c==='all'&&filter==='all'){ recSeed=String(Math.random()); recOrder=null; window.scrollTo({top:0,behavior:'smooth'}); toast('인기 글을 새로 섞었어요'); }
     setFilter(c.dataset.c,'');
   });
   subChips.addEventListener('click',function(e){ var c=e.target.closest('[data-s]'); if(c) setFilter(filter,c.dataset.s); });
@@ -3851,7 +3856,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   function autoCat(d){
     var opts=optInputs().map(function(i){return i.value}).join(' ');
     var t=qIn.value+' '+storyIn.value+' '+opts, lk=linkOf();
-    if(quizMode||/퀴즈|정답|문제 풀/.test(t)) return ['퀴즈',/수능|모의고사/.test(t)?'수능':/초등|[1-6]학년/.test(t)?'초등':/중학|고등학/.test(t)?'중·고등':'상식'];
+    if(quizMode||/퀴즈|정답|문제 풀/.test(t)) return ['교육',/수능|모의고사|고등학/.test(t)?'고등':/초등|[1-6]학년/.test(t)?'초등':/중학/.test(t)?'중등':'교육 이슈'];
     if(/유치원|어린이집|유아|[4-7]세 /.test(t)) return ['교육','유아'];
     if(/초등|[1-6]학년|받아쓰기/.test(t)) return ['교육','초등'];
     if(/중학|중등/.test(t)) return ['교육','중등'];
@@ -4097,7 +4102,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   }
   function intCard(){
     return '<section class="intcard" id="intCard" aria-label="관심사 고르기"><h3>'+ic('sparkles')+'관심 있는 걸 골라 주세요</h3>'+
-      '<p>고른 분야 위주로 보여 드리고, 지금 뜨거운 투표는 그대로 섞어 드려요. 상단 \'관심사\'에서 언제든 바꿀 수 있어요.</p>'+intPicker('card')+'</section>';
+      '<p>고른 분야 위주로 보여 드리고, 지금 뜨거운 투표는 그대로 섞어 드려요. 마이페이지 › 관심사에서 언제든 바꿀 수 있어요.</p>'+intPicker('card')+'</section>';
   }
   function maybeAskInt(){
     if(!shouldAskInt()||document.getElementById('intCard')) return;
