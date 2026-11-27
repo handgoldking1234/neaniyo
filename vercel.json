@@ -18,6 +18,10 @@
   ],
   "rewrites": [
     {
+      "source": "/code",
+      "destination": "/code.html"
+    },
+    {
       "source": "/sitemap.xml",
       "destination": "/api/share?sitemap=1"
     },
