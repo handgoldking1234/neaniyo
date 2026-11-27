@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>네아니요 - 실시간 투표·밸런스게임·이상형 월드컵</title>
-<meta name="description" content="지금 뜨는 연예·사회·경제 이슈, 당신은 어느 쪽? 실시간 찬반 투표, 밸런스게임, 이상형 월드컵, 퀴즈를 한 번에 투표하고 결과를 바로 확인해보세요.">
-<meta name="keywords" content="투표, 찬반투표, 밸런스게임, 이상형 월드컵, 설문, 퀴즈, 여론, 네아니요">
+<title>네아니요 - 실시간 투표·밸런스게임</title>
+<meta name="description" content="지금 뜨는 연예·사회·경제 이슈, 당신은 어느 쪽? 실시간 찬반 투표, 밸런스게임, 오늘의 뉴스 투표를 한 번에 투표하고 결과를 바로 확인해보세요.">
+<meta name="keywords" content="투표, 찬반투표, 밸런스게임, 뉴스 투표, 설문, 여론, 네아니요">
 <link rel="canonical" href="https://neaniyo.iux.kr/">
 <meta name="robots" content="index,follow">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"네아니요","alternateName":"Neaniyo","url":"https://neaniyo.iux.kr/","inLanguage":"ko","description":"실시간 찬반 투표, 밸런스게임, 이상형 월드컵을 한 번에 투표하고 결과를 확인하는 투표 서비스","potentialAction":{"@type":"SearchAction","target":"https://neaniyo.iux.kr/?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"네아니요","alternateName":"Neaniyo","url":"https://neaniyo.iux.kr/","inLanguage":"ko","description":"실시간 찬반 투표, 밸런스게임을 한 번에 투표하고 결과를 확인하는 투표 서비스","potentialAction":{"@type":"SearchAction","target":"https://neaniyo.iux.kr/?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="네아니요">
 <meta property="og:title" content="네아니요 · 당신은 어느 쪽?">
@@ -2026,7 +2026,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     if(t&&p.sub&&t.s.indexOf(p.sub)<0) p.sub='';
   }
   // 2026-11-27 퀴즈 탭을 없애면서 기본 예시 퀴즈도 뺌
-  polls=polls.filter(function(p){ return ['sci3','sn-kor','sp-e'].indexOf(p.id)<0; });
+  polls=polls.filter(function(p){ return ['sci3','sn-kor','sp-e'].indexOf(p.id)<0&&!/^wc-/.test(p.id); }); // 2026-11-28 기본 이상형 월드컵 7개도 뺌
   polls.forEach(normCat);
   var HRS={'방금':0,'1시간 전':1,'2시간 전':2,'3시간 전':3,'4시간 전':4,'5시간 전':5,'오늘':8,'어제':26,'2일 전':50,'3일 전':74};
   polls.forEach(function(p){ if(p.t===undefined) p.t=HRS[p.h]!==undefined?HRS[p.h]:0; });
