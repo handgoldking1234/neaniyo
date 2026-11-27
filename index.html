@@ -2512,9 +2512,10 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
       '<p>'+(j.me?'내 순위 <b>'+j.me.r+'위</b> · 이 기간 '+fmt(j.me.n)+'표'+(j.total?' <small>(출제자 '+fmt(j.total)+'명)</small>':''):'이 기간에 내 투표가 받은 표가 아직 없어요. 링크를 공유해 보세요.')+'</p>'+
       (user.nick&&user.rankPublic?'<small>랭킹에 <b>'+esc(user.nick)+'</b>(으)로 보여요.</small> ':'<small>지금은 랭킹에 익명으로 보여요.</small> ')+'<button type="button" class="btn" data-vnick>'+(user.nick&&user.rankPublic?'닉네임 바꾸기':'닉네임 공개하기')+'</button> '+mk+' '+gb+'</div>';
   }
-  function showNick(){
-    authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>'+
-      '<h2 id="authTitle">닉네임</h2><p>투표왕·인기 출제자 랭킹, 한줄평, 내가 만든 투표에 보일 이름이에요. 공개에 동의하지 않으면 \'익명\'으로 보여요. 어떤 투표에 무엇을 골랐는지는 누구에게도 보이지 않아요.</p>'+
+  window.nyShowNick=function(r){ showNick(r); };
+  function showNick(req){
+    authBody.innerHTML=(req?'':'<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>')+
+      '<h2 id="authTitle">닉네임'+(req?'을 정해 주세요':'')+'</h2>'+(req?'<p><b>닉네임이 있어야 한줄평을 쓰고 랭킹에 오를 수 있어요.</b></p>':'')+'<p>투표왕·인기 출제자 랭킹, 한줄평, 내가 만든 투표에 보일 이름이에요. 공개에 동의하지 않으면 \'익명\'으로 보여요. 어떤 투표에 무엇을 골랐는지는 누구에게도 보이지 않아요.</p>'+
       '<form class="pf" id="nickF" novalidate><div class="field full"><label for="nickIn">닉네임 <small>(2~10자, 한글·영문·숫자)</small></label><input id="nickIn" maxlength="10" autocomplete="off" value="'+esc(user.nick||'')+'"></div>'+
       '<label class="full"><input type="checkbox" id="nickPub"'+(user.rankPublic||!user.nick?' checked':'')+'> <span>랭킹·한줄평·만든 투표에 닉네임 공개</span></label>'+
       '<p class="msg err full" id="nickMsg" role="status"></p><button class="btn dark full" type="submit">저장</button></form>';
@@ -2522,11 +2523,12 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     document.getElementById('nickF').addEventListener('submit',function(e){
       e.preventDefault();
       var n=document.getElementById('nickIn').value.trim(), pub=document.getElementById('nickPub').checked, m=document.getElementById('nickMsg');
+      if(req&&!n){ m.textContent='닉네임을 정해 주세요.'; return; }
       if(n&&!/^[가-힣a-zA-Z0-9_ ]{2,10}$/.test(n)){ m.textContent='닉네임은 2~10자의 한글·영문·숫자로 써 주세요.'; return; }
       if(pub&&!n){ m.textContent='공개하려면 닉네임을 입력해 주세요.'; return; }
       m.textContent='';
       NY.call('profile',{method:'POST',body:{only:'rank',nick:n,rankPublic:pub}}).then(function(j){
-        user.nick=j.nickname||''; user.rankPublic=!!j.rank_public; saveUser(); vCache={}; closeDialog(); toast(user.rankPublic?'랭킹에 닉네임이 보여요.':'랭킹에 익명으로 보여요.'); if(isPeople()) renderVoters();
+        user.nick=j.nickname||''; user.rankPublic=!!j.rank_public; saveUser(); vCache={}; closeDialog(); if(req&&NY&&NY.afterSignup) NY.afterSignup(); toast(user.rankPublic?'랭킹에 닉네임이 보여요.':'랭킹에 익명으로 보여요.'); if(isPeople()) renderVoters();
       }).catch(function(err){ m.textContent=err.message==='nick-taken'?'이미 쓰는 닉네임이에요. 다른 닉네임을 골라 주세요.':err.message==='nick'?'쓸 수 없는 닉네임이에요.':'저장하지 못했어요. 잠시 후 다시 시도해 주세요.'; });
     });
   }
@@ -2638,6 +2640,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     authBody.innerHTML='<button class="x" type="button" data-close aria-label="닫기">'+ic('x')+'</button>'+
       '<h2 id="authTitle">프로필 입력</h2><p>그룹별 결과를 만드는 데만 쓰입니다. 다른 사람에게 개인 정보는 보이지 않아요.</p>'+
       '<form class="pf" id="pf" novalidate>'+
+      (NY&&NY.on?'<div class="field full"><label for="pf-n">닉네임 <span class="req">*</span> <small>(2~10자, 한글·영문·숫자)</small></label><input id="pf-n" maxlength="10" autocomplete="off" placeholder="한줄평·랭킹에 보일 이름"></div>':'')+
       '<div class="field"><label for="pf-g">성별 <span class="req">*</span></label><select id="pf-g"><option value="">선택</option><option>남성</option><option>여성</option><option>응답 안 함</option></select></div>'+
       '<div class="field"><label for="pf-y">출생연도 <span class="req">*</span></label><select id="pf-y"><option value="">선택</option>'+years+'</select></div>'+
       '<div class="field"><label for="pf-r">지역 <span class="req">*</span></label><select id="pf-r"><option value="">선택</option>'+REGIONS.map(function(r){return '<option>'+r+'</option>'}).join('')+'</select></div>'+
@@ -2657,12 +2660,28 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     document.getElementById('pf').addEventListener('submit',function(e){
       e.preventDefault();
       var g=val('pf-g'),yv=val('pf-y'),r=val('pf-r'),m=document.getElementById('pf-msg');
+      var nkEl=document.getElementById('pf-n'), nk=nkEl?nkEl.value.trim():'';
+      if(nkEl&&!/^[가-힣a-zA-Z0-9_ ]{2,10}$/.test(nk)){m.textContent='닉네임을 2~10자의 한글·영문·숫자로 정해 주세요.';nkEl.focus();return}
       if(!g||!yv||!r){m.textContent='성별, 출생연도, 지역을 선택해 주세요.';return}
       if(!chk('pf-c1')||!chk('pf-c2')||!chk('pf-c3')){m.textContent='필수 항목에 동의해 주세요.';return}
-      user={via:auth.dataset.via||'kakao',gender:g,birth:+yv,region:r,edu:val('pf-e'),stat:chk('pf-c4'),pro:false};
-      if(intr.cats.length) user.interests=intr.cats.slice(); saveUser(); if(NY&&NY.on) NY.saveProfile(user); authUI(); if(!intr.cats.length&&auth.dataset.next!=='pro') showIntDialog('signup'); else closeDialog(); toast('가입을 마쳤습니다.'); reRenderKeep();
-      if(auth.dataset.next==='pro'){ startTrial(); }
+      var sb2=this.querySelector('button[type=submit]');
+      var nu={via:auth.dataset.via||'kakao',gender:g,birth:+yv,region:r,edu:val('pf-e'),stat:chk('pf-c4'),pro:false};
+      if(nkEl){
+        // 프로필을 먼저 만들고 닉네임을 저장. 닉네임이 겹치면 창을 닫지 않고 다시 고르게 한다
+        sb2.disabled=true; m.textContent='';
+        user=nu; if(intr.cats.length) user.interests=intr.cats.slice(); saveUser();
+        Promise.resolve(NY.saveProfile(user)).then(function(){ return NY.call('profile',{method:'POST',body:{only:'rank',nick:nk,rankPublic:true}}); }).then(function(j){
+          user.nick=j.nickname||nk; user.rankPublic=!!j.rank_public; saveUser(); sb2.disabled=false; finishSignup();
+        }).catch(function(err){ sb2.disabled=false; m.textContent=err&&err.message==='nick-taken'?'이미 쓰는 닉네임이에요. 다른 닉네임을 골라 주세요.':err&&err.message==='nick'?'쓸 수 없는 닉네임이에요.':'저장하지 못했어요. 잠시 후 다시 시도해 주세요.'; nkEl.focus(); });
+        return;
+      }
+      user=nu;
+      if(intr.cats.length) user.interests=intr.cats.slice(); saveUser(); finishSignup();
     });
+    function finishSignup(){ authUI(); if(!intr.cats.length&&auth.dataset.next!=='pro') showIntDialog('signup'); else closeDialog(); toast('가입을 마쳤습니다.'); reRenderKeep();
+      if(auth.dataset.next==='pro'){ startTrial(); }
+      if(NY&&NY.afterSignup) NY.afterSignup();
+    }
     openDialog();
   }
   function showMe(){
@@ -2671,6 +2690,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
       '<h2 id="authTitle">내 정보 '+(user.pro?'<span class="pbadge">프리미엄 체험 중</span>':'')+'</h2>'+
       '<div class="me"><div><span>로그인</span><b>'+viaName(user.via)+'</b></div><div><span>성별</span><b>'+esc(user.gender)+'</b></div><div><span>연령대</span><b>'+age+'</b></div><div><span>지역</span><b>'+esc(user.region)+'</b></div><div><span>학력</span><b>'+(esc(user.edu)||'응답 안 함')+'</b></div><div><span>참여한 투표</span><b>'+Object.keys(voted).length+'개</b></div></div>'+
       (NY&&NY.on?'<div class="me"><div><span>랭킹 닉네임</span><b>'+(user.nick?esc(user.nick)+(user.rankPublic?'':' <small>(비공개)</small>'):'없음')+'</b> <button type="button" class="linkbtn" data-me="nick">'+(user.nick?'바꾸기':'정하기')+'</button></div></div>':'')+'<p style="font-size:calc(12px * var(--fs))">프로필은 30일에 한 번만 바꿀 수 있습니다.</p>'+
+      (NY&&NY.on&&NY.token&&!NY.sessEmail?'<div class="me"><div><span>이메일</span><b>연결 안 됨</b> <button type="button" class="linkbtn" data-me="mail">연결하기</button></div></div>':'')+
       '<div class="me"><div><span>관심사</span><b>'+(intr.cats&&intr.cats.length?intr.cats.map(function(c){return esc(catLabel(c))}).join(', '):'고르지 않음')+'</b> <button type="button" class="linkbtn" data-me="int">바꾸기</button></div></div>'+
       '<div class="row">'+(user.pro?'<button class="btn" type="button" data-me="unpro">체험 종료</button>':'')+'<button class="btn" type="button" data-me="logout">로그아웃</button></div>'+
       '<p class="hint" style="margin-top:14px"><a href="privacy">개인정보처리방침</a> · <a href="terms">이용약관</a> · <button type="button" data-me="withdraw" style="background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit">회원 탈퇴</button></p>';
@@ -2684,6 +2704,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     var sso=t.closest('[data-sso]'); if(sso){ auth.dataset.via=sso.dataset.sso; return showProfile(); }
     var me=t.closest('[data-me]'); if(!me) return;
     if(me.dataset.me==='int') return showIntDialog('dlg');
+    if(me.dataset.me==='mail') return NY.linkEmail();
     if(me.dataset.me==='withdraw'){
       if(!confirm('탈퇴하면 프로필·한줄평·내가 만든 투표가 삭제되고 되돌릴 수 없어요. 탈퇴할까요?')) return;
       if(!NY||!NY.withdraw) return toast('지금은 탈퇴를 처리할 수 없어요.');
@@ -4440,11 +4461,51 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
     api.signOut=function(){ if(api.sb) api.sb.auth.signOut(); api.token=null; api.uid=null; };
     // 이번 방문 경로, 없으면 30일 안에 처음 들어온 경로
     window.nySrcNow=function(){ try{ var s=sessionStorage.getItem('ny_src'); if(s&&s!=='direct'&&s!=='other') return s; var f=JSON.parse(localStorage.getItem('ny_src_first')||'null'); if(f&&Date.now()-f.t<30*864e5) return f.s; return s||''; }catch(e){ return ''; } };
+    // ---- 이메일 연결: 카카오가 이메일을 안 넘겨 준 계정은, 같은 사람이 네이버·구글로 오면 계정이 따로 생겨요.
+    //      메일 코드로 이메일을 붙여 두면 그 뒤로는 같은 이메일 로그인이 한 계정으로 합쳐져요.
+    api.afterSignup=function(){
+      if(!api.token||api.sessEmail||api.mailAsked) return;
+      var tries=0;
+      (function wait(){ // 다른 창(관심사 고르기 등)이 닫힌 뒤에 띄운다
+        if(document.getElementById('auth').open){ if(++tries<240) setTimeout(wait,1000); return; }
+        api.mailAsked=true; api.linkEmail();
+      })();
+    };
+    api.linkEmail=function(){
+      var authBody=document.getElementById('authBody');
+      authBody.innerHTML='<h2 id="authTitle">이메일을 연결해 주세요</h2><p>카카오에서 이메일을 받지 못했어요. 이메일을 연결해 두면 나중에 네이버·구글로 로그인해도 <b>같은 계정</b>으로 들어와요.</p>'+
+        '<form class="pf" id="lkF" novalidate><div class="field full"><label for="lkE">이메일</label><input id="lkE" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com"></div>'+
+        '<p class="msg err full" id="lkM" role="status"></p><button class="btn dark full" type="submit">코드 받기</button>'+
+        '<button type="button" class="lg-mail-s" id="lkLater">나중에 하기</button></form>';
+      if(!document.getElementById('auth').open) openDialog();
+      var f=document.getElementById('lkF'), m=document.getElementById('lkM');
+      document.getElementById('lkLater').onclick=function(){ closeDialog(); toast('내 정보에서 언제든 이메일을 연결할 수 있어요.'); };
+      f.onsubmit=function(e){
+        e.preventDefault();
+        var em=document.getElementById('lkE').value.trim(), b=f.querySelector('button[type=submit]');
+        if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ m.textContent='이메일 주소를 확인해 주세요.'; return; }
+        b.disabled=true; m.textContent='';
+        api.sb.auth.updateUser({email:em,data:{lang:/^ko/i.test(navigator.language||'ko')?'ko':'en'}},{emailRedirectTo:location.origin+'/'}).then(function(r){
+          b.disabled=false;
+          if(r.error){ var t=r.error.message||''; m.textContent=/already|exists|registered/i.test(t)?'이미 가입된 이메일이에요. 그 이메일의 계정(네이버·구글·이메일)으로 로그인해 주세요.':/seconds|rate/i.test(t)?'잠시 후 다시 시도해 주세요.':'메일을 보내지 못했어요. 잠시 후 다시 시도해 주세요.'; return; }
+          f.innerHTML='<p class="full" style="margin:0 0 4px"><b>'+esc(em)+'</b> 으로 코드를 보냈어요.</p><div class="field full"><label for="lkC">메일의 숫자 코드</label><input id="lkC" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="숫자 6자리" style="font-size:22px;letter-spacing:6px;text-align:center"></div><p class="msg err full" id="lkM2" role="status"></p><button class="btn dark full" type="submit">연결하기</button>';
+          var c=document.getElementById('lkC'), m2=document.getElementById('lkM2'); c.focus();
+          c.oninput=function(){ c.value=c.value.replace(/\D/g,''); if(c.value.length===6&&f.requestSubmit) f.requestSubmit(); };
+          f.onsubmit=function(ev){
+            ev.preventDefault();
+            api.sb.auth.verifyOtp({email:em,token:c.value,type:'email_change'}).then(function(r2){
+              if(r2.error){ m2.textContent='코드가 맞지 않거나 만료됐어요. 다시 확인해 주세요.'; return; }
+              api.sessEmail=em; closeDialog(); toast('이메일을 연결했어요. 이제 네이버·구글로 와도 같은 계정이에요.');
+            });
+          };
+        });
+      };
+    };
     api.saveProfile=function(u){
       if(!api.token) return;
       u.sid=api.uid; saveUser();
-      call('profile',{method:'POST',body:{gender:u.gender,birth:u.birth,region:u.region,edu:u.edu,stat:u.stat,notify:u.notify!==false,src:window.nySrcNow?nySrcNow():''}})
-        .catch(function(){ toast('프로필을 저장하지 못했어요. 다시 시도해 주세요.'); });
+      return call('profile',{method:'POST',body:{gender:u.gender,birth:u.birth,region:u.region,edu:u.edu,stat:u.stat,notify:u.notify!==false,src:window.nySrcNow?nySrcNow():''}})
+        .catch(function(e){ toast('프로필을 저장하지 못했어요. 다시 시도해 주세요.'); throw e; });
     };
     function loadMe(session){
       api.token=session.access_token; api.uid=session.user.id;
@@ -4458,7 +4519,11 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
           var pro=user&&user.pro;
           user={via:via,sid:api.uid,email:j.email,gender:pf.gender,birth:pf.birth_year,region:pf.region,edu:pf.edu||'',stat:pf.stat_consent,notify:pf.notify_results,admin:pf.is_admin,nick:pf.nickname||'',rankPublic:!!pf.rank_public,pro:!!pro};
           saveUser(); authUI(); if(started) reRenderKeep();
+          api.sessEmail=session.user.email||'';
+          if(!pf.nickname) setTimeout(function(){ if(window.nyShowNick) nyShowNick(true); },300);
+          else api.afterSignup();
         }else{
+          api.sessEmail=session.user.email||'';
           user=null; saveUser(); authUI();
           auth.dataset.via=via; auth.dataset.next=''; showProfile();
         }
