@@ -4276,6 +4276,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
   }
   document.querySelector('#v-mine .chips').addEventListener('click',function(e){ var b=e.target.closest('[data-m]'); if(!b) return; mineTab=b.dataset.m; mineShown=20; renderMine(); });
   document.getElementById('mineMore').onclick=function(){ mineShown+=20; renderMine(); };
+  function mailLang(){ var l=(navigator.languages&&navigator.languages[0])||navigator.language||'ko'; return /^ko/i.test(l)?'ko':'en'; }
   function route(){
     var h=(location.hash||'').slice(1);
     if(embedded) h='vote';
@@ -4387,7 +4388,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
           if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){ m.className='msg err full'; m.textContent='이메일 주소를 확인해 주세요.'; return; }
           b.disabled=true; m.className='msg full'; m.textContent='보내는 중…';
           var back=new URL(location.href); back.searchParams.set('auth','email'); back.hash='';
-          api.sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:back.toString()}}).then(function(r){
+          api.sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:back.toString(),data:{lang:mailLang()}}}).then(function(r){
             b.disabled=false;
             if(r.error){ m.className='msg err full'; m.textContent=/rate|seconds/i.test(r.error.message)?'잠시 후 다시 시도해 주세요. (1분에 한 번 보낼 수 있어요)':'메일을 보내지 못했어요. 잠시 후 다시 시도해 주세요.'; return; }
             // 코드 입력 칸으로 바꿈
@@ -4405,7 +4406,7 @@ html.vw-lock,html.vw-lock body{overflow:hidden}
             ci.focus(); drawOtp();
             var pb=document.getElementById('nyPaste');
             if(pb) pb.onclick=function(){ navigator.clipboard.readText().then(function(t){ var d=String(t||'').replace(/\D/g,''); if(d.length<6){ var cm=document.getElementById('nyCodeMsg'); cm.className='msg err full'; cm.textContent='복사한 내용에 숫자 코드가 없어요. 메일에서 코드를 복사해 주세요.'; return; } setCode(d); }).catch(function(){ ci.focus(); toast('길게 눌러 붙여넣어 주세요.'); }); };
-            document.getElementById('nyResend').onclick=function(){ api.sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:back.toString()}}).then(function(r2){ var cm=document.getElementById('nyCodeMsg'); cm.className='msg '+(r2.error?'err':'ok')+' full'; cm.textContent=r2.error?'잠시 후 다시 시도해 주세요. (1분에 한 번)':'새 코드를 보냈어요.'; }); };
+            document.getElementById('nyResend').onclick=function(){ api.sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:back.toString(),data:{lang:mailLang()}}}).then(function(r2){ var cm=document.getElementById('nyCodeMsg'); cm.className='msg '+(r2.error?'err':'ok')+' full'; cm.textContent=r2.error?'잠시 후 다시 시도해 주세요. (1분에 한 번)':'새 코드를 보냈어요.'; }); };
             f.onsubmit=function(ev){
               ev.preventDefault(); ev.stopImmediatePropagation();
               var code=ci.value.trim(), cm=document.getElementById('nyCodeMsg'), cb=f.querySelector('button[type=submit]');
